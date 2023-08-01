@@ -29,8 +29,6 @@ class SocketClient {
           `[close] connection was terminated appropriately (code=${ev.code} reason=${ev.reason})`
         );
       } else {
-        // 예시: 프로세스가 죽거나 네트워크에 장애가 있는 경우
-        // event.code가 1006이 됩니다.
         alert("[close] Deadly disconnected");
       }
     });

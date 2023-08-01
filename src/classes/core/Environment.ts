@@ -8,6 +8,12 @@ import {
   FreeCamera,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Control } from "@babylonjs/gui";
+import Level from "./Level";
+import Player from "./player/Player";
+
+/**
+ * Environment class
+ */
 
 enum ESceneState {
   LOADING = 0,
@@ -16,14 +22,15 @@ enum ESceneState {
 }
 
 class Environment {
-  private _engine: Engine;
+  // private _engine: Engine;
   private _scene: Scene;
   private _hemLight: HemisphericLight;
   private _state: ESceneState;
+  private _level: Level;
+  private _player: Player;
 
-  constructor(readonly canvas: HTMLCanvasElement) {
+  constructor(readonly canvas: HTMLCanvasElement, readonly _engine: Engine) {
     // initialize babylon scene and engine
-    this._engine = new Engine(this.canvas, true);
     this._scene = new Scene(this._engine);
 
     this._hemLight = new HemisphericLight(
@@ -31,8 +38,12 @@ class Environment {
       new Vector3(1, 1, 0),
       this._scene
     );
+    this._level = new Level(this._scene);
+    this._level.Load().then(() => console.log("level generated"));
 
-    this.LobbySceneSetup();
+    //this.LobbySceneSetup();
+    // player construct
+    this._player = new Player(this._scene);
 
     window.addEventListener("resize", () => {
       this._engine.resize();
@@ -68,15 +79,15 @@ class Environment {
 
     //When scene is ready
     await scene.whenReadyAsync();
-    this._engine.hideLoadingUI();
+    // this._engine.hideLoadingUI();
     this._scene.dispose(); //release resources of current scene
     this._scene = scene; // set new scene to current
     this._state = ESceneState.LOBBY; // update state
   }
 
-  get Engine() {
-    return this._engine;
-  }
+  // get Engine() {
+  //   return this._engine;
+  // }
 
   get Scene() {
     return this._scene;
