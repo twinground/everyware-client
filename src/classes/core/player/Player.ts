@@ -1,23 +1,37 @@
-import { Scene, MeshBuilder, TransformNode, Mesh } from "@babylonjs/core";
-import { FreeCamera, Vector3 } from "@babylonjs/core";
+// Module import
+import {
+  Scene,
+  SceneLoader,
+  Mesh,
+  ArcRotateCamera,
+  Vector3,
+  Node,
+  AnimationGroup,
+} from "@babylonjs/core";
+// Type import
+import { PlayerAsset } from "../types/PlayerType";
 
 class Player {
-  private _mesh: Mesh;
-  private _camera: FreeCamera;
+  private _mesh: Node;
+  private _camera: ArcRotateCamera;
+  private _animationGroups: AnimationGroup[];
 
-  constructor(readonly scene: Scene) {
-    this._mesh = MeshBuilder.CreateSphere(
-      "sphere",
-      { diameter: 3, segments: 10 },
-      this.scene
-    );
-    this._camera = new FreeCamera(
+  constructor(readonly scene: Scene, asset: PlayerAsset) {
+    this._camera = new ArcRotateCamera(
       "player-cam",
-      new Vector3(0, 5, -10),
+      Math.PI / 2,
+      Math.PI / 4,
+      20,
+      new Vector3(0, 0, 0),
       this.scene
     );
 
-    this._camera.setTarget(new Vector3(0, 0, 0));
+    this._mesh = asset.mesh;
+    this._animationGroups = asset.animationGroups;
+    console.log(this._animationGroups);
+
+    this._camera.setPosition(new Vector3(0, 0, -10));
+    this._camera.attachControl(true);
   }
 }
 

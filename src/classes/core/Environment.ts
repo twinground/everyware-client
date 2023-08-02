@@ -1,3 +1,4 @@
+// Module import
 import {
   Engine,
   Scene,
@@ -6,26 +7,21 @@ import {
   HemisphericLight,
   Color4,
   FreeCamera,
+  SceneLoader,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Control } from "@babylonjs/gui";
 import Level from "./Level";
 import Player from "./player/Player";
+// Type import
+import { PlayerAsset } from "./types/PlayerType";
 
 /**
  * Environment class
  */
-
-enum ESceneState {
-  LOADING = 0,
-  WORLD = 1,
-  LOBBY = 2,
-}
-
 class Environment {
   // private _engine: Engine;
   private _scene: Scene;
   private _hemLight: HemisphericLight;
-  private _state: ESceneState;
   private _level: Level;
   private _player: Player;
 
@@ -43,51 +39,33 @@ class Environment {
 
     //this.LobbySceneSetup();
     // player construct
-    this._player = new Player(this._scene);
+    this.LoadAsset().then((asset) => {
+      this._player = new Player(this._scene, asset);
+    });
 
     window.addEventListener("resize", () => {
       this._engine.resize();
     });
   }
 
-  private async LobbySceneSetup() {
-    this._engine.displayLoadingUI();
+  public async LoadAsset() {
+    const result = await SceneLoader.ImportMeshAsync(
+      "",
+      "./models/",
+      "character_with_anim.glb",
+      this._scene
+    );
+    let mesh = result.meshes[0].getChildren()[0];
+    mesh.parent = null; // remove parent after extracting
+    console.log(result);
 
-    //unable inputs while loading
-    this._scene.detachControl();
-    let scene = new Scene(this._engine);
-    scene.clearColor = new Color4(0, 0, 0, 1);
+    const asset: PlayerAsset = {
+      mesh,
+      animationGroups: result.animationGroups.slice(14), // TODO: modify animations in blender later
+    };
 
-    //basic camera setup
-    let camera = new FreeCamera("camera1", new Vector3(0, 0, 0), scene);
-    camera.setTarget(Vector3.Zero());
-
-    //GUI menu
-    const guiMenu = AdvancedDynamicTexture.CreateFullscreenUI("MENU");
-    guiMenu.idealHeight = 720;
-    const connectBtn = Button.CreateSimpleButton("start", "CONNECT");
-    connectBtn.width = 0.2;
-    connectBtn.color = "white";
-    connectBtn.top = "-14px";
-    connectBtn.thickness = 0;
-    connectBtn.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-    guiMenu.addControl(connectBtn);
-
-    connectBtn.onPointerDownObservable.add(() => {
-      scene.detachControl();
-    });
-
-    //When scene is ready
-    await scene.whenReadyAsync();
-    // this._engine.hideLoadingUI();
-    this._scene.dispose(); //release resources of current scene
-    this._scene = scene; // set new scene to current
-    this._state = ESceneState.LOBBY; // update state
+    return asset;
   }
-
-  // get Engine() {
-  //   return this._engine;
-  // }
 
   get Scene() {
     return this._scene;

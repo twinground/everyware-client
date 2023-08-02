@@ -27,18 +27,6 @@ class Engine {
     this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
     this._environment = new Environment(this._canvas, this._engine);
 
-    // hide/show the Inspector
-    window.addEventListener("keydown", (ev) => {
-      // Shift+Ctrl+Alt+I
-      if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
-        if (this._environment.Scene.debugLayer.isVisible()) {
-          this._environment.Scene.debugLayer.hide();
-        } else {
-          this._environment.Scene.debugLayer.show();
-        }
-      }
-    });
-
     await this.main();
   }
 
