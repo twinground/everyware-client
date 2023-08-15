@@ -1,10 +1,19 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
-import { Engine as BabylonEngine, EngineFactory } from "@babylonjs/core";
+import {
+  Vector3,
+  FreeCamera,
+  Engine as BabylonEngine,
+  EngineFactory,
+  Scene,
+  Color3,
+  Color4,
+} from "@babylonjs/core";
 import Environment from "./Environment";
 
 class Engine {
   private _environment: Environment;
+  private _scene: Scene;
   private _canvas: HTMLCanvasElement;
   private _engine: BabylonEngine;
 
@@ -23,9 +32,23 @@ class Engine {
 
   private async Init() {
     this.CreateCanvas();
-    // initialize environment
+    // initialize babylon scene and engine
     this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
-    this._environment = new Environment(this._canvas, this._engine);
+    this._scene = new Scene(this._engine);
+    this._scene.clearColor = new Color4(36 / 255, 113 / 255, 214 / 255);
+
+    // create temporary camera for setup
+    let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
+
+    // initialize environment
+    this._environment = new Environment(this._canvas, this._scene, () => {
+      camera.dispose(); // dispose camera after player is ready
+    });
+
+    // resize window
+    window.addEventListener("resize", () => {
+      this._engine.resize();
+    });
 
     await this.main();
   }
