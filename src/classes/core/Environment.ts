@@ -1,81 +1,70 @@
+// Module import
 import {
-  Engine,
   Scene,
-  ArcRotateCamera,
-  Vector3,
-  HemisphericLight,
-  Color4,
-  FreeCamera,
+  SceneLoader,
+  ShadowGenerator,
+  AnimationPropertiesOverride,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Control } from "@babylonjs/gui";
+import Level from "./Level";
+import Player from "./player/Player";
+// Type import
+import { PlayerAsset } from "../../types/PlayerType";
 
-enum ESceneState {
-  LOADING = 0,
-  WORLD = 1,
-  LOBBY = 2,
-}
-
+/**
+ * Environment class
+ */
 class Environment {
-  private _engine: Engine;
-  private _scene: Scene;
-  private _hemLight: HemisphericLight;
-  private _state: ESceneState;
+  // private _engine: Engine;
+  private _level: Level;
+  private _player: Player;
+  private _shadowGenerator: ShadowGenerator;
 
-  constructor(readonly canvas: HTMLCanvasElement) {
-    // initialize babylon scene and engine
-    this._engine = new Engine(this.canvas, true);
-    this._scene = new Scene(this._engine);
+  constructor(
+    readonly canvas: HTMLCanvasElement,
+    readonly _scene: Scene,
+    callback: () => void
+  ) {
+    this._level = new Level(this._scene);
+    this._shadowGenerator = new ShadowGenerator(1024, this._level.Light);
+    this._level.Load().then(() => console.log("level generated"));
 
-    this._hemLight = new HemisphericLight(
-      "light1",
-      new Vector3(1, 1, 0),
+    // player construct
+    this.LoadModelAsset().then((asset) => {
+      this._player = new Player(this._scene, asset);
+      callback();
+    });
+  }
+
+  public async LoadModelAsset() {
+    const result = await SceneLoader.ImportMeshAsync(
+      "",
+      "./models/",
+      "character_with_anim.glb",
       this._scene
     );
+    let skeleton = result.skeletons[0];
+    let mesh = result.meshes[0]; // root mesh
+    this._shadowGenerator.addShadowCaster(this._scene.meshes[0], true);
+    for (let i = 0; i < result.meshes.length; i++) {
+      result.meshes[i].receiveShadows = false;
+    }
+    mesh.scaling.setAll(0.8); // scale mesh
+    mesh.parent = null; // remove parent after extracting
 
-    this.LobbySceneSetup();
+    skeleton.animationPropertiesOverride = new AnimationPropertiesOverride();
+    skeleton.animationPropertiesOverride.enableBlending = true;
+    skeleton.animationPropertiesOverride.blendingSpeed = 0.05;
+    skeleton.animationPropertiesOverride.loopMode = 1;
 
-    window.addEventListener("resize", () => {
-      this._engine.resize();
-    });
-  }
+    console.log(skeleton);
 
-  private async LobbySceneSetup() {
-    this._engine.displayLoadingUI();
+    const asset: PlayerAsset = {
+      mesh,
+      animationGroups: result.animationGroups.slice(14), // TODO: modify animations in blender later
+    };
 
-    //unable inputs while loading
-    this._scene.detachControl();
-    let scene = new Scene(this._engine);
-    scene.clearColor = new Color4(0, 0, 0, 1);
-
-    //basic camera setup
-    let camera = new FreeCamera("camera1", new Vector3(0, 0, 0), scene);
-    camera.setTarget(Vector3.Zero());
-
-    //GUI menu
-    const guiMenu = AdvancedDynamicTexture.CreateFullscreenUI("MENU");
-    guiMenu.idealHeight = 720;
-    const connectBtn = Button.CreateSimpleButton("start", "CONNECT");
-    connectBtn.width = 0.2;
-    connectBtn.color = "white";
-    connectBtn.top = "-14px";
-    connectBtn.thickness = 0;
-    connectBtn.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-    guiMenu.addControl(connectBtn);
-
-    connectBtn.onPointerDownObservable.add(() => {
-      scene.detachControl();
-    });
-
-    //When scene is ready
-    await scene.whenReadyAsync();
-    this._engine.hideLoadingUI();
-    this._scene.dispose(); //release resources of current scene
-    this._scene = scene; // set new scene to current
-    this._state = ESceneState.LOBBY; // update state
-  }
-
-  get Engine() {
-    return this._engine;
+    return asset;
   }
 
   get Scene() {
