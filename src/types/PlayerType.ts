@@ -1,4 +1,9 @@
 import { AnimationGroup, AbstractMesh } from "@babylonjs/core";
+import {
+  IdleState,
+  SitState,
+  WalkState,
+} from "../classes/core/player/animations/AnimStates";
 
 export type PlayerAsset = {
   mesh: AbstractMesh;
@@ -10,17 +15,25 @@ export interface InputMap {
   a: boolean;
   s: boolean;
   d: boolean;
+  c: boolean;
 }
 
+export type StateMap = {
+  idle: IdleState;
+  walk: WalkState;
+  sit: SitState;
+};
+
 export type PlayerAnimations = {
-  clapping: AnimationGroup;
+  clap: AnimationGroup;
   idle: AnimationGroup;
-  turnLeft: AnimationGroup;
-  turnRight: AnimationGroup;
   sitDown: AnimationGroup;
+  sitting: AnimationGroup;
   standUp: AnimationGroup;
-  talk: AnimationGroup;
   thumbsUp: AnimationGroup;
   turnBack: AnimationGroup;
-  walk: AnimationGroup;
+  turnLeft: AnimationGroup;
+  turnRight: AnimationGroup;
+  walkBack: AnimationGroup;
+  walkFor: AnimationGroup;
 };

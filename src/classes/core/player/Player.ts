@@ -47,25 +47,20 @@ class Player extends TransformNode {
 
     // store animation assets
     this.scene.stopAllAnimations();
+    console.log(asset.animationGroups);
     this._animations = {
-      clapping: asset.animationGroups[0],
+      clap: asset.animationGroups[0],
       idle: asset.animationGroups[1],
       sitDown: asset.animationGroups[2],
-      standUp: asset.animationGroups[3],
-      talk: asset.animationGroups[4],
+      sitting: asset.animationGroups[3],
+      standUp: asset.animationGroups[4],
       thumbsUp: asset.animationGroups[5],
       turnBack: asset.animationGroups[6],
       turnLeft: asset.animationGroups[7],
       turnRight: asset.animationGroups[8],
-      walk: asset.animationGroups[9],
+      walkBack: asset.animationGroups[9],
+      walkFor: asset.animationGroups[10],
     };
-    this._animations.clapping.loopAnimation = true;
-    this._animations.idle.loopAnimation = true;
-    this._animations.sitDown.loopAnimation = true;
-    this._animations.standUp.loopAnimation = true;
-    this._animations.talk.loopAnimation = true;
-    this._animations.walk.loopAnimation = true;
-    this._animations.turnBack.loopAnimation = true;
 
     this._playerController = new PlayerController(this, this._scene);
   }

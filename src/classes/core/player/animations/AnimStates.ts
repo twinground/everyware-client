@@ -2,44 +2,36 @@ import type { IState } from "../../../../interfaces/IStateMachine";
 import type InputSystem from "../../InputSystem";
 import Player from "../Player";
 
-export enum EAnimState {
-  Idle,
-  Walking,
-  Sitting,
-  Talking,
-}
-
 export class AnimState {
-  private _state: EAnimState;
+  protected _state: string;
 
-  constructor(public player: Player, public inputSys: InputSystem) {
-    this._state = EAnimState.Idle;
+  constructor(public player: Player) {
+    this._state = "";
   }
 
-  GetState() {
+  get State() {
     return this._state;
   }
-  SetState(state: EAnimState) {
+
+  SetState(state: string) {
     this._state = state;
   }
-  Transition(_state: EAnimState) {}
-  Update() {}
+  Transition(_state: string): void {}
 }
 
 export class IdleState extends AnimState {
-  readonly STATE = EAnimState.Idle;
+  constructor(public player: Player) {
+    super(player);
 
-  GetState(): EAnimState {
-    return this.STATE;
+    this._state = "idle";
   }
 
-  Transition(nextState: EAnimState): void {
+  Transition(nextState: string): void {
     switch (nextState) {
-      case EAnimState.Sitting: {
-        this.player.Animations;
+      case "sit": {
         break;
       }
-      case EAnimState.Walking: {
+      case "walk": {
         break;
       }
     }
@@ -47,32 +39,32 @@ export class IdleState extends AnimState {
 }
 
 export class WalkState extends AnimState {
-  readonly STATE = EAnimState.Walking;
+  constructor(public player: Player) {
+    super(player);
 
-  GetState(): number {
-    return this.STATE;
+    this._state = "walk";
   }
 
-  Transition(nextState: EAnimState): void {}
+  Transition(nextState: string): void {}
 }
 
 export class SitState extends AnimState {
-  readonly STATE = EAnimState.Sitting;
+  constructor(public player: Player) {
+    super(player);
 
-  GetState(): EAnimState {
-    return this.STATE;
+    this._state = "set";
   }
 
-  Transition(nextState: EAnimState): void {}
+  Transition(nextState: string): void {}
 }
 
 // TODO : less important. implement later
 export class Talking extends AnimState {
-  readonly STATE = EAnimState.Idle;
+  constructor(public player: Player) {
+    super(player);
 
-  GetState(): EAnimState {
-    return this.STATE;
+    this._state = "talk";
   }
 
-  Transition(nextState: EAnimState): void {}
+  Transition(nextState: string): void {}
 }
