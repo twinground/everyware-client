@@ -1,14 +1,12 @@
 // Module import
 import {
   Scene,
-  SceneLoader,
-  Mesh,
   ArcRotateCamera,
   Vector3,
-  Node,
   AnimationGroup,
   AbstractMesh,
   TransformNode,
+  AsyncCoroutine,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -18,6 +16,7 @@ class Player extends TransformNode {
   private _mesh: AbstractMesh;
   private _camera: ArcRotateCamera;
   private _animations: PlayerAnimations;
+  private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
 
   constructor(readonly scene: Scene, asset: PlayerAsset) {
@@ -47,7 +46,6 @@ class Player extends TransformNode {
 
     // store animation assets
     this.scene.stopAllAnimations();
-    console.log(asset.animationGroups);
     this._animations = {
       clap: asset.animationGroups[0],
       idle: asset.animationGroups[1],
@@ -62,7 +60,31 @@ class Player extends TransformNode {
       walkFor: asset.animationGroups[10],
     };
 
+    // play idle animation as an initial animation
+    this._animations.idle.play(true);
+    this._curAnim = this._animations.idle;
+
     this._playerController = new PlayerController(this, this._scene);
+  }
+
+  //generator
+  public *AnimationBlending(
+    to: AnimationGroup,
+    from: AnimationGroup,
+    ratio: number
+  ): AsyncCoroutine<void> {
+    let curWeight = 1;
+    let nextWeight = 0;
+
+    to.play(true); // play next animation first
+
+    while (nextWeight < 1) {
+      curWeight -= ratio; // decrement current animation weight by given ratio
+      nextWeight += ratio; // increment
+      to.setWeightForAllAnimatables(nextWeight);
+      from.setWeightForAllAnimatables(curWeight);
+      yield; // this makes that routine wait for one frame.
+    }
   }
 
   get Mesh(): AbstractMesh {

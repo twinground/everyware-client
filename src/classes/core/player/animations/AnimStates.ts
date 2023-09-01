@@ -32,6 +32,16 @@ export class IdleState extends AnimState {
         break;
       }
       case "walk": {
+        this.player.scene.stopAllAnimations();
+        console.log("1");
+        this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+          this.player.AnimationBlending(
+            this.player.Animations.walkFor,
+            this.player.Animations.idle,
+            0.05
+          )
+        );
+
         break;
       }
     }
@@ -45,7 +55,26 @@ export class WalkState extends AnimState {
     this._state = "walk";
   }
 
-  Transition(nextState: string): void {}
+  Transition(nextState: string): void {
+    switch (nextState) {
+      case "idle": {
+        this.player.scene.stopAllAnimations(); // Stop all animations before blending two animations
+
+        this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+          this.player.AnimationBlending(
+            this.player.Animations.idle,
+            this.player.Animations.walkFor,
+            0.05
+          )
+        );
+
+        break;
+      }
+      default: {
+        console.log("Unsupported state yet.");
+      }
+    }
+  }
 }
 
 export class SitState extends AnimState {
