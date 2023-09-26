@@ -1,14 +1,12 @@
 // Module import
 import {
   Scene,
-  SceneLoader,
-  Mesh,
   ArcRotateCamera,
   Vector3,
-  Node,
   AnimationGroup,
   AbstractMesh,
   TransformNode,
+  AsyncCoroutine,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -18,6 +16,7 @@ class Player extends TransformNode {
   private _mesh: AbstractMesh;
   private _camera: ArcRotateCamera;
   private _animations: PlayerAnimations;
+  private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
 
   constructor(readonly scene: Scene, asset: PlayerAsset) {
@@ -48,26 +47,44 @@ class Player extends TransformNode {
     // store animation assets
     this.scene.stopAllAnimations();
     this._animations = {
-      clapping: asset.animationGroups[0],
+      clap: asset.animationGroups[0],
       idle: asset.animationGroups[1],
       sitDown: asset.animationGroups[2],
-      standUp: asset.animationGroups[3],
-      talk: asset.animationGroups[4],
+      sitting: asset.animationGroups[3],
+      standUp: asset.animationGroups[4],
       thumbsUp: asset.animationGroups[5],
       turnBack: asset.animationGroups[6],
       turnLeft: asset.animationGroups[7],
       turnRight: asset.animationGroups[8],
-      walk: asset.animationGroups[9],
+      walkBack: asset.animationGroups[9],
+      walkFor: asset.animationGroups[10],
     };
-    this._animations.clapping.loopAnimation = true;
-    this._animations.idle.loopAnimation = true;
-    this._animations.sitDown.loopAnimation = true;
-    this._animations.standUp.loopAnimation = true;
-    this._animations.talk.loopAnimation = true;
-    this._animations.walk.loopAnimation = true;
-    this._animations.turnBack.loopAnimation = true;
+
+    // play idle animation as an initial animation
+    this._animations.idle.play(true);
+    this._curAnim = this._animations.idle;
 
     this._playerController = new PlayerController(this, this._scene);
+  }
+
+  //generator
+  public *AnimationBlending(
+    to: AnimationGroup,
+    from: AnimationGroup,
+    ratio: number
+  ): AsyncCoroutine<void> {
+    let curWeight = 1;
+    let nextWeight = 0;
+
+    to.play(true); // play next animation first
+
+    while (nextWeight < 1) {
+      curWeight -= ratio; // decrement current animation weight by given ratio
+      nextWeight += ratio; // increment
+      to.setWeightForAllAnimatables(nextWeight);
+      from.setWeightForAllAnimatables(curWeight);
+      yield; // this makes that routine wait for one frame.
+    }
   }
 
   get Mesh(): AbstractMesh {

@@ -1,4 +1,5 @@
 import { ActionManager, Scene, ExecuteCodeAction } from "@babylonjs/core";
+// type
 import { InputMap } from "../../types/PlayerType";
 
 class InputSystem {
@@ -13,6 +14,7 @@ class InputSystem {
       a: false,
       s: false,
       d: false,
+      c: false,
     };
 
     //register keydown trigger
