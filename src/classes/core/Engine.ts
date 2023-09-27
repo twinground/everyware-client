@@ -6,7 +6,6 @@ import {
   Engine as BabylonEngine,
   EngineFactory,
   Scene,
-  Color3,
   Color4,
 } from "@babylonjs/core";
 import Environment from "./Environment";
