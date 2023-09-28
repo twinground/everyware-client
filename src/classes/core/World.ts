@@ -10,15 +10,18 @@ import {
   AnimationGroup,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Control } from "@babylonjs/gui";
+// class
 import Level from "./Level";
 import Player from "./player/Player";
-// Type import
+// type
 import { PlayerAsset } from "../../types/PlayerType";
+import { IConnection } from "../../interfaces/IPacket";
+import type Client from "../network/Client";
 
 /**
- * Environment class
+ * World class
  */
-class Environment {
+class World {
   // private _engine: Engine;
   private _level: Level;
   private _light: DirectionalLight;
@@ -27,6 +30,8 @@ class Environment {
   constructor(
     readonly canvas: HTMLCanvasElement,
     readonly _scene: Scene,
+    private _client: Client,
+    public expoName: string,
     callback: () => void
   ) {
     this._light = new DirectionalLight(
@@ -45,6 +50,12 @@ class Environment {
       callback();
     });
     this.LoadLevelAsset();
+
+    // listening on the connections from other users.
+    this._client.Socket.subscribe(`/${expoName}`, (message) => {
+      const connectionPkt: IConnection = JSON.parse(message.body);
+      const newUserId = connectionPkt.user_id;
+    });
   }
 
   public async LoadLevelAsset() {
@@ -88,4 +99,4 @@ class Environment {
   }
 }
 
-export default Environment;
+export default World;

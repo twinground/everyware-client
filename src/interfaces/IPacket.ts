@@ -1,7 +1,4 @@
-interface IPacket {
-  header: number; // information for packet
-  body: {
-    user_id: number;
-    data: any;
-  };
+export interface IConnection {
+  user_id: number;
+  data: any;
 }

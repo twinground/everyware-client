@@ -18,7 +18,7 @@ export default class PlayerController {
     this._inputSystem = new InputSystem(this.scene);
     this._velocity = Vector3.Zero();
     this._acceleration = new Vector3(1.0, 0.25, 25.0);
-    this._decceleration = new Vector3(-0.0005, -0.0001, -5.0);
+    this._decceleration = new Vector3(-0.0005, -0.0001, -10.0);
     this._animStateMachine = new AnimStateMachine(this._player);
 
     scene.registerBeforeRender(() => {

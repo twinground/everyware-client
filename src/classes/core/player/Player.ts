@@ -23,6 +23,8 @@ class Player extends TransformNode {
     super("player", scene);
     this.scene = scene;
 
+    // socket initialize
+
     // store loaded assets into member field.
     this._mesh = asset.mesh;
     this._mesh.parent = this;
