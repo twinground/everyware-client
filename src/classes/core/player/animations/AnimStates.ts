@@ -33,7 +33,7 @@ export class IdleState extends AnimState {
       }
       case "walk": {
         this.player.scene.stopAllAnimations();
-        console.log("1");
+
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
             this.player.Animations.walkFor,
@@ -81,7 +81,7 @@ export class SitState extends AnimState {
   constructor(public player: Player) {
     super(player);
 
-    this._state = "set";
+    this._state = "sit";
   }
 
   Transition(nextState: string): void {}
