@@ -1,5 +1,11 @@
 // module import
-import { AnimState, IdleState, SitState, WalkState } from "./AnimStates";
+import {
+  AnimState,
+  IdleState,
+  SitState,
+  WalkBackState,
+  WalkState,
+} from "./AnimStates";
 import Player from "../Player";
 import InputSystem from "../../InputSystem";
 // type import
@@ -17,6 +23,7 @@ export default class AnimStateMachine implements IStateMachine {
     this._stateMap = {
       idle: new IdleState(player),
       walk: new WalkState(player),
+      walkBack: new WalkBackState(player),
       sit: new SitState(player),
     };
 
@@ -28,6 +35,7 @@ export default class AnimStateMachine implements IStateMachine {
     if (this._curState.State == nextState) {
       return;
     }
+
     this._curState.Transition(nextState); // transition current state to next state
     this._curState = this._stateMap[nextState]; // set next state to current
   }
@@ -35,21 +43,29 @@ export default class AnimStateMachine implements IStateMachine {
   UpdateMachine(inputSys: InputSystem): void {
     switch (this._curState.State) {
       case "idle": {
-        if (inputSys.inputs.w || inputSys.inputs.d) {
+        if (inputSys.inputs.w) {
           this.Transition("walk");
+        } else if (inputSys.inputs.s) {
+          this.Transition("walkBack");
         } else if (inputSys.inputs.c) {
           this.Transition("sit");
         }
         break;
       }
       case "walk": {
-        if (!inputSys.inputs.w && !inputSys.inputs.d) {
+        if (!inputSys.inputs.w && !inputSys.inputs.s) {
+          this.Transition("idle");
+        }
+        break;
+      }
+      case "walkBack": {
+        if (!inputSys.inputs.w && !inputSys.inputs.s) {
           this.Transition("idle");
         }
         break;
       }
       case "sit": {
-        if (inputSys.inputs.w || inputSys.inputs.d) {
+        if (inputSys.inputs.w || inputSys.inputs.s) {
           this.Transition("idle");
         }
         break;

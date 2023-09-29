@@ -10,14 +10,11 @@ import {
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
-import PlayerController from "./PlayerController";
 
-class Player extends TransformNode {
+class RemotePlayer extends TransformNode {
   private _mesh: AbstractMesh;
-  private _camera: ArcRotateCamera;
   private _animations: PlayerAnimations;
   private _curAnim: AnimationGroup;
-  private _playerController: PlayerController;
 
   constructor(readonly scene: Scene, asset: PlayerAsset) {
     super("player", scene);
@@ -28,23 +25,6 @@ class Player extends TransformNode {
     // store loaded assets into member field.
     this._mesh = asset.mesh;
     this._mesh.parent = this;
-
-    // player camera setup and configuration
-    this._camera = new ArcRotateCamera(
-      "player-cam",
-      Math.PI / 2,
-      Math.PI / 4,
-      20,
-      new Vector3(0, 0, 0),
-      this.scene
-    );
-    this._camera.lowerBetaLimit = 0.1;
-    this._camera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    this._camera.lowerRadiusLimit = 1;
-    this._camera.upperRadiusLimit = 150;
-    this._camera.setPosition(new Vector3(0, 0, -10));
-    this._camera.attachControl(true);
-    this._camera.setTarget(this._mesh);
 
     // store animation assets
     this.scene.stopAllAnimations();
@@ -65,11 +45,9 @@ class Player extends TransformNode {
     // play idle animation as an initial animation
     this._animations.idle.play(true);
     this._curAnim = this._animations.idle;
-
-    this._playerController = new PlayerController(this, this._scene);
   }
 
-  //generator
+  // animation blending generator
   public *AnimationBlending(
     to: AnimationGroup,
     from: AnimationGroup,
@@ -106,4 +84,4 @@ class Player extends TransformNode {
   }
 }
 
-export default Player;
+export default RemotePlayer;

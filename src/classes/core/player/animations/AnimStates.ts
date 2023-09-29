@@ -33,7 +33,7 @@ export class IdleState extends AnimState {
       }
       case "walk": {
         this.player.scene.stopAllAnimations();
-        console.log("1");
+
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
             this.player.Animations.walkFor,
@@ -43,6 +43,17 @@ export class IdleState extends AnimState {
         );
 
         break;
+      }
+      case "walkBack": {
+        this.player.scene.stopAllAnimations();
+
+        this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+          this.player.AnimationBlending(
+            this.player.Animations.walkBack,
+            this.player.Animations.idle,
+            0.05
+          )
+        );
       }
     }
   }
@@ -77,11 +88,40 @@ export class WalkState extends AnimState {
   }
 }
 
+export class WalkBackState extends AnimState {
+  constructor(public player: Player) {
+    super(player);
+
+    this._state = "walkBack";
+  }
+
+  Transition(nextState: string): void {
+    switch (nextState) {
+      case "idle": {
+        this.player.scene.stopAllAnimations(); // Stop all animations before blending two animations
+
+        this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+          this.player.AnimationBlending(
+            this.player.Animations.idle,
+            this.player.Animations.walkBack,
+            0.05
+          )
+        );
+
+        break;
+      }
+      default: {
+        console.log("Unsupported state yet.");
+      }
+    }
+  }
+}
+
 export class SitState extends AnimState {
   constructor(public player: Player) {
     super(player);
 
-    this._state = "set";
+    this._state = "sit";
   }
 
   Transition(nextState: string): void {}

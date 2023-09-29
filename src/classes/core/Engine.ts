@@ -1,3 +1,4 @@
+// library
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import {
@@ -8,16 +9,19 @@ import {
   Scene,
   Color4,
 } from "@babylonjs/core";
-import Environment from "./Environment";
+// class
+import World from "./World";
+import Client from "../network/Client";
 
 class Engine {
-  private _environment: Environment;
+  private _world: World;
   private _scene: Scene;
   private _canvas: HTMLCanvasElement;
   private _engine: BabylonEngine;
+  private _client: Client;
 
-  constructor() {
-    this.Init();
+  constructor(brokerURL: string, expoName: string) {
+    this.Init(brokerURL, expoName);
   }
 
   /**
@@ -29,20 +33,41 @@ class Engine {
     document.body.appendChild(this._canvas);
   }
 
-  private async Init() {
+  private async Init(brokerURL: string, expoName: string) {
+    // initialize client
+    this._client = new Client(brokerURL);
+    // TODO : uncomment below
+    //this._client.Socket.activate();
+    // const connectionPkt: IConnection = {
+    //   user_id: this._client.id,
+    //   data: "hi",
+    // };
+    // // publish existence to other users
+    // this._client.Socket.publish({
+    //   destination: `/${expoName}`,
+    //   body: JSON.stringify(connectionPkt),
+    // });
+
     this.CreateCanvas();
+
     // initialize babylon scene and engine
     this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
     this._scene = new Scene(this._engine);
-    this._scene.clearColor = new Color4(36 / 255, 113 / 255, 214 / 255);
+    this._scene.clearColor = new Color4(0 / 255, 122 / 255, 204 / 255);
 
     // create temporary camera for setup
     let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
 
-    // initialize environment
-    this._environment = new Environment(this._canvas, this._scene, () => {
-      camera.dispose(); // dispose camera after player is ready
-    });
+    // initialize world
+    this._world = new World(
+      this._canvas,
+      this._scene,
+      this._client,
+      expoName,
+      () => {
+        camera.dispose(); // dispose camera after player is ready
+      }
+    );
 
     // resize window
     window.addEventListener("resize", () => {
@@ -55,7 +80,7 @@ class Engine {
   // asynchronous main runtime for client service
   private async main() {
     this._engine.runRenderLoop(() => {
-      this._environment.Scene.render();
+      this._world.Scene.render();
     });
   }
 
