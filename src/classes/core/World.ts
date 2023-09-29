@@ -9,6 +9,7 @@ import {
   DirectionalLight,
   AnimationGroup,
 } from "@babylonjs/core";
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
 import Level from "./Level";
 import Player from "./player/Player";
@@ -28,6 +29,7 @@ class World {
   private _shadowGenerator: ShadowGenerator;
   private _player: Player;
   private _remotePlayerMap: { [userId: number]: RemotePlayer };
+  private _advancedTexture: AdvancedDynamicTexture;
 
   constructor(
     readonly canvas: HTMLCanvasElement,
@@ -36,6 +38,10 @@ class World {
     public expoName: string,
     disposeCamera: () => void
   ) {
+    // fullscreen mode GUI
+    this._advancedTexture =
+      AdvancedDynamicTexture.CreateFullscreenUI("EXPO_UI");
+
     this._light = new DirectionalLight(
       "main_light",
       new Vector3(0, -1, -1),
@@ -44,17 +50,21 @@ class World {
     this._light.shadowMaxZ = 130;
     this._light.shadowMinZ = 10;
     this._shadowGenerator = new ShadowGenerator(1024, this._light);
-    this._level = new Level(this._scene);
 
     // player construct
     this.LoadModelAsset().then((asset) => {
       this._player = new Player(this._scene, asset);
+      this._level = new Level(
+        this._scene,
+        this._advancedTexture,
+        this._player.Mesh
+      );
       disposeCamera();
     });
-    this.LoadLevelAsset();
 
     // listening on the connections from other users.
     // TODO : Uncomment below after spring server implemented
+    /*
     this._client.Socket.subscribe(`/${expoName}`, (message) => {
       const packet: IPacket = JSON.parse(message.body);
       switch (packet.id) {
@@ -90,16 +100,7 @@ class World {
           break;
       }
     });
-  }
-
-  public async LoadLevelAsset() {
-    const res = await SceneLoader.ImportMeshAsync(
-      "",
-      "./models/",
-      "house.glb",
-      this._scene
-    );
-    res.meshes[0].scaling.setAll(0.8);
+    */
   }
 
   public async LoadModelAsset() {

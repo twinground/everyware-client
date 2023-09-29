@@ -36,14 +36,24 @@ class Engine {
   private async Init(brokerURL: string, expoName: string) {
     // initialize client
     this._client = new Client(brokerURL);
+    // TODO : uncomment below
     //this._client.Socket.activate();
+    // const connectionPkt: IConnection = {
+    //   user_id: this._client.id,
+    //   data: "hi",
+    // };
+    // // publish existence to other users
+    // this._client.Socket.publish({
+    //   destination: `/${expoName}`,
+    //   body: JSON.stringify(connectionPkt),
+    // });
 
     this.CreateCanvas();
 
     // initialize babylon scene and engine
     this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
     this._scene = new Scene(this._engine);
-    this._scene.clearColor = new Color4(36 / 255, 113 / 255, 214 / 255);
+    this._scene.clearColor = new Color4(0 / 255, 122 / 255, 204 / 255);
 
     // create temporary camera for setup
     let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
