@@ -65,10 +65,7 @@ export default class PlayerController {
       velocity.z += acc.z * deltaTime;
     }
     if (this._inputSystem.inputs.s) {
-      rot.multiplyInPlace(
-        Quaternion.RotationAxis(axis, 4 * -Math.PI * deltaTime)
-      );
-      //velocity.z -= acc.z * deltaTime;
+      velocity.z -= acc.z * deltaTime;
     }
     if (this._inputSystem.inputs.a) {
       rot.multiplyInPlace(

@@ -96,6 +96,14 @@ class Player extends TransformNode {
   get Animations(): PlayerAnimations {
     return this._animations;
   }
+
+  get CurAnim(): AnimationGroup {
+    return this._curAnim;
+  }
+
+  set CurAnim(anim: AnimationGroup) {
+    this._curAnim = anim;
+  }
 }
 
 export default Player;
