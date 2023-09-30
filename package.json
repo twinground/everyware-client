@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "@stomp/stompjs": "^7.0.0",
-    "recast": "^0.23.4"
+    "recast-detour": "^1.6.2"
   }
 }

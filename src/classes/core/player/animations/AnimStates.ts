@@ -29,6 +29,26 @@ export class IdleState extends AnimState {
   Transition(nextState: string): void {
     switch (nextState) {
       case "sit": {
+        this.player.scene.stopAllAnimations();
+        this.player.scene.onBeforeRenderObservable
+          .runCoroutineAsync(
+            this.player.AnimationBlending(
+              this.player.Animations.sitDown,
+              this.player.Animations.idle,
+              0.05
+            )
+          )
+          .then(() => {
+            this.player.scene.stopAllAnimations();
+            this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+              this.player.AnimationBlending(
+                this.player.Animations.sitting,
+                this.player.Animations.sitDown,
+                0.05
+              )
+            );
+          });
+
         break;
       }
       case "walk": {

@@ -11,6 +11,9 @@ import {
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
+import AnimStateMachine from "./animations/AnimStateMachine";
+import { IStateMachine } from "../../../interfaces/IStateMachine";
+import InputSystem from "../InputSystem";
 
 class Player extends TransformNode {
   private _mesh: AbstractMesh;
@@ -103,6 +106,10 @@ class Player extends TransformNode {
 
   set CurAnim(anim: AnimationGroup) {
     this._curAnim = anim;
+  }
+
+  get Controller(): PlayerController {
+    return this._playerController;
   }
 }
 

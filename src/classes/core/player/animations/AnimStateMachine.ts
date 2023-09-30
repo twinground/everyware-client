@@ -9,7 +9,7 @@ import {
 import Player from "../Player";
 import InputSystem from "../../InputSystem";
 // type import
-import type { PlayerAsset, StateMap } from "../../../../types/PlayerType";
+import type { StateMap } from "../../../../types/PlayerType";
 import type { IStateMachine } from "../../../../interfaces/IStateMachine";
 
 /**
@@ -47,7 +47,7 @@ export default class AnimStateMachine implements IStateMachine {
           this.Transition("walk");
         } else if (inputSys.inputs.s) {
           this.Transition("walkBack");
-        } else if (inputSys.inputs.c) {
+        } else if (inputSys.inputs.view) {
           this.Transition("sit");
         }
         break;

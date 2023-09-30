@@ -7,8 +7,31 @@ import {
   ActionManager,
   ExecuteCodeAction,
   Mesh,
+  Vector3,
+  Quaternion,
+  StandardMaterial,
 } from "@babylonjs/core";
+import { RecastJSPlugin } from "@babylonjs/core/Navigation/Plugins/recastJSPlugin";
 import { Button, AdvancedDynamicTexture } from "@babylonjs/gui";
+import Recast from "recast-detour";
+// class
+import Player from "./player/Player";
+
+const NAV_PARAMETERS = {
+  cs: 0.2,
+  ch: 0.2,
+  walkableSlopeAngle: 35,
+  walkableHeight: 1,
+  walkableClimb: 1,
+  walkableRadius: 1,
+  maxEdgeLen: 12,
+  maxSimplificationError: 1.3,
+  minRegionArea: 8,
+  mergeRegionArea: 20,
+  maxVertsPerPoly: 6,
+  detailSampleDist: 6,
+  detailSampleMaxError: 1,
+};
 
 class Level {
   private _outlineCollisionBox: Mesh;
@@ -19,7 +42,7 @@ class Level {
   constructor(
     public scene: Scene,
     public advancedTexture: AdvancedDynamicTexture,
-    public playerMesh: AbstractMesh
+    public player: Player
   ) {
     let level = this.scene.createDefaultEnvironment({
       enableGroundShadow: true,
@@ -59,22 +82,64 @@ class Level {
     this._viewModeButton.linkOffsetY = -70;
     this._viewModeButton.linkOffsetX = 50;
 
-    // // Handle button click
+    // Handle View mode button click
     this._viewModeButton.onPointerClickObservable.add(() => {
-      // Handle the action when the button is clicked
-      alert("관람시작");
+      let chairNode = this._outlineCollisionBox.getChildTransformNodes()[0]; // chair mesh
+      // TODO : How to refactor this hardcoded position and rotation adjustment between chair and character?
+      // Position and Rotation update
+      player.Mesh.position = this._outlineCollisionBox.position
+        .clone()
+        .addInPlace(new Vector3(0.09, -0.35, -0.3));
+      player.Mesh.rotationQuaternion = chairNode.rotationQuaternion.clone();
+
+      // Player state update
+      player.Controller.UpdateMode(true);
     });
 
-    // // Attach the button to the GUI layer
+    // Attach the button to the GUI layer
     this.scene.onBeforeRenderObservable.add(() => {
-      if (this._enableButtonArea.intersectsMesh(this.playerMesh, false)) {
+      if (this._enableButtonArea.intersectsMesh(this.player.Mesh, false)) {
         this._viewModeButton.isVisible = true;
+
+        for (let child of this._outlineCollisionBox.getChildMeshes()) {
+          child.outlineColor = this._outlineColor;
+          child.outlineWidth = 0.05;
+          child.renderOutline = true;
+        }
       } else {
         this._viewModeButton.isVisible = false;
+
+        for (let child of this._outlineCollisionBox.getChildMeshes()) {
+          child.renderOutline = false;
+        }
       }
     });
 
     this.Load();
+    //this.SetupNavigationPlugin();
+  }
+
+  // TODO : debug setup navigation system.
+  public async SetupNavigationPlugin() {
+    await Recast();
+    let tempGround = MeshBuilder.CreateGround("test_ground", {
+      width: 10,
+      height: 10,
+      subdivisions: 20,
+    });
+    let navigationPlugin = new RecastJSPlugin();
+    navigationPlugin.createNavMesh(
+      [tempGround, this._outlineCollisionBox],
+      NAV_PARAMETERS
+    );
+
+    var navmeshdebug = navigationPlugin.createDebugNavMesh(this.scene);
+    navmeshdebug.position = new Vector3(0, 0.01, 0);
+
+    var matdebug = new StandardMaterial("matdebug", this.scene);
+    matdebug.diffuseColor = new Color3(0.1, 0.2, 1);
+    matdebug.alpha = 0.2;
+    navmeshdebug.material = matdebug;
   }
 
   public async Load() {
@@ -84,17 +149,18 @@ class Level {
       "chair.glb",
       this.scene
     );
-
+    chairGLB.transformNodes[0].rotationQuaternion.multiplyInPlace(
+      Quaternion.FromEulerAngles(0, Math.PI, 0)
+    );
     let chairAsset = chairGLB.meshes[0];
     chairAsset.scaling.setAll(0.8);
-    this._outlineCollisionBox.position.set(0, 0.3, -5);
 
+    this._outlineCollisionBox.position.set(0, 0.3, -5);
     chairAsset.parent = this._outlineCollisionBox;
     chairAsset.position.set(-9.5, -1.3, -0.2);
-
-    this.SetChairOulineAction();
   }
 
+  // clickable outline effect on pointer over/off
   public SetChairOulineAction() {
     this._outlineCollisionBox.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {

@@ -2,16 +2,16 @@ import InputSystem from "../InputSystem";
 import { Vector3, Quaternion, Scene, Scalar } from "@babylonjs/core";
 import Player from "./Player";
 import AnimStateMachine from "./animations/AnimStateMachine";
-import { IStateMachine } from "../../../interfaces/IStateMachine";
+import { IState, IStateMachine } from "../../../interfaces/IStateMachine";
 
 export default class PlayerController {
   private static readonly PLAYER_WALK_SPEED = 0.03;
   private static readonly ANIM_WALK_SPEED = 1;
   private _inputSystem: InputSystem;
-  private _animStateMachine: IStateMachine;
   private _velocity: Vector3;
   private _acceleration: Vector3;
   private _decceleration: Vector3;
+  private _animStateMachine: IStateMachine;
 
   constructor(private _player: Player, public scene: Scene) {
     this._player = _player;
@@ -26,6 +26,18 @@ export default class PlayerController {
       deltaTime *= 0.001;
       this.UpdatePosition(deltaTime);
     });
+  }
+
+  UpdateMode(isViewing: boolean) {
+    if (!this._player) {
+      return;
+    }
+
+    /**
+     * State Machine update
+     */
+    this._inputSystem.inputs.view = isViewing;
+    this._animStateMachine.UpdateMachine(this._inputSystem);
   }
 
   UpdatePosition(deltaTime: number) {

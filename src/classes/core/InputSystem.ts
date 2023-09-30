@@ -14,7 +14,7 @@ class InputSystem {
       a: false,
       s: false,
       d: false,
-      c: false,
+      view: false,
     };
 
     //register keydown trigger

@@ -16,7 +16,7 @@ export interface InputMap {
   a: boolean;
   s: boolean;
   d: boolean;
-  c: boolean;
+  view: boolean;
 }
 
 export type StateMap = {

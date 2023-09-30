@@ -54,11 +54,7 @@ class World {
     // player construct
     this.LoadModelAsset().then((asset) => {
       this._player = new Player(this._scene, asset);
-      this._level = new Level(
-        this._scene,
-        this._advancedTexture,
-        this._player.Mesh
-      );
+      this._level = new Level(this._scene, this._advancedTexture, this._player);
       disposeCamera();
     });
 
