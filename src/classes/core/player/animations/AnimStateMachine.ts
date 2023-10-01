@@ -9,7 +9,7 @@ import {
 import Player from "../Player";
 import InputSystem from "../../InputSystem";
 // type import
-import type { PlayerAsset, StateMap } from "../../../../types/PlayerType";
+import type { StateMap } from "../../../../types/PlayerType";
 import type { IStateMachine } from "../../../../interfaces/IStateMachine";
 
 /**
@@ -43,23 +43,33 @@ export default class AnimStateMachine implements IStateMachine {
   UpdateMachine(inputSys: InputSystem): void {
     switch (this._curState.State) {
       case "idle": {
-        if (inputSys.inputs.w) {
+        if (inputSys.inputs.w || inputSys.inputs.ㅈ) {
           this.Transition("walk");
-        } else if (inputSys.inputs.s) {
+        } else if (inputSys.inputs.s || inputSys.inputs.ㄴ) {
           this.Transition("walkBack");
-        } else if (inputSys.inputs.c) {
+        } else if (inputSys.inputs.view) {
           this.Transition("sit");
         }
         break;
       }
       case "walk": {
-        if (!inputSys.inputs.w && !inputSys.inputs.s) {
+        if (
+          !inputSys.inputs.w &&
+          !inputSys.inputs.s &&
+          !inputSys.inputs.ㅈ &&
+          !inputSys.inputs.ㄴ
+        ) {
           this.Transition("idle");
         }
         break;
       }
       case "walkBack": {
-        if (!inputSys.inputs.w && !inputSys.inputs.s) {
+        if (
+          !inputSys.inputs.w &&
+          !inputSys.inputs.s &&
+          !inputSys.inputs.ㅈ &&
+          !inputSys.inputs.ㄴ
+        ) {
           this.Transition("idle");
         }
         break;

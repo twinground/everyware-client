@@ -7,20 +7,50 @@ import {
   ActionManager,
   ExecuteCodeAction,
   Mesh,
+  Vector3,
+  Quaternion,
+  StandardMaterial,
+  Animation,
 } from "@babylonjs/core";
 import { Button, AdvancedDynamicTexture } from "@babylonjs/gui";
+// class
+import Player from "./player/Player";
+import World from "./World";
+
+const NAV_PARAMETERS = {
+  cs: 0.2,
+  ch: 0.2,
+  walkableSlopeAngle: 35,
+  walkableHeight: 1,
+  walkableClimb: 1,
+  walkableRadius: 1,
+  maxEdgeLen: 12,
+  maxSimplificationError: 1.3,
+  minRegionArea: 8,
+  mergeRegionArea: 20,
+  maxVertsPerPoly: 6,
+  detailSampleDist: 6,
+  detailSampleMaxError: 1,
+};
+
+const FRAME_RATE = 60;
 
 class Level {
   private _outlineCollisionBox: Mesh;
   private _enableButtonArea: Mesh;
   private _outlineColor: Color3;
   private _viewModeButton: Button;
+  private _isViewing: boolean;
 
   constructor(
     public scene: Scene,
     public advancedTexture: AdvancedDynamicTexture,
-    public playerMesh: AbstractMesh
+    public player: Player,
+    readonly world: World
   ) {
+    this.scene = scene;
+    this.player = player;
+
     let level = this.scene.createDefaultEnvironment({
       enableGroundShadow: true,
     });
@@ -58,19 +88,56 @@ class Level {
     this._viewModeButton.linkWithMesh(this._outlineCollisionBox);
     this._viewModeButton.linkOffsetY = -70;
     this._viewModeButton.linkOffsetX = 50;
+    this._isViewing = false;
 
-    // // Handle button click
+    // Handle View mode button click
     this._viewModeButton.onPointerClickObservable.add(() => {
-      // Handle the action when the button is clicked
-      alert("관람시작");
+      let chairNode = this._outlineCollisionBox.getChildTransformNodes()[0]; // chair mesh
+      // TODO : How to refactor this hardcoded position and rotation adjustment between chair and character?
+      // Position and Rotation update
+      player.Mesh.position = this._outlineCollisionBox.position
+        .clone()
+        .addInPlace(new Vector3(0.09, -0.5, -0.1));
+      player.Mesh.rotationQuaternion = chairNode.rotationQuaternion.clone();
+
+      // Player state update
+      this._isViewing = true;
+      player.Controller.UpdateMode(this._isViewing);
+
+      // Fade out effect
+      this.world.FadeOutScene();
+
+      // Camera zoom in
+      const newTargetPosition = player.Mesh.position.clone();
+      newTargetPosition.y += 2;
+      this.player.FollowCam.cameraAcceleration = 0.01;
+      this.player.FollowCam.setTarget(newTargetPosition);
+      this.player.FollowCam.heightOffset = 0.5;
+      this.player.FollowCam.radius = 0;
+
+      // Hide view mode button
+      this._viewModeButton.isVisible = false;
     });
 
-    // // Attach the button to the GUI layer
+    // Attach the button to the GUI layer
     this.scene.onBeforeRenderObservable.add(() => {
-      if (this._enableButtonArea.intersectsMesh(this.playerMesh, false)) {
+      if (
+        !this._isViewing &&
+        this._enableButtonArea.intersectsMesh(this.player.Mesh, false)
+      ) {
         this._viewModeButton.isVisible = true;
+
+        for (let child of this._outlineCollisionBox.getChildMeshes()) {
+          child.outlineColor = this._outlineColor;
+          child.outlineWidth = 0.05;
+          child.renderOutline = true;
+        }
       } else {
         this._viewModeButton.isVisible = false;
+
+        for (let child of this._outlineCollisionBox.getChildMeshes()) {
+          child.renderOutline = false;
+        }
       }
     });
 
@@ -84,17 +151,30 @@ class Level {
       "chair.glb",
       this.scene
     );
+    const watchGLB = await SceneLoader.ImportMeshAsync(
+      "",
+      "./models/",
+      "watch.glb",
+      this.scene
+    );
+    const watchMesh = watchGLB.meshes[0];
+    watchMesh.rotationQuaternion.multiplyInPlace(
+      Quaternion.FromEulerAngles(0, Math.PI, 0)
+    );
+    watchMesh.position.set(0, 2, -6.5);
 
+    chairGLB.transformNodes[0].rotationQuaternion.multiplyInPlace(
+      Quaternion.FromEulerAngles(0, Math.PI, 0)
+    );
     let chairAsset = chairGLB.meshes[0];
     chairAsset.scaling.setAll(0.8);
-    this._outlineCollisionBox.position.set(0, 0.3, -5);
 
+    this._outlineCollisionBox.position.set(0, 0.3, -5);
     chairAsset.parent = this._outlineCollisionBox;
     chairAsset.position.set(-9.5, -1.3, -0.2);
-
-    this.SetChairOulineAction();
   }
 
+  // clickable outline effect on pointer over/off
   public SetChairOulineAction() {
     this._outlineCollisionBox.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {

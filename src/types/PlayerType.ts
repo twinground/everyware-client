@@ -16,7 +16,12 @@ export interface InputMap {
   a: boolean;
   s: boolean;
   d: boolean;
-  c: boolean;
+  // korean keyboard support
+  ㅈ: boolean;
+  ㅁ: boolean;
+  ㄴ: boolean;
+  ㅇ: boolean;
+  view: boolean;
 }
 
 export type StateMap = {

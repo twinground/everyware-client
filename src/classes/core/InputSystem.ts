@@ -14,7 +14,11 @@ class InputSystem {
       a: false,
       s: false,
       d: false,
-      c: false,
+      ㅈ: false,
+      ㅁ: false,
+      ㄴ: false,
+      ㅇ: false,
+      view: false,
     };
 
     //register keydown trigger
