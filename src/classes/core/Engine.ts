@@ -7,15 +7,18 @@ import {
   Engine as BabylonEngine,
   EngineFactory,
   Scene,
+  Effect,
   Color4,
 } from "@babylonjs/core";
-import { RecastJSPlugin } from "@babylonjs/core/Navigation/Plugins/recastJSPlugin";
 // class
 import World from "./World";
 import Client from "../network/Client";
+// interface
+import ICustomScene from "../../interfaces/ICustomScene";
+import WorldScene from "./scene/WorldScene";
+
 class Engine {
-  private _world: World;
-  private _scene: Scene;
+  private _currentScene: ICustomScene;
   private _canvas: HTMLCanvasElement;
   private _engine: BabylonEngine;
   private _client: Client;
@@ -33,6 +36,7 @@ class Engine {
     document.body.appendChild(this._canvas);
   }
 
+  // TODO : remember last player's position when a user finishs preview
   private async Init(brokerURL: string, expoName: string) {
     // initialize client
     this._client = new Client(brokerURL);
@@ -51,23 +55,18 @@ class Engine {
     this.CreateCanvas();
 
     // initialize babylon scene and engine
-    this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
-    this._scene = new Scene(this._engine);
-    this._scene.clearColor = new Color4(0 / 255, 122 / 255, 204 / 255);
-
     // create temporary camera for setup
-    let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
-
-    // initialize world
-    this._world = new World(
+    //let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
+    this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
+    this._currentScene = new WorldScene(
+      this._engine,
       this._canvas,
-      this._scene,
       this._client,
-      expoName,
-      () => {
-        camera.dispose(); // dispose camera after player is ready
-      }
+      expoName
     );
+
+    // define shaders
+    this.DefineCustomShader();
 
     // resize window
     window.addEventListener("resize", () => {
@@ -77,10 +76,30 @@ class Engine {
     await this.main();
   }
 
+  // Custom Shader definitions (custom shader only can be defined as PixelShader type)
+  private DefineCustomShader() {
+    /**
+     * name : fadeOutPixelShader
+     * fragment url : fadeOut
+     */
+    Effect.ShadersStore["fadeOutPixelShader"] =
+      "precision highp float;" +
+      "varying vec2 vUV;" +
+      "uniform sampler2D textureSampler; " +
+      "uniform float fadeLevel; " +
+      "void main(void){" +
+      "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
+      "baseColor.a = 1.0;" +
+      "gl_FragColor = baseColor;" +
+      "}";
+  }
+
   // asynchronous main runtime for client service
   private async main() {
     this._engine.runRenderLoop(() => {
-      this._world.Scene.render();
+      if (this._currentScene.scene.activeCamera) {
+        this._currentScene.scene.render();
+      }
     });
   }
 

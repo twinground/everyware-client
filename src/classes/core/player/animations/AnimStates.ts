@@ -1,5 +1,5 @@
 import type { IState } from "../../../../interfaces/IStateMachine";
-import type InputSystem from "../../InputSystem";
+import type InputSystem from "../InputSystem";
 import Player from "../Player";
 
 export class AnimState {

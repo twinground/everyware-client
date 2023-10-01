@@ -15,7 +15,7 @@ import {
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
-import Level from "./Level";
+import Level from "./level/Level";
 import Player from "./player/Player";
 // type
 import { PlayerAsset } from "../../types/PlayerType";
@@ -134,21 +134,10 @@ class World {
   }
 
   public FadeOutScene() {
-    Effect.ShadersStore["fadePixelShader"] =
-      "precision highp float;" +
-      "varying vec2 vUV;" +
-      "uniform sampler2D textureSampler; " +
-      "uniform float fadeLevel; " +
-      "void main(void){" +
-      "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
-      "baseColor.a = 1.0;" +
-      "gl_FragColor = baseColor;" +
-      "}";
-
     let fadeLevel = 1.0;
     const postProcess = new PostProcess(
       "Fade",
-      "fade",
+      "fadeOut",
       ["fadeLevel"],
       null,
       1.0,
@@ -161,7 +150,7 @@ class World {
 
     this._scene.onBeforeRenderObservable.add(() => {
       fadeLevel = Math.abs(Math.cos(alpha));
-      alpha += 0.01;
+      alpha += 0.015;
     });
 
     setTimeout(() => {

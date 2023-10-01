@@ -7,7 +7,7 @@ import {
   WalkState,
 } from "./AnimStates";
 import Player from "../Player";
-import InputSystem from "../../InputSystem";
+import InputSystem from "../InputSystem";
 // type import
 import type { StateMap } from "../../../../types/PlayerType";
 import type { IStateMachine } from "../../../../interfaces/IStateMachine";
