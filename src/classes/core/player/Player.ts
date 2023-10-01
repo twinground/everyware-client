@@ -7,17 +7,21 @@ import {
   AbstractMesh,
   TransformNode,
   AsyncCoroutine,
+  FollowCamera,
+  Quaternion,
+  UniversalCamera,
+  TargetCamera,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
-import AnimStateMachine from "./animations/AnimStateMachine";
-import { IStateMachine } from "../../../interfaces/IStateMachine";
-import InputSystem from "../InputSystem";
 
 class Player extends TransformNode {
   private _mesh: AbstractMesh;
-  private _camera: ArcRotateCamera;
+  private _arcRotCamera: ArcRotateCamera;
+  private _followCamera: FollowCamera;
+  private _universalCamera: UniversalCamera;
+  private _currentCamera: TargetCamera;
   private _animations: PlayerAnimations;
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
@@ -26,28 +30,64 @@ class Player extends TransformNode {
     super("player", scene);
     this.scene = scene;
 
-    // socket initialize
-
-    // store loaded assets into member field.
+    /**
+     * Mesh initialization
+     */
     this._mesh = asset.mesh;
     this._mesh.parent = this;
+    // this._mesh.rotationQuaternion.multiplyInPlace(
+    //   Quaternion.RotationAxis(new Vector3(0, 1, 0), Math.PI)
+    // );
 
-    // player camera setup and configuration
-    this._camera = new ArcRotateCamera(
-      "player-cam",
+    /**
+     * Camera configuration
+     */
+
+    // Arc rotation camera configuration
+    this._arcRotCamera = new ArcRotateCamera(
+      "arc-rotate-cam",
       Math.PI / 2,
       Math.PI / 4,
       20,
       new Vector3(0, 0, 0),
       this.scene
     );
-    this._camera.lowerBetaLimit = 0.1;
-    this._camera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    this._camera.lowerRadiusLimit = 1;
-    this._camera.upperRadiusLimit = 150;
-    this._camera.setPosition(new Vector3(0, 0, -10));
-    this._camera.attachControl(true);
-    this._camera.setTarget(this._mesh);
+    this._arcRotCamera.lowerBetaLimit = 0.1;
+    this._arcRotCamera.upperBetaLimit = (Math.PI / 2) * 0.9;
+    this._arcRotCamera.lowerRadiusLimit = 1;
+    this._arcRotCamera.upperRadiusLimit = 150;
+    this._arcRotCamera.setPosition(new Vector3(0, 0, -10));
+    this._arcRotCamera.attachControl(true);
+    this._arcRotCamera.setTarget(this._mesh);
+
+    // Follow camera configuration
+    this._followCamera = new FollowCamera(
+      "follow-cam",
+      new Vector3(0, -2, 0),
+      this.scene,
+      this._mesh
+    );
+    this._followCamera.radius = 7;
+    this._followCamera.rotationOffset = 180;
+    this._followCamera.heightOffset = 5;
+    this._followCamera.cameraAcceleration = 0.05; // control camera rotation speed
+
+    // Universal camera configuration
+    // Parameters : name, position, scene
+    this._universalCamera = new UniversalCamera(
+      "univeral-cam",
+      this._mesh.position,
+      this.scene
+    );
+    this._universalCamera.setTarget(this._mesh.position);
+
+    // Initial camera setup
+    this.scene.activeCamera = this._followCamera;
+    this._currentCamera = this._followCamera;
+
+    /**
+     * Animation asset initialization
+     */
 
     // store animation assets
     this.scene.stopAllAnimations();
@@ -64,11 +104,13 @@ class Player extends TransformNode {
       walkBack: asset.animationGroups[9],
       walkFor: asset.animationGroups[10],
     };
-
     // play idle animation as an initial animation
     this._animations.idle.play(true);
     this._curAnim = this._animations.idle;
 
+    /**
+     * Player controller
+     */
     this._playerController = new PlayerController(this, this._scene);
   }
 
@@ -92,6 +134,22 @@ class Player extends TransformNode {
     }
   }
 
+  // Camera type change
+  public ConvertCameraTo(type: number) {
+    switch (type) {
+      case 0: // arc rotate cam
+        this.scene.activeCamera = this._arcRotCamera;
+        break;
+      case 1: // follow cam
+        this.scene.activeCamera = this._followCamera;
+        break;
+      case 2: // universal cam
+        this.scene.activeCamera = this._universalCamera;
+        this._universalCamera.attachControl();
+        break;
+    }
+  }
+
   get Mesh(): AbstractMesh {
     return this._mesh;
   }
@@ -110,6 +168,14 @@ class Player extends TransformNode {
 
   get Controller(): PlayerController {
     return this._playerController;
+  }
+
+  get FollowCam(): FollowCamera {
+    return this._followCamera;
+  }
+
+  get CurrentCam(): TargetCamera {
+    return this._currentCamera;
   }
 }
 

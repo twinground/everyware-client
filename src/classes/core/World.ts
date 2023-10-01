@@ -8,6 +8,10 @@ import {
   Vector3,
   DirectionalLight,
   AnimationGroup,
+  NodeMaterial,
+  Constants,
+  Effect,
+  PostProcess,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
@@ -54,7 +58,12 @@ class World {
     // player construct
     this.LoadModelAsset().then((asset) => {
       this._player = new Player(this._scene, asset);
-      this._level = new Level(this._scene, this._advancedTexture, this._player);
+      this._level = new Level(
+        this._scene,
+        this._advancedTexture,
+        this._player,
+        this
+      );
       disposeCamera();
     });
 
@@ -122,6 +131,42 @@ class World {
     };
 
     return asset;
+  }
+
+  public FadeOutScene() {
+    Effect.ShadersStore["fadePixelShader"] =
+      "precision highp float;" +
+      "varying vec2 vUV;" +
+      "uniform sampler2D textureSampler; " +
+      "uniform float fadeLevel; " +
+      "void main(void){" +
+      "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
+      "baseColor.a = 1.0;" +
+      "gl_FragColor = baseColor;" +
+      "}";
+
+    let fadeLevel = 1.0;
+    const postProcess = new PostProcess(
+      "Fade",
+      "fade",
+      ["fadeLevel"],
+      null,
+      1.0,
+      this._player.CurrentCam
+    );
+    postProcess.onApply = (effect) => {
+      effect.setFloat("fadeLevel", fadeLevel);
+    };
+    let alpha = 0;
+
+    this._scene.onBeforeRenderObservable.add(() => {
+      fadeLevel = Math.abs(Math.cos(alpha));
+      alpha += 0.01;
+    });
+
+    setTimeout(() => {
+      postProcess.dispose();
+    }, 2617);
   }
 
   get Scene() {

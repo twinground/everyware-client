@@ -10,11 +10,12 @@ import {
   Vector3,
   Quaternion,
   StandardMaterial,
+  Animation,
 } from "@babylonjs/core";
-import { RecastJSPlugin } from "@babylonjs/core/Navigation/Plugins/recastJSPlugin";
 import { Button, AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
 import Player from "./player/Player";
+import World from "./World";
 
 const NAV_PARAMETERS = {
   cs: 0.2,
@@ -32,6 +33,8 @@ const NAV_PARAMETERS = {
   detailSampleMaxError: 1,
 };
 
+const FRAME_RATE = 60;
+
 class Level {
   private _outlineCollisionBox: Mesh;
   private _enableButtonArea: Mesh;
@@ -42,8 +45,12 @@ class Level {
   constructor(
     public scene: Scene,
     public advancedTexture: AdvancedDynamicTexture,
-    public player: Player
+    public player: Player,
+    readonly world: World
   ) {
+    this.scene = scene;
+    this.player = player;
+
     let level = this.scene.createDefaultEnvironment({
       enableGroundShadow: true,
     });
@@ -90,12 +97,23 @@ class Level {
       // Position and Rotation update
       player.Mesh.position = this._outlineCollisionBox.position
         .clone()
-        .addInPlace(new Vector3(0.09, -0.5, 0));
+        .addInPlace(new Vector3(0.09, -0.5, -0.1));
       player.Mesh.rotationQuaternion = chairNode.rotationQuaternion.clone();
 
       // Player state update
       this._isViewing = true;
       player.Controller.UpdateMode(this._isViewing);
+
+      // Fade out effect
+      this.world.FadeOutScene();
+
+      // Camera zoom in
+      const newTargetPosition = player.Mesh.position.clone();
+      newTargetPosition.y += 2;
+      this.player.FollowCam.cameraAcceleration = 0.01;
+      this.player.FollowCam.setTarget(newTargetPosition);
+      this.player.FollowCam.heightOffset = 0.5;
+      this.player.FollowCam.radius = 0;
 
       // Hide view mode button
       this._viewModeButton.isVisible = false;
@@ -133,6 +151,18 @@ class Level {
       "chair.glb",
       this.scene
     );
+    const watchGLB = await SceneLoader.ImportMeshAsync(
+      "",
+      "./models/",
+      "watch.glb",
+      this.scene
+    );
+    const watchMesh = watchGLB.meshes[0];
+    watchMesh.rotationQuaternion.multiplyInPlace(
+      Quaternion.FromEulerAngles(0, Math.PI, 0)
+    );
+    watchMesh.position.set(0, 2, -6.5);
+
     chairGLB.transformNodes[0].rotationQuaternion.multiplyInPlace(
       Quaternion.FromEulerAngles(0, Math.PI, 0)
     );
