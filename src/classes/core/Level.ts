@@ -13,7 +13,6 @@ import {
 } from "@babylonjs/core";
 import { RecastJSPlugin } from "@babylonjs/core/Navigation/Plugins/recastJSPlugin";
 import { Button, AdvancedDynamicTexture } from "@babylonjs/gui";
-import Recast from "recast-detour";
 // class
 import Player from "./player/Player";
 
@@ -38,6 +37,7 @@ class Level {
   private _enableButtonArea: Mesh;
   private _outlineColor: Color3;
   private _viewModeButton: Button;
+  private _isViewing: boolean;
 
   constructor(
     public scene: Scene,
@@ -81,6 +81,7 @@ class Level {
     this._viewModeButton.linkWithMesh(this._outlineCollisionBox);
     this._viewModeButton.linkOffsetY = -70;
     this._viewModeButton.linkOffsetX = 50;
+    this._isViewing = false;
 
     // Handle View mode button click
     this._viewModeButton.onPointerClickObservable.add(() => {
@@ -89,16 +90,23 @@ class Level {
       // Position and Rotation update
       player.Mesh.position = this._outlineCollisionBox.position
         .clone()
-        .addInPlace(new Vector3(0.09, -0.35, -0.3));
+        .addInPlace(new Vector3(0.09, -0.5, 0));
       player.Mesh.rotationQuaternion = chairNode.rotationQuaternion.clone();
 
       // Player state update
-      player.Controller.UpdateMode(true);
+      this._isViewing = true;
+      player.Controller.UpdateMode(this._isViewing);
+
+      // Hide view mode button
+      this._viewModeButton.isVisible = false;
     });
 
     // Attach the button to the GUI layer
     this.scene.onBeforeRenderObservable.add(() => {
-      if (this._enableButtonArea.intersectsMesh(this.player.Mesh, false)) {
+      if (
+        !this._isViewing &&
+        this._enableButtonArea.intersectsMesh(this.player.Mesh, false)
+      ) {
         this._viewModeButton.isVisible = true;
 
         for (let child of this._outlineCollisionBox.getChildMeshes()) {
@@ -116,30 +124,6 @@ class Level {
     });
 
     this.Load();
-    //this.SetupNavigationPlugin();
-  }
-
-  // TODO : debug setup navigation system.
-  public async SetupNavigationPlugin() {
-    await Recast();
-    let tempGround = MeshBuilder.CreateGround("test_ground", {
-      width: 10,
-      height: 10,
-      subdivisions: 20,
-    });
-    let navigationPlugin = new RecastJSPlugin();
-    navigationPlugin.createNavMesh(
-      [tempGround, this._outlineCollisionBox],
-      NAV_PARAMETERS
-    );
-
-    var navmeshdebug = navigationPlugin.createDebugNavMesh(this.scene);
-    navmeshdebug.position = new Vector3(0, 0.01, 0);
-
-    var matdebug = new StandardMaterial("matdebug", this.scene);
-    matdebug.diffuseColor = new Color3(0.1, 0.2, 1);
-    matdebug.alpha = 0.2;
-    navmeshdebug.material = matdebug;
   }
 
   public async Load() {

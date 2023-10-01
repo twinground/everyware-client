@@ -16,6 +16,11 @@ export interface InputMap {
   a: boolean;
   s: boolean;
   d: boolean;
+  // korean keyboard support
+  ㅈ: boolean;
+  ㅁ: boolean;
+  ㄴ: boolean;
+  ㅇ: boolean;
   view: boolean;
 }
 

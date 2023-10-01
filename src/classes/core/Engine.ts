@@ -9,10 +9,10 @@ import {
   Scene,
   Color4,
 } from "@babylonjs/core";
+import { RecastJSPlugin } from "@babylonjs/core/Navigation/Plugins/recastJSPlugin";
 // class
 import World from "./World";
 import Client from "../network/Client";
-
 class Engine {
   private _world: World;
   private _scene: Scene;

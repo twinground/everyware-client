@@ -14,6 +14,10 @@ class InputSystem {
       a: false,
       s: false,
       d: false,
+      ㅈ: false,
+      ㅁ: false,
+      ㄴ: false,
+      ㅇ: false,
       view: false,
     };
 

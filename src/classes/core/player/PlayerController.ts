@@ -73,13 +73,13 @@ export default class PlayerController {
     const rot = player.rotationQuaternion.clone();
 
     //product deltaTime to move character according to device frame rate
-    if (this._inputSystem.inputs.w) {
+    if (this._inputSystem.inputs.w || this._inputSystem.inputs.ㅈ) {
       velocity.z += acc.z * deltaTime;
     }
-    if (this._inputSystem.inputs.s) {
+    if (this._inputSystem.inputs.s || this._inputSystem.inputs.ㄴ) {
       velocity.z -= acc.z * deltaTime;
     }
-    if (this._inputSystem.inputs.a) {
+    if (this._inputSystem.inputs.a || this._inputSystem.inputs.ㅁ) {
       rot.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
@@ -87,7 +87,7 @@ export default class PlayerController {
         )
       );
     }
-    if (this._inputSystem.inputs.d) {
+    if (this._inputSystem.inputs.d || this._inputSystem.inputs.ㅇ) {
       rot.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
