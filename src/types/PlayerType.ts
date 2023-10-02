@@ -21,6 +21,7 @@ export interface InputMap {
   ㅁ: boolean;
   ㄴ: boolean;
   ㅇ: boolean;
+  // enter view mode
   view: boolean;
 }
 

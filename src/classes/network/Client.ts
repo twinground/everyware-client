@@ -21,13 +21,12 @@ class Client {
       heartbeatOutgoing: 10000,
       onConnect: (_frame) => {
         // TODO : unused frame need to handle later
-        this._subscriptionList.push(
-          this._socket.subscribe("/", (message) => {
-            const connectionPkt: IConnection = JSON.parse(message.body);
-            this.id = connectionPkt.user_id;
-            console.log("Greetings from server: " + connectionPkt.data);
-          })
-        );
+        const subscription = this._socket.subscribe("/", (message) => {
+          const connectionPkt: IConnection = JSON.parse(message.body);
+          this.id = connectionPkt.user_id;
+          console.log("Greetings from server: " + connectionPkt.data);
+        });
+        this._subscriptionList.push(subscription);
       },
     });
   }

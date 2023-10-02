@@ -8,9 +8,10 @@ import {
   TransformNode,
   AsyncCoroutine,
   FollowCamera,
-  Quaternion,
   UniversalCamera,
   TargetCamera,
+  ExecuteCodeAction,
+  ActionManager,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -31,16 +32,17 @@ class Player extends TransformNode {
     this.scene = scene;
 
     /**
-     * Mesh initialization
+     * -----  Mesh initialization -----
      */
     this._mesh = asset.mesh;
     this._mesh.parent = this;
-    // this._mesh.rotationQuaternion.multiplyInPlace(
-    //   Quaternion.RotationAxis(new Vector3(0, 1, 0), Math.PI)
-    // );
 
     /**
-     * Camera configuration
+     * Player controller
+     */
+    this._playerController = new PlayerController(this, this._scene);
+    /**
+     * ----- Camera configuration -----
      */
 
     // Arc rotation camera configuration
@@ -84,11 +86,29 @@ class Player extends TransformNode {
     // Initial camera setup
     this.scene.activeCamera = this._followCamera;
     this._currentCamera = this._followCamera;
+    this.scene.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
+        if (evt.sourceEvent.key == "Control") {
+          console.log("on");
+          this.scene.activeCamera = this._arcRotCamera;
+          this._arcRotCamera.attachControl(
+            this.scene.getEngine().getRenderingCanvas(),
+            true
+          );
+        }
+      })
+    );
+    this.scene.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+        if (evt.sourceEvent.key == "Control") {
+          this.scene.activeCamera = this._followCamera;
+        }
+      })
+    );
 
     /**
-     * Animation asset initialization
+     * ----- Animation asset initialization -----
      */
-
     // store animation assets
     this.scene.stopAllAnimations();
     this._animations = {
@@ -107,11 +127,6 @@ class Player extends TransformNode {
     // play idle animation as an initial animation
     this._animations.idle.play(true);
     this._curAnim = this._animations.idle;
-
-    /**
-     * Player controller
-     */
-    this._playerController = new PlayerController(this, this._scene);
   }
 
   //generator
@@ -139,6 +154,7 @@ class Player extends TransformNode {
     switch (type) {
       case 0: // arc rotate cam
         this.scene.activeCamera = this._arcRotCamera;
+        this.scene.activeCamera.attachControl();
         break;
       case 1: // follow cam
         this.scene.activeCamera = this._followCamera;
@@ -148,6 +164,16 @@ class Player extends TransformNode {
         this._universalCamera.attachControl();
         break;
     }
+  }
+
+  // Zoom in
+  public ZoomInFollowCam() {
+    const newTargetPosition = this._mesh.position.clone();
+    newTargetPosition.y += 2;
+    this._followCamera.cameraAcceleration = 0.01;
+    this._followCamera.setTarget(newTargetPosition);
+    this._followCamera.heightOffset = 0.5;
+    this._followCamera.radius = 0;
   }
 
   get Mesh(): AbstractMesh {

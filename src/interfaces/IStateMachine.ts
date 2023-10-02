@@ -1,4 +1,4 @@
-import InputSystem from "../classes/core/InputSystem";
+import InputSystem from "../classes/core/player/InputSystem";
 
 /**
  * @param T State type

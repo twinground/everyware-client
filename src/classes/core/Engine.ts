@@ -7,17 +7,23 @@ import {
   Engine as BabylonEngine,
   EngineFactory,
   Scene,
+  Effect,
   Color4,
+  TargetCamera,
+  TouchCamera,
+  PostProcess,
 } from "@babylonjs/core";
-import { RecastJSPlugin } from "@babylonjs/core/Navigation/Plugins/recastJSPlugin";
 // class
 import World from "./World";
 import Client from "../network/Client";
+// interface
+import ICustomScene from "../../interfaces/ICustomScene";
+import WorldScene from "./scene/WorldScene";
+
 class Engine {
-  private _world: World;
-  private _scene: Scene;
+  private _currentScene: ICustomScene;
   private _canvas: HTMLCanvasElement;
-  private _engine: BabylonEngine;
+  private _babylonEngine: BabylonEngine;
   private _client: Client;
 
   constructor(brokerURL: string, expoName: string) {
@@ -33,6 +39,7 @@ class Engine {
     document.body.appendChild(this._canvas);
   }
 
+  // TODO : remember last player's position when a user finishs preview
   private async Init(brokerURL: string, expoName: string) {
     // initialize client
     this._client = new Client(brokerURL);
@@ -51,42 +58,102 @@ class Engine {
     this.CreateCanvas();
 
     // initialize babylon scene and engine
-    this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
-    this._scene = new Scene(this._engine);
-    this._scene.clearColor = new Color4(0 / 255, 122 / 255, 204 / 255);
-
-    // create temporary camera for setup
-    let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
-
-    // initialize world
-    this._world = new World(
+    this._babylonEngine = await EngineFactory.CreateAsync(
       this._canvas,
-      this._scene,
-      this._client,
-      expoName,
-      () => {
-        camera.dispose(); // dispose camera after player is ready
-      }
+      undefined
     );
+    this._babylonEngine.displayLoadingUI();
+    this._currentScene = new WorldScene(
+      this,
+      this._canvas,
+      this._client,
+      expoName
+    );
+
+    // define shaders
+    this.DefineCustomShader();
 
     // resize window
     window.addEventListener("resize", () => {
-      this._engine.resize();
+      this._babylonEngine.resize();
     });
 
     await this.main();
+    this._babylonEngine.hideLoadingUI();
+  }
+
+  // Custom Shader definitions (custom shader only can be defined as PixelShader type)
+  private DefineCustomShader() {
+    /**
+     * name : fadeOutPixelShader
+     * fragment url : fadeOut
+     */
+    Effect.ShadersStore["fadeOutPixelShader"] =
+      "precision highp float;" +
+      "varying vec2 vUV;" +
+      "uniform sampler2D textureSampler; " +
+      "uniform float fadeLevel; " +
+      "void main(void){" +
+      "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
+      "baseColor.a = 1.0;" +
+      "gl_FragColor = baseColor;" +
+      "}";
+  }
+
+  private IncrementAlpha(params: any) {
+    params.fadeLevel = Math.abs(Math.cos(params.alpha));
+    params.alpha += 0.015;
+  }
+
+  public FadeOutScene(camera: TargetCamera | TouchCamera) {
+    const postProcess = new PostProcess(
+      "Fade",
+      "fadeOut",
+      ["fadeLevel"],
+      null,
+      1.0,
+      camera
+    );
+
+    const params = {
+      fadeLevel: 1.0,
+      alpha: 0.0,
+    };
+
+    const boundedIncremetAlpha = this.IncrementAlpha.bind(this, params);
+    postProcess.onApply = (effect) => {
+      effect.setFloat("fadeLevel", params.fadeLevel);
+    };
+
+    this._currentScene.scene.onBeforeRenderObservable.add(boundedIncremetAlpha);
+
+    // dispose postProcess after 2617ms
+    setTimeout(() => {
+      this._currentScene.scene.onBeforeRenderObservable.removeCallback(
+        boundedIncremetAlpha
+      );
+      postProcess.dispose();
+    }, 2617); // 60 frames per second * 0.01 => 0.6 per second
+    // cos(0) = 1, cos(pi/2) = 0, pi/2 = 1.517 -> need 2617ms for fade out
+  }
+
+  public TransitScene(sceneType: number) {
+    // world scene : 0
+    // preview scene : 1
   }
 
   // asynchronous main runtime for client service
   private async main() {
-    this._engine.runRenderLoop(() => {
-      this._world.Scene.render();
+    this._babylonEngine.runRenderLoop(() => {
+      if (this._currentScene.scene.activeCamera) {
+        this._currentScene.scene.render();
+      }
     });
   }
 
-  /**
-   * public field
-   */
+  get BabylonEngine() {
+    return this._babylonEngine;
+  }
 }
 
 export default Engine;

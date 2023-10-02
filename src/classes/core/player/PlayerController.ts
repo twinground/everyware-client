@@ -1,4 +1,4 @@
-import InputSystem from "../InputSystem";
+import InputSystem from "./InputSystem";
 import { Vector3, Quaternion, Scene, Scalar } from "@babylonjs/core";
 import Player from "./Player";
 import AnimStateMachine from "./animations/AnimStateMachine";
@@ -28,7 +28,7 @@ export default class PlayerController {
     });
   }
 
-  UpdateMode(isViewing: boolean) {
+  UpdateViewMode() {
     if (!this._player) {
       return;
     }
@@ -36,7 +36,7 @@ export default class PlayerController {
     /**
      * State Machine update
      */
-    this._inputSystem.inputs.view = isViewing;
+    this._inputSystem.inputs.view = true;
     this._animStateMachine.UpdateMachine(this._inputSystem);
   }
 
