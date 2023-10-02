@@ -9,6 +9,9 @@ import {
   Scene,
   Effect,
   Color4,
+  TargetCamera,
+  TouchCamera,
+  PostProcess,
 } from "@babylonjs/core";
 // class
 import World from "./World";
@@ -20,7 +23,7 @@ import WorldScene from "./scene/WorldScene";
 class Engine {
   private _currentScene: ICustomScene;
   private _canvas: HTMLCanvasElement;
-  private _engine: BabylonEngine;
+  private _babylonEngine: BabylonEngine;
   private _client: Client;
 
   constructor(brokerURL: string, expoName: string) {
@@ -55,11 +58,13 @@ class Engine {
     this.CreateCanvas();
 
     // initialize babylon scene and engine
-    // create temporary camera for setup
-    //let camera = new FreeCamera("temp", new Vector3(0, 0, 0));
-    this._engine = await EngineFactory.CreateAsync(this._canvas, undefined);
+    this._babylonEngine = await EngineFactory.CreateAsync(
+      this._canvas,
+      undefined
+    );
+    this._babylonEngine.displayLoadingUI();
     this._currentScene = new WorldScene(
-      this._engine,
+      this,
       this._canvas,
       this._client,
       expoName
@@ -70,10 +75,11 @@ class Engine {
 
     // resize window
     window.addEventListener("resize", () => {
-      this._engine.resize();
+      this._babylonEngine.resize();
     });
 
     await this.main();
+    this._babylonEngine.hideLoadingUI();
   }
 
   // Custom Shader definitions (custom shader only can be defined as PixelShader type)
@@ -94,18 +100,60 @@ class Engine {
       "}";
   }
 
+  private IncrementAlpha(params: any) {
+    params.fadeLevel = Math.abs(Math.cos(params.alpha));
+    params.alpha += 0.015;
+  }
+
+  public FadeOutScene(camera: TargetCamera | TouchCamera) {
+    const postProcess = new PostProcess(
+      "Fade",
+      "fadeOut",
+      ["fadeLevel"],
+      null,
+      1.0,
+      camera
+    );
+
+    const params = {
+      fadeLevel: 1.0,
+      alpha: 0.0,
+    };
+
+    const boundedIncremetAlpha = this.IncrementAlpha.bind(this, params);
+    postProcess.onApply = (effect) => {
+      effect.setFloat("fadeLevel", params.fadeLevel);
+    };
+
+    this._currentScene.scene.onBeforeRenderObservable.add(boundedIncremetAlpha);
+
+    // dispose postProcess after 2617ms
+    setTimeout(() => {
+      this._currentScene.scene.onBeforeRenderObservable.removeCallback(
+        boundedIncremetAlpha
+      );
+      postProcess.dispose();
+    }, 2617); // 60 frames per second * 0.01 => 0.6 per second
+    // cos(0) = 1, cos(pi/2) = 0, pi/2 = 1.517 -> need 2617ms for fade out
+  }
+
+  public TransitScene(sceneType: number) {
+    // world scene : 0
+    // preview scene : 1
+  }
+
   // asynchronous main runtime for client service
   private async main() {
-    this._engine.runRenderLoop(() => {
+    this._babylonEngine.runRenderLoop(() => {
       if (this._currentScene.scene.activeCamera) {
         this._currentScene.scene.render();
       }
     });
   }
 
-  /**
-   * public field
-   */
+  get BabylonEngine() {
+    return this._babylonEngine;
+  }
 }
 
 export default Engine;

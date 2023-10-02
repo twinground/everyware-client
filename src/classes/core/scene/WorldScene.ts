@@ -20,6 +20,7 @@ import ICustomScene from "../../../interfaces/ICustomScene";
 // class
 import Level from "../level/Level";
 import Player from "../player/Player";
+import Engine from "../Engine";
 // type
 import { PlayerAsset } from "../../../types/PlayerType";
 import { IConnection, IPacket, ITransform } from "../../../interfaces/IPacket";
@@ -35,6 +36,7 @@ const OUTLINE_COLOR = new Color3(1, 1, 0);
  */
 class WorldScene implements ICustomScene {
   public scene: Scene;
+  private _engine: Engine;
   private _level: Level;
   private _light: DirectionalLight;
   private _shadowGenerator: ShadowGenerator;
@@ -45,13 +47,14 @@ class WorldScene implements ICustomScene {
   private _isViewing: boolean;
 
   constructor(
-    readonly engine: BabylonEngine,
+    readonly engine: Engine,
     readonly canvas: HTMLCanvasElement,
     private _client: Client,
     public expoName: string // TODO : should subsribe this expo
   ) {
     // Initialize Scene
-    this.scene = new Scene(engine);
+    this._engine = engine;
+    this.scene = new Scene(this._engine.BabylonEngine);
 
     // Fullscreen mode GUI
     this._advancedTexture =
@@ -120,7 +123,7 @@ class WorldScene implements ICustomScene {
         .rotationQuaternion.clone();
 
       // fade out scene
-      this.FadeOutScene();
+      this._engine.FadeOutScene(this._player.CurrentCam);
       // player camera zoom in
       this._player.ZoomInFollowCam();
       // start animation and change anim state.
@@ -138,7 +141,7 @@ class WorldScene implements ICustomScene {
 
         for (let child of linkMesh.getChildMeshes()) {
           child.outlineColor = OUTLINE_COLOR;
-          child.outlineWidth = 0.05;
+          child.outlineWidth = 0.08;
           child.renderOutline = true;
         }
       } else {
@@ -151,35 +154,6 @@ class WorldScene implements ICustomScene {
     });
 
     this._viewButtons.push(viewButton);
-  }
-
-  public Transition(nextScene: ICustomScene): void {}
-
-  public FadeOutScene() {
-    let fadeLevel = 1.0;
-    const postProcess = new PostProcess(
-      "Fade",
-      "fadeOut",
-      ["fadeLevel"],
-      null,
-      1.0,
-      this._player.CurrentCam
-    );
-    postProcess.onApply = (effect) => {
-      effect.setFloat("fadeLevel", fadeLevel);
-    };
-    let alpha = 0;
-
-    this.scene.onBeforeRenderObservable.add(() => {
-      fadeLevel = Math.abs(Math.cos(alpha));
-      alpha += 0.015;
-    });
-
-    // dispose postProcess after 2617ms
-    setTimeout(() => {
-      postProcess.dispose();
-    }, 2617); // 60 frames per second * 0.01 => 0.6 per second
-    // cos(0) = 1, cos(pi/2) = 0, pi/2 = 1.517 -> need 2617ms for fade out
   }
 }
 
