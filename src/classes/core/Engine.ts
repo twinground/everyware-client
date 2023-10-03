@@ -14,7 +14,6 @@ import {
   PostProcess,
 } from "@babylonjs/core";
 // class
-import World from "./World";
 import Client from "../network/Client";
 // interface
 import ICustomScene from "../../interfaces/ICustomScene";

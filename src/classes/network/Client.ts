@@ -28,7 +28,7 @@ class Client {
         });
 
         const subscription = this._socket.subscribe(
-          `/sub/expo/${expoName}`,
+          `/sub/expo/${expoName}/init`,
           (message) => {
             const connectionPkt: IConnection = JSON.parse(message.body);
             this.id = connectionPkt.user_id;
