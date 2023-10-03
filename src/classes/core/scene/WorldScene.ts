@@ -36,7 +36,7 @@ class WorldScene implements ICustomScene {
   private _light: DirectionalLight;
   private _shadowGenerator: ShadowGenerator;
   private _player: Player;
-  private _remotePlayerMap: { [userId: string]: RemotePlayer };
+  private _remotePlayerMap: { [userId: string]: RemotePlayer } = {};
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
   private _isViewing: boolean;
