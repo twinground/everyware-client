@@ -59,7 +59,12 @@ class WorldScene implements ICustomScene {
       `/sub/expo/${expoName}`,
       (message) => {
         const connectionPkt: IConnection = JSON.parse(message.body);
-        console.log("new user : " + connectionPkt.user_id);
+        this.LoadModelAsset().then((asset) => {
+          this._remotePlayerMap[connectionPkt.user_id] = new RemotePlayer(
+            this.scene,
+            asset
+          );
+        });
       }
     );
 
