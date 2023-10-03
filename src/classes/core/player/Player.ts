@@ -29,11 +29,18 @@ class Player extends TransformNode {
   private _animations: PlayerAnimations;
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
+  public expoName: string;
 
-  constructor(readonly scene: Scene, client: Client, asset: PlayerAsset) {
+  constructor(
+    readonly scene: Scene,
+    client: Client,
+    expoName: string,
+    asset: PlayerAsset
+  ) {
     super("player", scene);
     this.scene = scene;
     this._client = client;
+    this.expoName = expoName;
 
     /**
      * -----  Mesh initialization -----
@@ -195,7 +202,7 @@ class Player extends TransformNode {
       },
     };
     this._client.Socket.publish({
-      destination: "/sub/expo/${expoName}/transform",
+      destination: `/pub/expo/${this.expoName}/transform`,
       body: JSON.stringify(transformPkt),
     });
   }
