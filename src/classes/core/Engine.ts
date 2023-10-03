@@ -45,7 +45,7 @@ class Engine {
   private async Init(brokerURL: string, expoName: string) {
     // initialize client
     // TODO : uncomment below
-    // this._client.Socket.activate();
+    this._client.Socket.activate();
 
     this.CreateCanvas();
 

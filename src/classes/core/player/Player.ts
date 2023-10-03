@@ -30,12 +30,7 @@ class Player extends TransformNode {
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
 
-  constructor(
-    readonly scene: Scene,
-    player: Player,
-    client: Client,
-    asset: PlayerAsset
-  ) {
+  constructor(readonly scene: Scene, client: Client, asset: PlayerAsset) {
     super("player", scene);
     this.scene = scene;
     this._client = client;
@@ -49,7 +44,7 @@ class Player extends TransformNode {
     /**
      * ----- Player controller -----
      */
-    this._playerController = new PlayerController(this, this._scene, player);
+    this._playerController = new PlayerController(this, this._scene);
 
     /**
      * ----- Camera configuration -----

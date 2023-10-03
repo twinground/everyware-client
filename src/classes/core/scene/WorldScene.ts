@@ -79,7 +79,7 @@ class WorldScene implements ICustomScene {
 
     // player construct
     this.LoadModelAsset().then((asset) => {
-      this._player = new Player(this.scene, this._player, this._client, asset);
+      this._player = new Player(this.scene, this._client, asset);
       this._level = new Level(
         this.scene,
         this._advancedTexture,
