@@ -10,7 +10,7 @@ import type { StompSubscription } from "@stomp/stompjs";
  */
 class Client {
   private _socket: StompClient;
-  private _subscriptionList: StompSubscription[];
+  private _subscriptionList: StompSubscription[] = [];
   public id: number;
 
   constructor(brokerURL: string, expoName: string) {
