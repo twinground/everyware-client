@@ -26,7 +26,8 @@ class Engine {
   private _babylonEngine: BabylonEngine;
   private _client: Client;
 
-  constructor(brokerURL: string, expoName: string) {
+  constructor(brokerURL: string, expoName: string, client: Client) {
+    this._client = client;
     this.Init(brokerURL, expoName);
   }
 
@@ -42,18 +43,8 @@ class Engine {
   // TODO : remember last player's position when a user finishs preview
   private async Init(brokerURL: string, expoName: string) {
     // initialize client
-    this._client = new Client(brokerURL);
     // TODO : uncomment below
-    //this._client.Socket.activate();
-    // const connectionPkt: IConnection = {
-    //   user_id: this._client.id,
-    //   data: "hi",
-    // };
-    // // publish existence to other users
-    // this._client.Socket.publish({
-    //   destination: `/${expoName}`,
-    //   body: JSON.stringify(connectionPkt),
-    // });
+    // this._client.activate();
 
     this.CreateCanvas();
 
@@ -62,7 +53,7 @@ class Engine {
       this._canvas,
       undefined
     );
-    this._babylonEngine.displayLoadingUI();
+    //this._babylonEngine.displayLoadingUI();
     this._currentScene = new WorldScene(
       this,
       this._canvas,
@@ -79,7 +70,6 @@ class Engine {
     });
 
     await this.main();
-    this._babylonEngine.hideLoadingUI();
   }
 
   // Custom Shader definitions (custom shader only can be defined as PixelShader type)

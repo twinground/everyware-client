@@ -13,19 +13,28 @@ class Client {
   private _subscriptionList: StompSubscription[];
   public id: number;
 
-  constructor(brokerURL: string) {
+  constructor(brokerURL: string, expoName: string) {
     this._socket = new StompClient({
       brokerURL,
       reconnectDelay: 5000, // try reconnect for every 5000 seconds
       heartbeatIncoming: 10000, // heartbeat used for checking connection
       heartbeatOutgoing: 10000,
-      onConnect: (_frame) => {
-        // TODO : unused frame need to handle later
-        const subscription = this._socket.subscribe("/", (message) => {
-          const connectionPkt: IConnection = JSON.parse(message.body);
-          this.id = connectionPkt.user_id;
-          console.log("Greetings from server: " + connectionPkt.data);
+      onConnect: () => {
+        this._socket.publish({
+          destination: `/pub/expo/${expoName}`,
+          body: JSON.stringify({
+            expoName,
+          }),
         });
+
+        const subscription = this._socket.subscribe(
+          `/sub/expo/${expoName}`,
+          (message) => {
+            const connectionPkt: IConnection = JSON.parse(message.body);
+            this.id = connectionPkt.user_id;
+            console.log("Session id assigned from server : " + this.id);
+          }
+        );
         this._subscriptionList.push(subscription);
       },
     });
