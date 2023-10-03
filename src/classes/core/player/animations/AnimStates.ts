@@ -1,4 +1,4 @@
-import type { IState } from "../../../../interfaces/IStateMachine";
+import type { IAnimState } from "../../../../interfaces/IStateMachine";
 import type InputSystem from "../InputSystem";
 import Player from "../Player";
 

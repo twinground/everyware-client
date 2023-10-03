@@ -170,7 +170,7 @@ class Player extends TransformNode {
   public ZoomInFollowCam() {
     const newTargetPosition = this._mesh.position.clone();
     newTargetPosition.y += 2;
-    this._followCamera.cameraAcceleration = 0.01;
+    this._followCamera.cameraAcceleration = 0.012;
     this._followCamera.setTarget(newTargetPosition);
     this._followCamera.heightOffset = 0.5;
     this._followCamera.radius = 0;

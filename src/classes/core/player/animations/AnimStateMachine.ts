@@ -10,12 +10,12 @@ import Player from "../Player";
 import InputSystem from "../InputSystem";
 // type import
 import type { StateMap } from "../../../../types/PlayerType";
-import type { IStateMachine } from "../../../../interfaces/IStateMachine";
+import type { IAnimStateMachine } from "../../../../interfaces/IStateMachine";
 
 /**
  * Animation Finite State Mcahine
  */
-export default class AnimStateMachine implements IStateMachine {
+export default class AnimStateMachine implements IAnimStateMachine {
   private _stateMap: StateMap;
   private _curState: AnimState;
 

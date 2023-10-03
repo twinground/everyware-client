@@ -4,15 +4,9 @@ import {
   Scene,
   SceneLoader,
   ShadowGenerator,
-  AnimationPropertiesOverride,
   Color3,
   Vector3,
   DirectionalLight,
-  AnimationGroup,
-  NodeMaterial,
-  Constants,
-  Effect,
-  PostProcess,
   Mesh,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
@@ -27,6 +21,7 @@ import { IConnection, IPacket, ITransform } from "../../../interfaces/IPacket";
 import type Client from "../../network/Client";
 import RemotePlayer from "../player/RemotePlayer";
 import { createButton } from "../ui/ViewButton";
+import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
 
@@ -50,6 +45,7 @@ class WorldScene implements ICustomScene {
     readonly engine: Engine,
     readonly canvas: HTMLCanvasElement,
     private _client: Client,
+    private _sceneMachine: ISceneStateMachine,
     public expoName: string // TODO : should subsribe this expo
   ) {
     // Initialize Scene
@@ -83,6 +79,44 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons = [];
     this._isViewing = false;
+
+    /*
+    this._client.Socket.subscribe(`/${expoName}`, (message) => {
+      const packet: IPacket = JSON.parse(message.body);
+      switch (packet.id) {
+        case 0:
+          this.LoadModelAsset().then((asset) => {
+            const connectionPkt = packet.body as IConnection;
+            this._remotePlayerMap[connectionPkt.user_id] = new RemotePlayer(
+              this._scene,
+              asset
+            );
+          });
+          break;
+
+        case 1:
+          const {
+            user_id,
+            data: {
+              position: { x, z },
+              quaternion: { y, w },
+              state,
+            },
+          } = packet.body as ITransform; // Destruct Transformation packet
+          let target = this._remotePlayerMap[user_id];
+          target.Mesh.position.set(x, 0, z); // update position
+          target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+          target.AnimationBlending(
+            // blending animation
+            target.CurAnim,
+            target.Animations[state],
+            0.05
+          );
+          target.CurAnim = target.Animations[state];
+          break;
+      }
+    });
+    */
   }
 
   public async LoadModelAsset() {
@@ -123,7 +157,7 @@ class WorldScene implements ICustomScene {
         .rotationQuaternion.clone();
 
       // fade out scene
-      this._engine.FadeOutScene(this._player.CurrentCam);
+      this._sceneMachine.UpdateMachine(1); // 1 : PreviewScene
       // player camera zoom in
       this._player.ZoomInFollowCam();
       // start animation and change anim state.
@@ -155,6 +189,10 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons.push(viewButton);
   }
+
+  // get Camera() {
+  //   return this._player.CurrentCam;
+  // }
 }
 
 export default WorldScene;
