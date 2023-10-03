@@ -1,4 +1,6 @@
 import { ActionManager, Scene, ExecuteCodeAction } from "@babylonjs/core";
+//class
+import Player from "./Player";
 // type
 import { InputMap } from "../../../types/PlayerType";
 
@@ -6,7 +8,7 @@ class InputSystem {
   private _actionManager: ActionManager;
   private _inputMap: InputMap;
 
-  constructor(public scene: Scene) {
+  constructor(public scene: Scene, player: Player) {
     this._actionManager = new ActionManager(this.scene); // bind action manager to current scene.
     this.scene.actionManager = this._actionManager; // action manager to handle actions on scene
     this._inputMap = {
@@ -27,6 +29,7 @@ class InputSystem {
         let key = evt.sourceEvent.key;
         if (key in this._inputMap) {
           this._inputMap[key] = true;
+          player.SendTransformPacket();
         }
       })
     );
@@ -37,6 +40,7 @@ class InputSystem {
         let key = evt.sourceEvent.key;
         if (key in this._inputMap) {
           this._inputMap[key] = false;
+          player.SendTransformPacket();
         }
       })
     );

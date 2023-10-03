@@ -18,7 +18,7 @@ import Engine from "../Engine";
 // type
 import { PlayerAsset } from "../../../types/PlayerType";
 import { IConnection, IPacket, ITransform } from "../../../interfaces/IPacket";
-import type Client from "../../network/Client";
+import Client from "../../network/Client";
 import RemotePlayer from "../player/RemotePlayer";
 import { createButton } from "../ui/ViewButton";
 import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
@@ -36,7 +36,7 @@ class WorldScene implements ICustomScene {
   private _light: DirectionalLight;
   private _shadowGenerator: ShadowGenerator;
   private _player: Player;
-  private _remotePlayerMap: { [userId: number]: RemotePlayer };
+  private _remotePlayerMap: { [userId: string]: RemotePlayer };
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
   private _isViewing: boolean;
@@ -46,11 +46,22 @@ class WorldScene implements ICustomScene {
     readonly canvas: HTMLCanvasElement,
     private _client: Client,
     private _sceneMachine: ISceneStateMachine,
-    public expoName: string // TODO : should subsribe this expo
+    public expoName: string
   ) {
     // Initialize Scene
     this._engine = engine;
     this.scene = new Scene(this._engine.BabylonEngine);
+
+    // start subscribe to other user's connection
+    this._client.SubscriptionList["init"].unsubscribe();
+    delete this._client.SubscriptionList["init"];
+    this._client.SubscriptionList["connect"] = this._client.Socket.subscribe(
+      `/sub/expo/${expoName}`,
+      (message) => {
+        const connectionPkt: IConnection = JSON.parse(message.body);
+        console.log("new user : " + connectionPkt.user_id);
+      }
+    );
 
     // Fullscreen mode GUI
     this._advancedTexture =
@@ -68,7 +79,7 @@ class WorldScene implements ICustomScene {
 
     // player construct
     this.LoadModelAsset().then((asset) => {
-      this._player = new Player(this.scene, asset);
+      this._player = new Player(this.scene, this._player, this._client, asset);
       this._level = new Level(
         this.scene,
         this._advancedTexture,
@@ -80,45 +91,29 @@ class WorldScene implements ICustomScene {
     this._viewButtons = [];
     this._isViewing = false;
 
-    // this._client.Socket.subscribe(
-    //   `/sub/expo/${expoName}/transform`,
-    //   (message) => {
-    //     const transformPkt = JSON.parse(message.body);
-    //     const {
-    //       user_id,
-    //       data: {
-    //         position: { x, z },
-    //         quaternion: { y, w },
-    //         state,
-    //       },
-    //     } = message.body as ITransform; // Destruct Transformation packet
-    //     let target = this._remotePlayerMap[user_id];
-    //     target.Mesh.position.set(x, 0, z); // update position
-    //     target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-    //     target.AnimationBlending(
-    //       // blending animation
-    //       target.CurAnim,
-    //       target.Animations[state],
-    //       0.05
-    //     );
-    //     target.CurAnim = target.Animations[state];
-    //   }
-    // );
-
-    // this._client.Socket.subscribe(
-    //   `/sub/expo/${expoName}/connect`,
-    //   (message) => {
-    //     const packet: IPacket = JSON.parse(message.body);
-
-    //     this.LoadModelAsset().then((asset) => {
-    //       const connectionPkt = packet.body as IConnection;
-    //       this._remotePlayerMap[connectionPkt.user_id] = new RemotePlayer(
-    //         this._scene,
-    //         asset
-    //       );
-    //     });
-    //   }
-    // );
+    this._client.Socket.subscribe(
+      `/sub/expo/${expoName}/transform`,
+      (message) => {
+        const {
+          user_id,
+          data: {
+            position: { x, z },
+            quaternion: { y, w },
+            state,
+          },
+        } = JSON.parse(message.body) as ITransform; // Destruct Transformation packet
+        let target = this._remotePlayerMap[user_id];
+        target.Mesh.position.set(x, 0, z); // update position
+        target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+        target.AnimationBlending(
+          // blending animation
+          target.CurAnim,
+          target.Animations[state],
+          0.05
+        );
+        target.CurAnim = target.Animations[state];
+      }
+    );
   }
 
   public async LoadModelAsset() {

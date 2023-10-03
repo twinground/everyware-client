@@ -1,11 +1,8 @@
 import InputSystem from "./InputSystem";
-import { Vector3, Quaternion, Scene, Scalar } from "@babylonjs/core";
+import { Vector3, Quaternion, Scene } from "@babylonjs/core";
 import Player from "./Player";
 import AnimStateMachine from "./animations/AnimStateMachine";
-import {
-  IAnimState,
-  IAnimStateMachine,
-} from "../../../interfaces/IStateMachine";
+import { IAnimStateMachine } from "../../../interfaces/IStateMachine";
 
 export default class PlayerController {
   private static readonly PLAYER_WALK_SPEED = 0.03;
@@ -16,9 +13,9 @@ export default class PlayerController {
   private _decceleration: Vector3;
   private _animStateMachine: IAnimStateMachine;
 
-  constructor(private _player: Player, public scene: Scene) {
+  constructor(private _player: Player, public scene: Scene, player: Player) {
     this._player = _player;
-    this._inputSystem = new InputSystem(this.scene);
+    this._inputSystem = new InputSystem(this.scene, player);
     this._velocity = Vector3.Zero();
     this._acceleration = new Vector3(1.0, 0.25, 25.0);
     this._decceleration = new Vector3(-0.0005, -0.0001, -10.0);

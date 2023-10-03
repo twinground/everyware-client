@@ -16,8 +16,11 @@ import {
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
+import Client from "../../network/Client";
+import { ITransform } from "../../../interfaces/IPacket";
 
 class Player extends TransformNode {
+  private _client: Client;
   private _mesh: AbstractMesh;
   private _arcRotCamera: ArcRotateCamera;
   private _followCamera: FollowCamera;
@@ -27,9 +30,15 @@ class Player extends TransformNode {
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
 
-  constructor(readonly scene: Scene, asset: PlayerAsset) {
+  constructor(
+    readonly scene: Scene,
+    player: Player,
+    client: Client,
+    asset: PlayerAsset
+  ) {
     super("player", scene);
     this.scene = scene;
+    this._client = client;
 
     /**
      * -----  Mesh initialization -----
@@ -38,9 +47,10 @@ class Player extends TransformNode {
     this._mesh.parent = this;
 
     /**
-     * Player controller
+     * ----- Player controller -----
      */
-    this._playerController = new PlayerController(this, this._scene);
+    this._playerController = new PlayerController(this, this._scene, player);
+
     /**
      * ----- Camera configuration -----
      */
@@ -174,6 +184,25 @@ class Player extends TransformNode {
     this._followCamera.setTarget(newTargetPosition);
     this._followCamera.heightOffset = 0.5;
     this._followCamera.radius = 0;
+  }
+
+  // publish Transform Packet
+  public SendTransformPacket() {
+    const transformPkt: ITransform = {
+      user_id: this._client.id,
+      data: {
+        position: { x: this._mesh.position.x, z: this._mesh.position.z },
+        quaternion: {
+          y: this._mesh.rotationQuaternion.y,
+          w: this._mesh.rotationQuaternion.w,
+        },
+        state: this._curAnim.name,
+      },
+    };
+    this._client.Socket.publish({
+      destination: "/sub/expo/${expoName}/transform",
+      body: JSON.stringify(transformPkt),
+    });
   }
 
   get Mesh(): AbstractMesh {

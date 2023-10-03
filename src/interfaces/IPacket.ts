@@ -1,10 +1,10 @@
 export interface IConnection {
-  user_id: number;
+  user_id: string;
   data: any;
 }
 
 export interface ITransform {
-  user_id: number;
+  user_id: string;
   data: {
     position: { x: number; z: number };
     quaternion: { y: number; w: number };
@@ -13,6 +13,6 @@ export interface ITransform {
 }
 
 export interface IPacket {
-  id: number;
+  id: string;
   body: IConnection | ITransform;
 }

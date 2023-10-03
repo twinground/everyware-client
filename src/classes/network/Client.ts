@@ -10,8 +10,8 @@ import type { StompSubscription } from "@stomp/stompjs";
  */
 class Client {
   private _socket: StompClient;
-  private _subscriptionList: StompSubscription[] = [];
-  public id: number;
+  private _subscriptionList: { [key: string]: StompSubscription } = {};
+  public id: string | null = null;
 
   constructor(brokerURL: string, expoName: string) {
     this._socket = new StompClient({
@@ -20,6 +20,18 @@ class Client {
       heartbeatIncoming: 10000, // heartbeat used for checking connection
       heartbeatOutgoing: 10000,
       onConnect: () => {
+        const initSub = this._socket.subscribe(
+          `/sub/expo/${expoName}`,
+          (message) => {
+            const connectionPkt: IConnection = JSON.parse(message.body);
+            if (!this.id) {
+              this.id = connectionPkt.user_id;
+              console.log("Hi from server, your id is " + this.id);
+            }
+            console.log("test");
+          }
+        );
+
         this._socket.publish({
           destination: `/pub/expo/${expoName}`,
           body: JSON.stringify({
@@ -27,21 +39,17 @@ class Client {
           }),
         });
 
-        const subscription = this._socket.subscribe(
-          `/sub/expo/${expoName}/init`,
-          (message) => {
-            const connectionPkt: IConnection = JSON.parse(message.body);
-            this.id = connectionPkt.user_id;
-            console.log("Session id assigned from server : " + this.id);
-          }
-        );
-        this._subscriptionList.push(subscription);
+        this._subscriptionList["init"] = initSub;
       },
     });
   }
 
   get Socket() {
     return this._socket;
+  }
+
+  get SubscriptionList() {
+    return this._subscriptionList;
   }
 }
 
