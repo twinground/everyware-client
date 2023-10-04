@@ -107,17 +107,16 @@ class SceneStateMachine implements ISceneStateMachine {
         break;
 
       case 1: // PreviewScene
-        nextScene = new PreviewScene(this._engine, this._canvas);
+        nextScene = new PreviewScene(this._engine, this);
         break;
     }
 
     nextScene.scene.clearColor = new Color4(36 / 255, 113 / 255, 214 / 255);
-    await nextScene.scene.whenReadyAsync();
+    await nextScene.scene.whenReadyAsync(true);
     this._currentScene.scene.dispose(); // dispose all resources after transition
     this._currentScene = nextScene;
-
+    // this.FadeScene(0.0);
     this._engine.BabylonEngine.hideLoadingUI();
-    this.FadeScene(0.0);
   }
 
   get Scene() {
