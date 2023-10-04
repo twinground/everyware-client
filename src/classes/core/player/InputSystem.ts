@@ -29,7 +29,8 @@ class InputSystem {
         let key = evt.sourceEvent.key;
         if (key in this._inputMap) {
           this._inputMap[key] = true;
-          player.SendTransformPacket();
+          // TODO : uncomment
+          // player.SendTransformPacket();
         }
       })
     );
@@ -40,7 +41,7 @@ class InputSystem {
         let key = evt.sourceEvent.key;
         if (key in this._inputMap) {
           this._inputMap[key] = false;
-          player.SendTransformPacket();
+          // player.SendTransformPacket();
         }
       })
     );

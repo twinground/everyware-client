@@ -189,23 +189,25 @@ class Player extends TransformNode {
   }
 
   // publish Transform Packet
-  public SendTransformPacket() {
-    const transformPkt: ITransform = {
-      user_id: this._client.id,
-      data: {
-        position: { x: this._mesh.position.x, z: this._mesh.position.z },
-        quaternion: {
-          y: this._mesh.rotationQuaternion.y,
-          w: this._mesh.rotationQuaternion.w,
-        },
-        state: this._curAnim.name,
-      },
-    };
-    this._client.Socket.publish({
-      destination: `/pub/expo/${this.expoName}/transform`,
-      body: JSON.stringify(transformPkt),
-    });
-  }
+  // TODO : uncomment below
+  // public SendTransformPacket() {
+  //   const transformPkt: ITransform = {
+  //     user_id: this._client.id,
+  //     data: {
+  //       position: { x: this._mesh.position.x, z: this._mesh.position.z },
+  //       quaternion: {
+  //         y: this._mesh.rotationQuaternion.y,
+  //         w: this._mesh.rotationQuaternion.w,
+  //       },
+  //       state: this._curAnim.name,
+  //     },
+  //   };
+
+  //   this._client.Socket.publish({
+  //     destination: `/pub/expo/${this.expoName}/transform`,
+  //     body: JSON.stringify(transformPkt),
+  //   });
+  // }
 
   get Mesh(): AbstractMesh {
     return this._mesh;

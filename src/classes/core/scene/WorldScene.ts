@@ -53,24 +53,25 @@ class WorldScene implements ICustomScene {
     this.scene = new Scene(this._engine.BabylonEngine);
 
     // start subscribe to other user's connection
-    this._client.SubscriptionList["init"].unsubscribe();
-    delete this._client.SubscriptionList["init"];
-    this._client.SubscriptionList["connect"] = this._client.Socket.subscribe(
-      `/sub/expo/${expoName}`,
-      (message) => {
-        const connectionPkt: IConnection = JSON.parse(message.body);
-        this.LoadModelAsset().then((asset) => {
-          this._remotePlayerMap[connectionPkt.user_id] = new RemotePlayer(
-            this.scene,
-            asset
-          );
-        });
-      }
-    );
+    // TODO : uncomment below for socket
+    // this._client.SubscriptionList["init"].unsubscribe();
+    // delete this._client.SubscriptionList["init"];
+    // this._client.SubscriptionList["connect"] = this._client.Socket.subscribe(
+    //   `/sub/expo/${expoName}`,
+    //   (message) => {
+    //     const connectionPkt: IConnection = JSON.parse(message.body);
+    //     this.LoadModelAsset().then((asset) => {
+    //       this._remotePlayerMap[connectionPkt.user_id] = new RemotePlayer(
+    //         this.scene,
+    //         asset
+    //       );
+    //     });
+    //   }
+    // );
 
     // Fullscreen mode GUI
     this._advancedTexture =
-      AdvancedDynamicTexture.CreateFullscreenUI("EXPO_UI");
+      AdvancedDynamicTexture.CreateFullscreenUI("EXPO_GUI");
 
     // Light Setup
     this._light = new DirectionalLight(
@@ -96,29 +97,30 @@ class WorldScene implements ICustomScene {
     this._viewButtons = [];
     this._isViewing = false;
 
-    this._client.Socket.subscribe(
-      `/sub/expo/${expoName}/transform`,
-      (message) => {
-        const {
-          user_id,
-          data: {
-            position: { x, z },
-            quaternion: { y, w },
-            state,
-          },
-        } = JSON.parse(message.body) as ITransform; // Destruct Transformation packet
-        let target = this._remotePlayerMap[user_id];
-        target.Mesh.position.set(x, 0, z); // update position
-        target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-        target.AnimationBlending(
-          // blending animation
-          target.CurAnim,
-          target.Animations[state],
-          0.05
-        );
-        target.CurAnim = target.Animations[state];
-      }
-    );
+    // TODO : uncomment
+    // this._client.Socket.subscribe(
+    //   `/sub/expo/${expoName}/transform`,
+    //   (message) => {
+    //     const {
+    //       user_id,
+    //       data: {
+    //         position: { x, z },
+    //         quaternion: { y, w },
+    //         state,
+    //       },
+    //     } = JSON.parse(message.body) as ITransform; // Destruct Transformation packet
+    //     let target = this._remotePlayerMap[user_id];
+    //     target.Mesh.position.set(x, 0, z); // update position
+    //     target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+    //     target.AnimationBlending(
+    //       // blending animation
+    //       target.CurAnim,
+    //       target.Animations[state],
+    //       0.05
+    //     );
+    //     target.CurAnim = target.Animations[state];
+    //   }
+    // );
   }
 
   public async LoadModelAsset() {
