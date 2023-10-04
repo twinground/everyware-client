@@ -45,7 +45,7 @@ class Engine {
   private async Init(brokerURL: string, expoName: string) {
     // initialize client
     // TODO : uncomment below
-    // this._client.Socket.activate();
+    //this._client.Socket.activate();
 
     this.CreateCanvas();
 
@@ -109,7 +109,10 @@ class Engine {
   // asynchronous main runtime for client service
   private async main() {
     this._babylonEngine.runRenderLoop(() => {
-      if (this._sceneStateMachine.Scene.activeCamera) {
+      if (
+        this._sceneStateMachine.Scene &&
+        this._sceneStateMachine.Scene.activeCamera
+      ) {
         this._sceneStateMachine.Scene.render();
       }
     });

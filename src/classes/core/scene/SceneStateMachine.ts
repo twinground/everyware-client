@@ -1,5 +1,5 @@
 //module
-import { Engine as BabylonEngine, PostProcess } from "@babylonjs/core";
+import { PostProcess, Color4 } from "@babylonjs/core";
 // class
 import Client from "../../network/Client";
 import Engine from "../Engine";
@@ -40,32 +40,41 @@ class SceneStateMachine implements ISceneStateMachine {
     params.alpha += 0.015;
   }
 
-  public FadeOutScene() {
+  private DecrementAlpha(params: any) {
+    params.fadeLevel = Math.abs(Math.cos(params.alpha));
+    params.alpha -= 0.015;
+  }
+
+  public FadeScene(startValue: number) {
+    const params = {
+      postName: startValue == 1 ? "FADEOUT" : "FADEIN",
+      shaderName: startValue == 1 ? "fadeOut" : "fadeIn",
+      fadeLevel: startValue,
+      alpha: 1.0 - startValue,
+    };
     const postProcess = new PostProcess(
-      "FadeOut",
-      "fadeOut",
+      params.postName,
+      params.shaderName,
       ["fadeLevel"],
       null,
       1.0,
       this._currentScene.scene.activeCamera
     );
 
-    const params = {
-      fadeLevel: 1.0,
-      alpha: 0.0,
-    };
-
-    const boundedIncremetAlpha = this.IncrementAlpha.bind(this, params);
+    const boundedModifyAlpha =
+      startValue == 1
+        ? this.IncrementAlpha.bind(this, params)
+        : this.DecrementAlpha.bind(this, params);
     postProcess.onApply = (effect) => {
       effect.setFloat("fadeLevel", params.fadeLevel);
     };
 
-    this._currentScene.scene.onBeforeRenderObservable.add(boundedIncremetAlpha);
+    this._currentScene.scene.onBeforeRenderObservable.add(boundedModifyAlpha);
 
     // dispose postProcess after 2617ms
     setTimeout(() => {
       this._currentScene.scene.onBeforeRenderObservable.removeCallback(
-        boundedIncremetAlpha
+        boundedModifyAlpha
       );
       console.log("dispose post process & render callback");
       postProcess.dispose();
@@ -74,14 +83,14 @@ class SceneStateMachine implements ISceneStateMachine {
   }
 
   UpdateMachine(nextSceneType: number): void {
-    this.FadeOutScene();
+    this.FadeScene(1.0); // start fade out effect
     setTimeout(() => {
       console.log("transition to preview");
       this.Transition(nextSceneType);
     }, 1700); // transition first before dispose effect resource
   }
 
-  Transition(nextSceneType: number): void {
+  async Transition(nextSceneType: number) {
     this._engine.BabylonEngine.displayLoadingUI();
     this._currentScene.scene.detachControl();
 
@@ -101,6 +110,14 @@ class SceneStateMachine implements ISceneStateMachine {
         nextScene = new PreviewScene(this._engine, this._canvas);
         break;
     }
+
+    nextScene.scene.clearColor = new Color4(36 / 255, 113 / 255, 214 / 255);
+    await nextScene.scene.whenReadyAsync();
+    this._currentScene.scene.dispose(); // dispose all resources after transition
+    this._currentScene = nextScene;
+
+    this._engine.BabylonEngine.hideLoadingUI();
+    this.FadeScene(0.0);
   }
 
   get Scene() {
