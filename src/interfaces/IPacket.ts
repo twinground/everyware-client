@@ -13,6 +13,6 @@ export interface ITransform {
 }
 
 export interface IPacket {
-  id: string;
-  body: IConnection | ITransform;
+  id: number;
+  body: any;
 }

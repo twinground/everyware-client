@@ -30,7 +30,6 @@ export default class AnimStateMachine implements IAnimStateMachine {
     this._curState = this._stateMap.idle;
   }
 
-  //TODO: current state -> next state
   Transition(nextState: string): void {
     if (this._curState.State == nextState) {
       return;
