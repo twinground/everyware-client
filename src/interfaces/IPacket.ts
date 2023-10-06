@@ -1,10 +1,17 @@
+type TransformData = {
+  session_id: string;
+  position: { x: number; z: number };
+  quaternion: { y: number; w: number };
+  state: string;
+};
+
 export interface IConnection {
-  user_id: string;
-  data: any;
+  session_id: string;
+  data: TransformData[];
 }
 
 export interface ITransform {
-  user_id: string;
+  session_id: string;
   data: {
     position: { x: number; z: number };
     quaternion: { y: number; w: number };
@@ -13,6 +20,6 @@ export interface ITransform {
 }
 
 export interface IPacket {
-  id: number;
+  type: number;
   body: any;
 }

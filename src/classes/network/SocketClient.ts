@@ -1,24 +1,51 @@
-import { IPacket } from "../../interfaces/IPacket";
+import { IConnection, ITransform, IPacket } from "../../interfaces/IPacket";
+import { SocketEventMap, SocketEventHandler } from "./SocketEventHandler";
+
+const NAME_MAP = {
+  0: "connection",
+  1: "transform",
+};
 
 class Socket {
-  private _webSock;
-  private _messageHandlers;
+  private _webSock: WebSocket;
+  private _eventMap: SocketEventMap;
   public id: string;
 
   constructor(URL: string) {
     this._webSock = new WebSocket(URL);
+    this._eventMap = new SocketEventMap();
 
     this._webSock.addEventListener("open", (ev) => {
-      console.log("connected.");
+      console.log("Successful Handshake!");
+      //   this.On("connection").Add((data) => {
+      //     // const connectionPkt :
+      //   });
     });
 
     this._webSock.addEventListener("error", (ev) => {
-      console.log("error : ", ev);
+      console.log("websocket error : ", ev);
     });
 
     this._webSock.addEventListener("message", (ev) => {
       const packet: IPacket = JSON.parse(ev.data);
-      switch (packet.id) {
+      switch (packet.type) {
+        case 0: {
+          // connection
+          const body: IConnection = packet.body;
+          this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
+          break;
+        }
+
+        case 1: {
+          // transform
+          const body: ITransform = packet.body;
+          this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
+          break;
+        }
+
+        default:
+          console.log("Unsupported packet type");
+          break;
       }
     });
 
@@ -33,13 +60,31 @@ class Socket {
     });
   }
 
-  On(eventName: string) {}
+  /**
+   *
+   * @param eventName define an event handler for certain eventName
+   * @returns target Socket event to add additional callback on the event
+   */
+  On(eventName: string) {
+    if (!this._eventMap.GetEvent(eventName)) {
+      this._eventMap.InitEvent(eventName);
+    }
 
-  Send(packetId: number, data: any) {
+    return this._eventMap.GetEvent(eventName);
+  }
+
+  /**
+   *
+   * @param packetType type to define specific packet
+   * @param data actual data to send
+   */
+  Send(packetType: number, data: any) {
     const packet: IPacket = {
-      id: packetId,
+      type: packetType,
       body: data,
     };
+
+    this._webSock.send(JSON.stringify(packet));
   }
 }
 
