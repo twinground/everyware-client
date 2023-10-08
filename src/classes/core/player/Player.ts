@@ -16,11 +16,11 @@ import {
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
-import Client from "../../network/Client";
+import Socket from "../../network/SocketClient";
 import { ITransform } from "../../../interfaces/IPacket";
 
 class Player extends TransformNode {
-  private _client: Client;
+  private _socket: Socket;
   private _mesh: AbstractMesh;
   private _arcRotCamera: ArcRotateCamera;
   private _followCamera: FollowCamera;
@@ -33,13 +33,13 @@ class Player extends TransformNode {
 
   constructor(
     readonly scene: Scene,
-    client: Client,
+    socket: Socket,
     expoName: string,
     asset: PlayerAsset
   ) {
     super("player", scene);
     this.scene = scene;
-    this._client = client;
+    this._socket = socket;
     this.expoName = expoName;
 
     /**
@@ -190,24 +190,21 @@ class Player extends TransformNode {
 
   // publish Transform Packet
   // TODO : uncomment below
-  // public SendTransformPacket() {
-  //   const transformPkt: ITransform = {
-  //     user_id: this._client.id,
-  //     data: {
-  //       position: { x: this._mesh.position.x, z: this._mesh.position.z },
-  //       quaternion: {
-  //         y: this._mesh.rotationQuaternion.y,
-  //         w: this._mesh.rotationQuaternion.w,
-  //       },
-  //       state: this._curAnim.name,
-  //     },
-  //   };
+  public SendTransformPacket() {
+    const transformData: ITransform = {
+      session_id: this._socket.id,
+      data: {
+        position: { x: this._mesh.position.x, z: this._mesh.position.z },
+        quaternion: {
+          y: this._mesh.rotationQuaternion.y,
+          w: this._mesh.rotationQuaternion.w,
+        },
+        state: this._curAnim.name,
+      },
+    };
 
-  //   this._client.Socket.publish({
-  //     destination: `/pub/expo/${this.expoName}/transform`,
-  //     body: JSON.stringify(transformPkt),
-  //   });
-  // }
+    this._socket.Send(1, transformData);
+  }
 
   get Mesh(): AbstractMesh {
     return this._mesh;
@@ -235,6 +232,10 @@ class Player extends TransformNode {
 
   get CurrentCam(): TargetCamera {
     return this._currentCamera;
+  }
+
+  get Socket(): Socket {
+    return this._socket;
   }
 }
 

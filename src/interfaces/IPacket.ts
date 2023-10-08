@@ -5,9 +5,14 @@ type TransformData = {
   state: string;
 };
 
+export interface IInit {
+  session_id: string;
+}
+
 export interface IConnection {
   session_id: string;
-  data: TransformData[];
+  expo_name: string;
+  transforms: TransformData[];
 }
 
 export interface ITransform {

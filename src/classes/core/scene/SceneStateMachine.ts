@@ -1,7 +1,7 @@
 //module
 import { PostProcess, Color4 } from "@babylonjs/core";
 // class
-import Client from "../../network/Client";
+import Socket from "../../network/SocketClient";
 import Engine from "../Engine";
 import WorldScene from "./WorldScene";
 //interface
@@ -13,13 +13,13 @@ class SceneStateMachine implements ISceneStateMachine {
   private _currentScene: ICustomScene;
   private _engine: Engine;
   private _canvas: HTMLCanvasElement;
-  private _client: Client;
+  private _socket: Socket;
   private _expoName: string;
 
   constructor(
     engine: Engine,
     canvas: HTMLCanvasElement,
-    client: Client,
+    socket: Socket,
     expoName: string
   ) {
     //initial scene
@@ -29,7 +29,7 @@ class SceneStateMachine implements ISceneStateMachine {
     this._currentScene = new WorldScene(
       this._engine,
       canvas,
-      client,
+      socket,
       this,
       expoName
     );
@@ -100,7 +100,7 @@ class SceneStateMachine implements ISceneStateMachine {
         nextScene = new WorldScene(
           this._engine,
           this._canvas,
-          this._client,
+          this._socket,
           this,
           this._expoName
         );

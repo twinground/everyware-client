@@ -2,34 +2,39 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import {
-  Vector3,
-  FreeCamera,
   Engine as BabylonEngine,
   EngineFactory,
-  Scene,
   Effect,
-  Color4,
-  TargetCamera,
-  TouchCamera,
-  PostProcess,
 } from "@babylonjs/core";
 // class
-import Client from "../network/Client";
+import Socket from "../network/SocketClient";
 // interface
-import ICustomScene from "../../interfaces/ICustomScene";
-import WorldScene from "./scene/WorldScene";
 import SceneStateMachine from "./scene/SceneStateMachine";
 import { ISceneStateMachine } from "../../interfaces/IStateMachine";
+import { IConnection, IPacket } from "../../interfaces/IPacket";
 
 class Engine {
   private _sceneStateMachine: ISceneStateMachine;
   private _canvas: HTMLCanvasElement;
   private _babylonEngine: BabylonEngine;
-  private _client: Client;
+  private _socket: Socket;
 
-  constructor(brokerURL: string, expoName: string, client: Client) {
-    this._client = client;
-    this.Init(brokerURL, expoName);
+  constructor(expoName: string, socket: Socket) {
+    this._socket = socket;
+    const connectionData: IConnection = {
+      session_id: this._socket.id,
+      expo_name: expoName,
+      transforms: [
+        {
+          session_id: this._socket.id,
+          position: { x: 0, z: 0 },
+          quaternion: { y: 0, w: 0 },
+          state: "idle",
+        },
+      ],
+    };
+    this._socket.Send(0, connectionData);
+    this.Init(expoName);
   }
 
   /**
@@ -42,11 +47,8 @@ class Engine {
   }
 
   // TODO : remember last player's position when a user finishs preview
-  private async Init(brokerURL: string, expoName: string) {
+  private async Init(expoName: string) {
     // initialize client
-    // TODO : uncomment below
-    //this._client.Socket.activate();
-
     this.CreateCanvas();
 
     // initialize babylon scene and engine
@@ -58,7 +60,7 @@ class Engine {
     this._sceneStateMachine = new SceneStateMachine(
       this,
       this._canvas,
-      this._client,
+      this._socket,
       expoName
     );
 

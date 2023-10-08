@@ -15,7 +15,7 @@ export default class PlayerController {
 
   constructor(private _player: Player, public scene: Scene) {
     this._player = _player;
-    this._inputSystem = new InputSystem(this.scene, this._player);
+    this._inputSystem = new InputSystem(this.scene);
     this._velocity = Vector3.Zero();
     this._acceleration = new Vector3(1.0, 0.25, 25.0);
     this._decceleration = new Vector3(-0.0005, -0.0001, -10.0);
@@ -113,5 +113,9 @@ export default class PlayerController {
 
     player.position.addInPlace(forward);
     player.position.addInPlace(sideways);
+
+    if (this._inputSystem.isUpdating) {
+      this._player.SendTransformPacket();
+    }
   }
 }

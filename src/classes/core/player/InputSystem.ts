@@ -7,8 +7,9 @@ import { InputMap } from "../../../types/PlayerType";
 class InputSystem {
   private _actionManager: ActionManager;
   private _inputMap: InputMap;
+  public isUpdating: boolean;
 
-  constructor(public scene: Scene, player: Player) {
+  constructor(public scene: Scene) {
     this._actionManager = new ActionManager(this.scene); // bind action manager to current scene.
     this.scene.actionManager = this._actionManager; // action manager to handle actions on scene
     this._inputMap = {
@@ -29,8 +30,7 @@ class InputSystem {
         let key = evt.sourceEvent.key;
         if (key in this._inputMap) {
           this._inputMap[key] = true;
-          // TODO : uncomment
-          // player.SendTransformPacket();
+          this.isUpdating = true;
         }
       })
     );
@@ -41,7 +41,7 @@ class InputSystem {
         let key = evt.sourceEvent.key;
         if (key in this._inputMap) {
           this._inputMap[key] = false;
-          // player.SendTransformPacket();
+          this.isUpdating = false;
         }
       })
     );
