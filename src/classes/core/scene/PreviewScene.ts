@@ -9,9 +9,12 @@ import {
   SceneLoader,
   ArcRotateCamera,
 } from "@babylonjs/core";
-import { AdvancedDynamicTexture } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
+// class
 import Engine from "../Engine";
 import ICustomScene from "../../../interfaces/ICustomScene";
+import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
+import { createExitButton } from "../ui/ExitButton";
 
 class PreviewScene implements ICustomScene {
   public scene: Scene;
@@ -20,14 +23,22 @@ class PreviewScene implements ICustomScene {
   private _light: DirectionalLight;
   private _advancedTexture: AdvancedDynamicTexture;
   private _shadowGenerator: ShadowGenerator;
+  private _exitButton: Button;
 
-  constructor(engine: Engine, canvas: HTMLCanvasElement) {
+  constructor(
+    private engine: Engine,
+    private _sceneMachine: ISceneStateMachine
+  ) {
     console.log("preview scene initailized");
     this.scene = new Scene(engine.BabylonEngine);
 
     // fullscreen gui
     this._advancedTexture = this._advancedTexture =
       AdvancedDynamicTexture.CreateFullscreenUI("PREVIEW_GUI");
+    this._exitButton = createExitButton(this._advancedTexture);
+    this._exitButton.onPointerClickObservable.add(() => {
+      this._sceneMachine.UpdateMachine(0);
+    });
 
     // Level setup
     this._level = this.scene.createDefaultEnvironment({
@@ -45,21 +56,6 @@ class PreviewScene implements ICustomScene {
       this.scene
     );
     this._camera.attachControl(true);
-    // this._camera = new ArcRotateCamera(
-    //   "arc-rotate-cam",
-    //   Math.PI / 2,
-    //   Math.PI / 4,
-    //   20,
-    //   new Vector3(0, 0, 0),
-    //   this.scene
-    // );
-    // this._camera.lowerBetaLimit = 0.1;
-    // this._camera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    // this._camera.lowerRadiusLimit = 1;
-    // this._camera.upperRadiusLimit = 150;
-    // this._camera.setPosition(new Vector3(0, 0, -10));
-    // this._camera.attachControl(true);
-    // this._camera.setTarget(this._mesh);
 
     // Light Setup
     this._light = new DirectionalLight(

@@ -1,10 +1,27 @@
+type TransformData = {
+  session_id: string;
+  position: { x: number; z: number };
+  quaternion: { y: number; w: number };
+  state: string;
+};
+
+export interface IInit {
+  session_id: string;
+}
+
 export interface IConnection {
-  user_id: string;
-  data: any;
+  session_id: string;
+  expo_name: string;
+  transforms: TransformData[];
+}
+
+export interface IDisconnection {
+  session_id: string;
 }
 
 export interface ITransform {
-  user_id: string;
+  session_id: string;
+  expo_name: string;
   data: {
     position: { x: number; z: number };
     quaternion: { y: number; w: number };
@@ -13,6 +30,6 @@ export interface ITransform {
 }
 
 export interface IPacket {
-  id: string;
-  body: IConnection | ITransform;
+  type: number;
+  body: any;
 }

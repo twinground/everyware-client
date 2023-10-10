@@ -1,6 +1,5 @@
 // Module import
 import {
-  Engine as BabylonEngine,
   Scene,
   SceneLoader,
   ShadowGenerator,
@@ -17,8 +16,12 @@ import Player from "../player/Player";
 import Engine from "../Engine";
 // type
 import { PlayerAsset } from "../../../types/PlayerType";
-import { IConnection, IPacket, ITransform } from "../../../interfaces/IPacket";
-import Client from "../../network/Client";
+import {
+  IConnection,
+  IDisconnection,
+  ITransform,
+} from "../../../interfaces/IPacket";
+import Socket from "../../network/SocketClient";
 import RemotePlayer from "../player/RemotePlayer";
 import { createButton } from "../ui/ViewButton";
 import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
@@ -44,7 +47,7 @@ class WorldScene implements ICustomScene {
   constructor(
     readonly engine: Engine,
     readonly canvas: HTMLCanvasElement,
-    private _client: Client,
+    private _socket: Socket,
     private _sceneMachine: ISceneStateMachine,
     public expoName: string
   ) {
@@ -52,22 +55,74 @@ class WorldScene implements ICustomScene {
     this._engine = engine;
     this.scene = new Scene(this._engine.BabylonEngine);
 
-    // start subscribe to other user's connection
-    // TODO : uncomment below for socket
-    // this._client.SubscriptionList["init"].unsubscribe();
-    // delete this._client.SubscriptionList["init"];
-    // this._client.SubscriptionList["connect"] = this._client.Socket.subscribe(
-    //   `/sub/expo/${expoName}`,
-    //   (message) => {
-    //     const connectionPkt: IConnection = JSON.parse(message.body);
-    //     this.LoadModelAsset().then((asset) => {
-    //       this._remotePlayerMap[connectionPkt.user_id] = new RemotePlayer(
-    //         this.scene,
-    //         asset
-    //       );
-    //     });
-    //   }
-    // );
+    // Socket Event callback definition for "connection" and "transform"
+    this._socket.On("connection").Add((data: IConnection) => {
+      // Initialize all the users exists in server before this connection
+      for (let userData of data.transforms) {
+        this.LoadModelAsset().then((asset) => {
+          const {
+            session_id,
+            position: { x, z },
+            quaternion: { y, w },
+            state,
+          } = userData;
+          this._remotePlayerMap[session_id] = new RemotePlayer(
+            this.scene,
+            asset
+          );
+          const target = this._remotePlayerMap[session_id];
+          target.Mesh.position.set(x, 0, z); // update position
+          target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+        });
+      }
+    });
+
+    this._socket.On("transform").Add((data: ITransform) => {
+      const {
+        session_id,
+        data: {
+          position: { x, z },
+          quaternion: { y, w },
+          state,
+        },
+      } = data; // Destruct Transformation packet
+      const target = this._remotePlayerMap[session_id];
+
+      target.Mesh.position.set(x, 0, z); // update position
+      target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+      if (target.CurAnim.name != state) {
+        this.scene.onBeforeRenderObservable.runCoroutineAsync(
+          target.AnimationBlending(
+            // blending animation
+            target.Animations[state],
+            target.Animations[target.CurAnim.name],
+            0.05
+          )
+        );
+        target.CurAnim = target.Animations[state];
+      }
+    });
+
+    this._socket.On("disconnection").Add((data: IDisconnection) => {
+      delete this._remotePlayerMap[data.session_id];
+    });
+
+    // Busy-waiting for connection establishment.
+    // There is no reason to proceed scene if there is an unexpected error on socket connection
+    let start = Date.now();
+    while (this._socket.WebSock.CONNECTING) {
+      let duration = Date.now() - start;
+      if (duration > 50000) {
+        break; // if suspend time is over 5 seconds, give up service to this client. (fatal error happened in this case).
+      }
+    }
+
+    const connectionData: IConnection = {
+      session_id: this._socket.id,
+      expo_name: expoName,
+      transforms: [],
+    };
+    this._socket.Send(1, connectionData);
 
     // Fullscreen mode GUI
     this._advancedTexture =
@@ -85,7 +140,7 @@ class WorldScene implements ICustomScene {
 
     // player construct
     this.LoadModelAsset().then((asset) => {
-      this._player = new Player(this.scene, this._client, expoName, asset);
+      this._player = new Player(this.scene, this._socket, expoName, asset);
       this._level = new Level(
         this.scene,
         this._advancedTexture,
@@ -96,33 +151,12 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons = [];
     this._isViewing = false;
-
-    // TODO : uncomment
-    // this._client.Socket.subscribe(
-    //   `/sub/expo/${expoName}/transform`,
-    //   (message) => {
-    //     const {
-    //       user_id,
-    //       data: {
-    //         position: { x, z },
-    //         quaternion: { y, w },
-    //         state,
-    //       },
-    //     } = JSON.parse(message.body) as ITransform; // Destruct Transformation packet
-    //     let target = this._remotePlayerMap[user_id];
-    //     target.Mesh.position.set(x, 0, z); // update position
-    //     target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-    //     target.AnimationBlending(
-    //       // blending animation
-    //       target.CurAnim,
-    //       target.Animations[state],
-    //       0.05
-    //     );
-    //     target.CurAnim = target.Animations[state];
-    //   }
-    // );
   }
 
+  /**
+   * asynchronous load GLB asset from public shared directory
+   * @returns asset
+   */
   public async LoadModelAsset() {
     const { meshes, animationGroups } = await SceneLoader.ImportMeshAsync(
       "",
@@ -148,6 +182,10 @@ class WorldScene implements ICustomScene {
     return asset;
   }
 
+  /**
+   * Create view button UI and enroll events on the button.
+   * @param linkMesh a mesh will be linked to button UI
+   */
   public CreateViewButton(linkMesh: Mesh) {
     const viewButton = createButton(linkMesh, this._advancedTexture);
 
@@ -193,10 +231,6 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons.push(viewButton);
   }
-
-  // get Camera() {
-  //   return this._player.CurrentCam;
-  // }
 }
 
 export default WorldScene;
