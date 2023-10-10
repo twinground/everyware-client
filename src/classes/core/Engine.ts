@@ -21,19 +21,6 @@ class Engine {
 
   constructor(expoName: string, socket: Socket) {
     this._socket = socket;
-    const connectionData: IConnection = {
-      session_id: this._socket.id,
-      expo_name: expoName,
-      transforms: [
-        {
-          session_id: this._socket.id,
-          position: { x: 0, z: 0 },
-          quaternion: { y: 0, w: 0 },
-          state: "idle",
-        },
-      ],
-    };
-    this._socket.Send(1, connectionData);
     this.Init(expoName);
   }
 

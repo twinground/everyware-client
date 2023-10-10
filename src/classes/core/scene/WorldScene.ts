@@ -51,8 +51,7 @@ class WorldScene implements ICustomScene {
     this._engine = engine;
     this.scene = new Scene(this._engine.BabylonEngine);
 
-    // start subscribe to other user's connection
-    // TODO : uncomment below for socket
+    // Socket Event callback definition for "connection" and "transform"
     this._socket.On("connection").Add((data: IConnection) => {
       // Initialize all the users exists in server before this connection
       for (let userData of data.transforms) {
@@ -79,8 +78,6 @@ class WorldScene implements ICustomScene {
         });
       }
     });
-
-    // TODO : uncomment
     this._socket.On("transform").Add((data: ITransform) => {
       const {
         session_id,
@@ -100,6 +97,23 @@ class WorldScene implements ICustomScene {
         0.05
       );
     });
+
+    // Busy-waiting for connection establishment.
+    // There is no reason to proceed scene if there is an unexpected error on socket connection
+    let start = Date.now();
+    while (this._socket.WebSock.CONNECTING) {
+      let duration = Date.now() - start;
+      if (duration > 50000) {
+        break; // if suspend time is over 5 seconds, give up service to this client. (fatal error happened in this case).
+      }
+    }
+
+    const connectionData: IConnection = {
+      session_id: this._socket.id,
+      expo_name: expoName,
+      transforms: [],
+    };
+    this._socket.Send(1, connectionData);
 
     // Fullscreen mode GUI
     this._advancedTexture =
@@ -130,6 +144,10 @@ class WorldScene implements ICustomScene {
     this._isViewing = false;
   }
 
+  /**
+   * asynchronous load GLB asset from public shared directory
+   * @returns asset
+   */
   public async LoadModelAsset() {
     const { meshes, animationGroups } = await SceneLoader.ImportMeshAsync(
       "",
@@ -155,6 +173,10 @@ class WorldScene implements ICustomScene {
     return asset;
   }
 
+  /**
+   * Create view button UI and enroll events on the button.
+   * @param linkMesh a mesh will be linked to button UI
+   */
   public CreateViewButton(linkMesh: Mesh) {
     const viewButton = createButton(linkMesh, this._advancedTexture);
 
@@ -200,10 +222,6 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons.push(viewButton);
   }
-
-  // get Camera() {
-  //   return this._player.CurrentCam;
-  // }
 }
 
 export default WorldScene;

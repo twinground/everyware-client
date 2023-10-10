@@ -99,6 +99,13 @@ class Socket {
 
     this._webSock.send(JSON.stringify(packet));
   }
+
+  /**
+   * getter for web socket instance
+   */
+  get WebSock() {
+    return this._webSock;
+  }
 }
 
 export default Socket;
