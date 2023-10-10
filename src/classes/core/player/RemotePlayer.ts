@@ -28,6 +28,17 @@ class RemotePlayer extends TransformNode {
 
     // store animation assets
     this.scene.stopAllAnimations();
+    asset.animationGroups[0].name = "clap";
+    asset.animationGroups[1].name = "idle";
+    asset.animationGroups[2].name = "sitDown";
+    asset.animationGroups[3].name = "sitting";
+    asset.animationGroups[4].name = "standUp";
+    asset.animationGroups[5].name = "thumbsUp";
+    asset.animationGroups[6].name = "turnBack";
+    asset.animationGroups[7].name = "turnLeft";
+    asset.animationGroups[8].name = "turnRight";
+    asset.animationGroups[9].name = "walkBack";
+    asset.animationGroups[10].name = "walkFor";
     this._animations = {
       clap: asset.animationGroups[0],
       idle: asset.animationGroups[1],
