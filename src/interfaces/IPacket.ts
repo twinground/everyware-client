@@ -15,6 +15,10 @@ export interface IConnection {
   transforms: TransformData[];
 }
 
+export interface IDisconnection {
+  session_id: string;
+}
+
 export interface ITransform {
   session_id: string;
   expo_name: string;

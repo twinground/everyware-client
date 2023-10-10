@@ -12,6 +12,7 @@ export interface IAnimState {
 export interface IAnimStateMachine {
   Transition(nextState: string): void;
   UpdateMachine(inputSys: InputSystem): void;
+  get State(): string;
 }
 
 export interface ISceneStateMachine {

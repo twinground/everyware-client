@@ -43,8 +43,10 @@ class InputSystem {
           this.isUpdating = false;
         }
 
-        this.player.CurAnim = this.player.Animations.idle;
-        this.player.SendTransformPacket();
+        if (key == "w" || key == "s" || key == "ㅈ" || key == "ㄴ") {
+          this.player.CurAnim = this.player.Animations.idle;
+          this.player.SendTransformPacket();
+        }
       })
     );
   }

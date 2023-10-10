@@ -81,4 +81,8 @@ export default class AnimStateMachine implements IAnimStateMachine {
       }
     }
   }
+
+  get State() {
+    return this._curState.State;
+  }
 }

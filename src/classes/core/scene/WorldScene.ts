@@ -16,7 +16,11 @@ import Player from "../player/Player";
 import Engine from "../Engine";
 // type
 import { PlayerAsset } from "../../../types/PlayerType";
-import { IConnection, ITransform } from "../../../interfaces/IPacket";
+import {
+  IConnection,
+  IDisconnection,
+  ITransform,
+} from "../../../interfaces/IPacket";
 import Socket from "../../network/SocketClient";
 import RemotePlayer from "../player/RemotePlayer";
 import { createButton } from "../ui/ViewButton";
@@ -83,6 +87,7 @@ class WorldScene implements ICustomScene {
         },
       } = data; // Destruct Transformation packet
       const target = this._remotePlayerMap[session_id];
+
       target.Mesh.position.set(x, 0, z); // update position
       target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
       if (target.CurAnim.name != state) {
@@ -96,6 +101,10 @@ class WorldScene implements ICustomScene {
         );
         target.CurAnim = target.Animations[state];
       }
+    });
+
+    this._socket.On("disconnection").Add((data: IDisconnection) => {
+      delete this._remotePlayerMap[data.session_id];
     });
 
     // Busy-waiting for connection establishment.

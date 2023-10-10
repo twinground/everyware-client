@@ -3,6 +3,7 @@ import {
   ITransform,
   IPacket,
   IInit,
+  IDisconnection,
 } from "../../interfaces/IPacket";
 import { SocketEventMap } from "./SocketEventHandler";
 
@@ -10,6 +11,7 @@ const NAME_MAP = {
   0: "init",
   1: "connection",
   2: "transform",
+  3: "disconnection",
 };
 
 class Socket {
@@ -35,30 +37,7 @@ class Socket {
 
     this._webSock.addEventListener("message", (ev) => {
       const packet: IPacket = JSON.parse(ev.data);
-      switch (packet.type) {
-        case 0: {
-          // initialize client
-          const body: IInit = packet.body;
-          this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
-        }
-        case 1: {
-          // connection
-          const body: IConnection = packet.body;
-          this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
-          break;
-        }
-
-        case 2: {
-          // transform
-          const body: ITransform = packet.body;
-          this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
-          break;
-        }
-
-        default:
-          console.log("Unsupported packet type");
-          break;
-      }
+      this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(packet.body);
     });
 
     this._webSock.addEventListener("close", (ev) => {
