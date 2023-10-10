@@ -1,9 +1,15 @@
-import { IConnection, ITransform, IPacket } from "../../interfaces/IPacket";
-import { SocketEventMap, SocketEventHandler } from "./SocketEventHandler";
+import {
+  IConnection,
+  ITransform,
+  IPacket,
+  IInit,
+} from "../../interfaces/IPacket";
+import { SocketEventMap } from "./SocketEventHandler";
 
 const NAME_MAP = {
-  0: "connection",
-  1: "transform",
+  0: "init",
+  1: "connection",
+  2: "transform",
 };
 
 class Socket {
@@ -15,11 +21,12 @@ class Socket {
     this._webSock = new WebSocket(URL);
     this._eventMap = new SocketEventMap();
 
-    this._webSock.addEventListener("open", (ev) => {
+    // websocket handshake point
+    this._webSock.addEventListener("open", (_ev) => {
       console.log("Successful Handshake!");
-      //   this.On("connection").Add((data) => {
-      //     // const connectionPkt :
-      //   });
+      this.On("init").Add((data: IInit) => {
+        this.id = data.session_id;
+      });
     });
 
     this._webSock.addEventListener("error", (ev) => {
@@ -30,13 +37,18 @@ class Socket {
       const packet: IPacket = JSON.parse(ev.data);
       switch (packet.type) {
         case 0: {
+          // initialize client
+          const body: IInit = packet.body;
+          this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
+        }
+        case 1: {
           // connection
           const body: IConnection = packet.body;
           this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);
           break;
         }
 
-        case 1: {
+        case 2: {
           // transform
           const body: ITransform = packet.body;
           this._eventMap.GetEvent(NAME_MAP[packet.type]).Execute(body);

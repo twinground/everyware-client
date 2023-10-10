@@ -1,8 +1,6 @@
 import { ActionManager, Scene, ExecuteCodeAction } from "@babylonjs/core";
-//class
-import Player from "./Player";
 // type
-import { InputMap } from "../../../types/PlayerType";
+import type { InputMap } from "../../../types/PlayerType";
 
 class InputSystem {
   private _actionManager: ActionManager;

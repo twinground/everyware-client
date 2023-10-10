@@ -204,7 +204,7 @@ class Player extends TransformNode {
       },
     };
 
-    this._socket.Send(1, transformData);
+    this._socket.Send(2, transformData);
   }
 
   get Mesh(): AbstractMesh {

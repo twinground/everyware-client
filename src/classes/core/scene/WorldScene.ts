@@ -1,6 +1,5 @@
 // Module import
 import {
-  Engine as BabylonEngine,
   Scene,
   SceneLoader,
   ShadowGenerator,
@@ -17,7 +16,7 @@ import Player from "../player/Player";
 import Engine from "../Engine";
 // type
 import { PlayerAsset } from "../../../types/PlayerType";
-import { IConnection, IPacket, ITransform } from "../../../interfaces/IPacket";
+import { IConnection, ITransform } from "../../../interfaces/IPacket";
 import Socket from "../../network/SocketClient";
 import RemotePlayer from "../player/RemotePlayer";
 import { createButton } from "../ui/ViewButton";
