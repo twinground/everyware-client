@@ -69,18 +69,10 @@ class WorldScene implements ICustomScene {
           const target = this._remotePlayerMap[session_id];
           target.Mesh.position.set(x, 0, z); // update position
           target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-          if (target.CurAnim.name != state) {
-            target.AnimationBlending(
-              // blending animation
-              target.Animations[state],
-              target.Animations[target.CurAnim.name],
-              0.05
-            );
-            target.CurAnim = target.Animations[state];
-          }
         });
       }
     });
+
     this._socket.On("transform").Add((data: ITransform) => {
       const {
         session_id,
@@ -93,12 +85,15 @@ class WorldScene implements ICustomScene {
       const target = this._remotePlayerMap[session_id];
       target.Mesh.position.set(x, 0, z); // update position
       target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-      target.AnimationBlending(
-        // blending animation
-        target.CurAnim,
-        target.Animations[state],
-        0.05
-      );
+      if (target.CurAnim.name != state) {
+        target.AnimationBlending(
+          // blending animation
+          target.Animations[state],
+          target.Animations[target.CurAnim.name],
+          0.05
+        );
+        target.CurAnim = target.Animations[state];
+      }
     });
 
     // Busy-waiting for connection establishment.

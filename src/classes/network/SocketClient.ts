@@ -34,7 +34,6 @@ class Socket {
     });
 
     this._webSock.addEventListener("message", (ev) => {
-      console.log(ev.data);
       const packet: IPacket = JSON.parse(ev.data);
       switch (packet.type) {
         case 0: {
