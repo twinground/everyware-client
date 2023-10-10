@@ -71,8 +71,8 @@ class WorldScene implements ICustomScene {
           target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
           target.AnimationBlending(
             // blending animation
-            target.CurAnim,
             target.Animations[state],
+            target.Animations[target.CurAnim.name],
             0.05
           );
         });
