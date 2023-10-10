@@ -62,7 +62,8 @@ export class SocketEventMap {
   InitEvent(name: string) {
     if (!this._eventMap[name]) {
       this._eventMap[name] = new SocketEventHandler(name);
+    } else {
+      console.log("event already exists"); // TODO : debug
     }
-    console.log("event already exists"); // TODO : debug
   }
 }

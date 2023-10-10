@@ -12,6 +12,7 @@ export default class PlayerController {
   private _acceleration: Vector3;
   private _decceleration: Vector3;
   private _animStateMachine: IAnimStateMachine;
+  private _isTransformUpdated: boolean;
 
   constructor(private _player: Player, public scene: Scene) {
     this._player = _player;
@@ -20,6 +21,7 @@ export default class PlayerController {
     this._acceleration = new Vector3(1.0, 0.25, 25.0);
     this._decceleration = new Vector3(-0.0005, -0.0001, -10.0);
     this._animStateMachine = new AnimStateMachine(this._player);
+    this._isTransformUpdated = false;
 
     scene.registerBeforeRender(() => {
       let deltaTime = this.scene.getEngine().getDeltaTime();
@@ -74,12 +76,17 @@ export default class PlayerController {
 
     //product deltaTime to move character according to device frame rate
     if (this._inputSystem.inputs.w || this._inputSystem.inputs.ㅈ) {
+      this._player.CurAnim = this._player.Animations["walkFor"];
+      this._isTransformUpdated = true;
       velocity.z += acc.z * deltaTime;
     }
     if (this._inputSystem.inputs.s || this._inputSystem.inputs.ㄴ) {
+      this._player.CurAnim = this._player.Animations["walkBack"];
+      this._isTransformUpdated = true;
       velocity.z -= acc.z * deltaTime;
     }
     if (this._inputSystem.inputs.a || this._inputSystem.inputs.ㅁ) {
+      this._isTransformUpdated = true;
       rot.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
@@ -88,6 +95,7 @@ export default class PlayerController {
       );
     }
     if (this._inputSystem.inputs.d || this._inputSystem.inputs.ㅇ) {
+      this._isTransformUpdated = true;
       rot.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
@@ -114,8 +122,10 @@ export default class PlayerController {
     player.position.addInPlace(forward);
     player.position.addInPlace(sideways);
 
-    if (this._inputSystem.isUpdating) {
+    if (this._isTransformUpdated) {
       this._player.SendTransformPacket();
     }
+
+    this._isTransformUpdated = false;
   }
 }
