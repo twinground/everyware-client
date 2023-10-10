@@ -43,6 +43,7 @@ class InputSystem {
           this.isUpdating = false;
         }
 
+        this.player.CurAnim = this.player.Animations.idle;
         this.player.SendTransformPacket();
       })
     );

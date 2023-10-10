@@ -86,11 +86,13 @@ class WorldScene implements ICustomScene {
       target.Mesh.position.set(x, 0, z); // update position
       target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
       if (target.CurAnim.name != state) {
-        target.AnimationBlending(
-          // blending animation
-          target.Animations[state],
-          target.Animations[target.CurAnim.name],
-          0.05
+        this.scene.onBeforeRenderObservable.runCoroutineAsync(
+          target.AnimationBlending(
+            // blending animation
+            target.Animations[state],
+            target.Animations[target.CurAnim.name],
+            0.05
+          )
         );
         target.CurAnim = target.Animations[state];
       }
