@@ -17,6 +17,7 @@ export interface IConnection {
 
 export interface ITransform {
   session_id: string;
+  expo_name: string;
   data: {
     position: { x: number; z: number };
     quaternion: { y: number; w: number };

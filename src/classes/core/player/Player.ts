@@ -193,6 +193,7 @@ class Player extends TransformNode {
   public SendTransformPacket() {
     const transformData: ITransform = {
       session_id: this._socket.id,
+      expo_name: this.expoName,
       data: {
         position: { x: this._mesh.position.x, z: this._mesh.position.z },
         quaternion: {
