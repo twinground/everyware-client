@@ -107,22 +107,16 @@ class WorldScene implements ICustomScene {
       delete this._remotePlayerMap[data.session_id];
     });
 
-    // Busy-waiting for connection establishment.
+    // Promise-based-waiting for connection establishment.
     // There is no reason to proceed scene if there is an unexpected error on socket connection
-    let start = Date.now();
-    while (this._socket.WebSock.CONNECTING) {
-      let duration = Date.now() - start;
-      if (duration > 50000) {
-        break; // if suspend time is over 5 seconds, give up service to this client. (fatal error happened in this case).
-      }
-    }
-
-    const connectionData: IConnection = {
-      session_id: this._socket.id,
-      expo_name: expoName,
-      transforms: [],
-    };
-    this._socket.Send(1, connectionData);
+    this.WaitConnection().then(() => {
+      const connectionData: IConnection = {
+        session_id: this._socket.id,
+        expo_name: expoName,
+        transforms: [],
+      };
+      this._socket.Send(1, connectionData);
+    });
 
     // Fullscreen mode GUI
     this._advancedTexture =
@@ -180,6 +174,19 @@ class WorldScene implements ICustomScene {
     };
 
     return asset;
+  }
+
+  public async WaitConnection(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      // Check the WebSocket state in an interval
+      const interval = setInterval(() => {
+        // If the WebSocket is open, resolve the promise and clear the interval
+        if (this._socket.WebSock.readyState === WebSocket.OPEN) {
+          resolve();
+          clearInterval(interval);
+        }
+      }, 100); // Check every 100 milliseconds
+    });
   }
 
   /**

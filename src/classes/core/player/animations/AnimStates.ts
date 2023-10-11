@@ -144,7 +144,7 @@ export class SitState extends AnimState {
     this._state = "sit";
   }
 
-  Transition(nextState: string): void {}
+  Transition(_nextState: string): void {}
 }
 
 // TODO : less important. implement later
@@ -155,5 +155,5 @@ export class Talking extends AnimState {
     this._state = "talk";
   }
 
-  Transition(nextState: string): void {}
+  Transition(_nextState: string): void {}
 }

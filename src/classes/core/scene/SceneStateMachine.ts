@@ -11,6 +11,8 @@ import PreviewScene from "./PreviewScene";
 
 class SceneStateMachine implements ISceneStateMachine {
   private _currentScene: ICustomScene;
+  private _worldScene: WorldScene;
+  private _previewScene: PreviewScene;
   private _engine: Engine;
   private _canvas: HTMLCanvasElement;
   private _socket: Socket;
@@ -26,13 +28,16 @@ class SceneStateMachine implements ISceneStateMachine {
     this._engine = engine;
     this._canvas = canvas;
     this._expoName = expoName;
-    this._currentScene = new WorldScene(
+    this._socket = socket;
+    this._worldScene = new WorldScene(
       this._engine,
       canvas,
       socket,
       this,
       expoName
     );
+    this._previewScene = new PreviewScene(this._engine, this);
+    this._currentScene = this._worldScene;
   }
 
   private IncrementAlpha(params: any) {
@@ -42,7 +47,7 @@ class SceneStateMachine implements ISceneStateMachine {
 
   private DecrementAlpha(params: any) {
     params.fadeLevel = Math.abs(Math.cos(params.alpha));
-    params.alpha -= 0.015;
+    if (params.alpha > 0.01) params.alpha -= 0.01;
   }
 
   public FadeScene(startValue: number) {
@@ -85,38 +90,24 @@ class SceneStateMachine implements ISceneStateMachine {
   UpdateMachine(nextSceneType: number): void {
     this.FadeScene(1.0); // start fade out effect
     setTimeout(() => {
-      console.log("transition to preview");
       this.Transition(nextSceneType);
     }, 1700); // transition first before dispose effect resource
   }
 
   async Transition(nextSceneType: number) {
-    this._engine.BabylonEngine.displayLoadingUI();
     this._currentScene.scene.detachControl();
 
-    let nextScene: ICustomScene = null;
     switch (nextSceneType) {
       case 0: // WorldScene
-        nextScene = new WorldScene(
-          this._engine,
-          this._canvas,
-          this._socket,
-          this,
-          this._expoName
-        );
+        this._currentScene = this._worldScene;
         break;
 
       case 1: // PreviewScene
-        nextScene = new PreviewScene(this._engine, this);
+        this._currentScene = this._previewScene;
         break;
     }
 
-    nextScene.scene.clearColor = new Color4(36 / 255, 113 / 255, 214 / 255);
-    await nextScene.scene.whenReadyAsync(true);
-    this._currentScene.scene.dispose(); // dispose all resources after transition
-    this._currentScene = nextScene;
-    // this.FadeScene(0.0);
-    this._engine.BabylonEngine.hideLoadingUI();
+    this.FadeScene(0.0);
   }
 
   get Scene() {

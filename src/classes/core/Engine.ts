@@ -89,7 +89,7 @@ class Engine {
         "uniform float fadeLevel; " +
         "void main(void){" +
         "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
-        "baseColor.a = 0.0;" +
+        "baseColor.a = 1.0;" +
         "gl_FragColor = baseColor;" +
         "}"
     );
