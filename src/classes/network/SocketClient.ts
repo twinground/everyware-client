@@ -23,6 +23,12 @@ class Socket {
     this._webSock = new WebSocket(URL);
     this._eventMap = new SocketEventMap();
 
+    window.onbeforeunload = () => {
+      this.Send(3, {
+        session_id: this.id,
+      });
+    };
+
     // websocket handshake point
     this._webSock.addEventListener("open", (_ev) => {
       console.log("Successful Handshake!");
