@@ -55,8 +55,8 @@ class WorldScene implements ICustomScene {
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
     this._gizman = new GizmoManager(this.scene);
-    this._gizman.positionGizmoEnabled = true;
-    this._gizman.scaleGizmoEnabled = true;
+    this._gizman.positionGizmoEnabled = false;
+    this._gizman.scaleGizmoEnabled = false;
 
     // Socket Event callback definition for "connection" and "transform"
     this._socket.On("connection").Add((data: IConnection) => {

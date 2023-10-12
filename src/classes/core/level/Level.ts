@@ -19,11 +19,8 @@ import WorldScene from "../scene/WorldScene";
 // level-data json file
 import data from "../../../../public/data/level-data.json";
 
-// gizmo manager
-import WorldGizmoManager from "./WorldGizmoManager";
 class Level {
   private _collisionArea: Mesh;
-  private _gizmoManager: WorldGizmoManager;
   private _levelData: any[];
 
   constructor(
@@ -35,7 +32,6 @@ class Level {
     this.scene = scene;
     this.player = player;
     //TODO : check for PR
-    this._gizmoManager = new WorldGizmoManager(scene);
     this._levelData = JSON.parse(JSON.stringify(data));
 
     let level = this.scene.createDefaultEnvironment({
@@ -99,6 +95,7 @@ class Level {
     // 이런 코드들을 어디서 관리할지 고민필요
     this._collisionArea.name = "test_chairMeshCol";
     this._collisionArea.rotationQuaternion = new Quaternion(0, 0, 0, 0);
+
     background.name = "test_background";
     background.rotationQuaternion = new Quaternion(0, 0, 0, 0);
 
