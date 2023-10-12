@@ -8,6 +8,8 @@ import {
   DirectionalLight,
   Mesh,
   GizmoManager,
+  ExecuteCodeAction,
+  ActionManager,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
@@ -45,6 +47,7 @@ class WorldScene implements ICustomScene {
   private _viewButtons: Button[];
   private _isViewing: boolean;
   private _gizman: GizmoManager;
+  private _gizmode: number;
 
   constructor(
     private engine: Engine,
@@ -54,9 +57,9 @@ class WorldScene implements ICustomScene {
   ) {
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
+    this.scene.actionManager = new ActionManager();
     this._gizman = new GizmoManager(this.scene);
-    this._gizman.positionGizmoEnabled = false;
-    this._gizman.scaleGizmoEnabled = false;
+    this._gizmode = 0;
 
     // Socket Event callback definition for "connection" and "transform"
     this._socket.On("connection").Add((data: IConnection) => {
@@ -150,6 +153,8 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons = [];
     this._isViewing = false;
+
+    this.SetGizmoInteraction();
   }
 
   /**
@@ -253,11 +258,45 @@ class WorldScene implements ICustomScene {
     this._viewButtons.push(viewButton);
   }
 
+  public SetGizmoInteraction() {
+    this.scene.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+        let key = evt.sourceEvent.key;
+        if (key == "R" || key == "ㄲ") {
+          //shift + R
+          ++this._gizmode;
+          this._gizmode %= 4;
+
+          switch (this._gizmode) {
+            case 0:
+              this._gizman.rotationGizmoEnabled = false;
+              break;
+            case 1:
+              this._gizman.positionGizmoEnabled = true;
+              break;
+            case 2:
+              this._gizman.positionGizmoEnabled = false;
+              this._gizman.scaleGizmoEnabled = true;
+              break;
+            case 3:
+              this._gizman.scaleGizmoEnabled = false;
+              this._gizman.rotationGizmoEnabled = true;
+              break;
+          }
+        }
+      })
+    );
+  }
+
   /**
    * Getter / Setter
    */
   get LocalPlayer() {
     return this._player;
+  }
+
+  get GizmoManager() {
+    return this._gizman;
   }
 
   set isViewing(v: boolean) {

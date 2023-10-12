@@ -26,10 +26,14 @@ class SceneStateMachine implements ISceneStateMachine {
   ) {
     //initial scene
     this._engine = engine;
+    this._engine.BabylonEngine.displayLoadingUI();
     this._canvas = canvas;
     this._expoName = expoName;
     this._socket = socket;
     this._worldScene = new WorldScene(this._engine, socket, this, expoName);
+    this._worldScene.scene.whenReadyAsync(true).then(() => {
+      this._engine.BabylonEngine.hideLoadingUI();
+    });
     this._previewScene = new PreviewScene(this._engine, this);
     this._currentScene = this._worldScene;
   }

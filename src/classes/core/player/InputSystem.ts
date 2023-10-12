@@ -1,16 +1,20 @@
-import { ActionManager, Scene, ExecuteCodeAction } from "@babylonjs/core";
+import {
+  ActionManager,
+  Scene,
+  ExecuteCodeAction,
+  AbstractActionManager,
+} from "@babylonjs/core";
 // type
 import type { InputMap } from "../../../types/PlayerType";
 import Player from "./Player";
 
 class InputSystem {
-  private _actionManager: ActionManager;
+  private _actionManager: AbstractActionManager;
   private _inputMap: InputMap;
   public isUpdating: boolean;
 
   constructor(public scene: Scene, public player: Player) {
-    this._actionManager = new ActionManager(this.scene); // bind action manager to current scene.
-    this.scene.actionManager = this._actionManager; // action manager to handle actions on scene
+    this._actionManager = this.scene.actionManager; // action manager to handle actions on scene
     this._inputMap = {
       w: false,
       a: false,
