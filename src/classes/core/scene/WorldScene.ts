@@ -105,6 +105,7 @@ class WorldScene implements ICustomScene {
     });
 
     this._socket.On("disconnection").Add((data: IDisconnection) => {
+      this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
       delete this._remotePlayerMap[data.session_id];
     });
 
