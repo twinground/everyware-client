@@ -29,13 +29,7 @@ class SceneStateMachine implements ISceneStateMachine {
     this._canvas = canvas;
     this._expoName = expoName;
     this._socket = socket;
-    this._worldScene = new WorldScene(
-      this._engine,
-      canvas,
-      socket,
-      this,
-      expoName
-    );
+    this._worldScene = new WorldScene(this._engine, socket, this, expoName);
     this._previewScene = new PreviewScene(this._engine, this);
     this._currentScene = this._worldScene;
   }

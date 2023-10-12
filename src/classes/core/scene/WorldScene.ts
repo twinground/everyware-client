@@ -7,6 +7,7 @@ import {
   Vector3,
   DirectionalLight,
   Mesh,
+  GizmoManager,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
@@ -43,17 +44,18 @@ class WorldScene implements ICustomScene {
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
   private _isViewing: boolean;
+  private _gizman: GizmoManager;
 
   constructor(
-    readonly engine: Engine,
-    readonly canvas: HTMLCanvasElement,
+    private engine: Engine,
     private _socket: Socket,
     private _sceneMachine: ISceneStateMachine,
     public expoName: string
   ) {
     // Initialize Scene
-    this._engine = engine;
-    this.scene = new Scene(this._engine.BabylonEngine);
+    this.scene = new Scene(engine.BabylonEngine);
+    this._gizman = new GizmoManager(this.scene);
+    this._gizman.positionGizmoEnabled = true;
 
     // Socket Event callback definition for "connection" and "transform"
     this._socket.On("connection").Add((data: IConnection) => {
