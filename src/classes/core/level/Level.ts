@@ -5,7 +5,10 @@ import {
   SceneLoader,
   ActionManager,
   Mesh,
+  Texture,
   Quaternion,
+  StandardMaterial,
+  Vector3,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
@@ -52,19 +55,29 @@ class Level {
       "chair.glb",
       this.scene
     );
-    const watchGLB = await SceneLoader.ImportMeshAsync(
-      "",
-      "./models/",
-      "watch.glb",
+
+    const chairMesh = chairGLB.meshes[0];
+    const monalisaMaterial = new StandardMaterial("test mat", this.scene);
+    const monalisaTexture = new Texture("/images/monalisa.png", this.scene);
+    monalisaMaterial.diffuseTexture = monalisaTexture;
+    const panel = MeshBuilder.CreateBox(
+      "test exhibit",
+      { width: 1.5, height: 1.5, depth: 0.3 },
       this.scene
     );
-    const watchMesh = watchGLB.meshes[0];
-    const chairMesh = chairGLB.meshes[0];
-
-    watchMesh.rotationQuaternion.multiplyInPlace(
-      Quaternion.FromEulerAngles(0, Math.PI, 0)
+    const background = MeshBuilder.CreateBox(
+      "test background",
+      {
+        width: 1.5,
+        height: 2.5,
+        depth: 0.29,
+      },
+      this.scene
     );
-    watchMesh.position.set(0, 2, -6.5);
+    panel.material = monalisaMaterial;
+    panel.rotate(new Vector3(0, 0, 1), Math.PI);
+    background.position.set(0, 1.5, -7.5);
+    panel.parent = background;
 
     chairMesh.parent = this._collisionArea;
   }

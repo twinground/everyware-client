@@ -11,7 +11,6 @@ import Socket from "../network/SocketClient";
 // interface
 import SceneStateMachine from "./scene/SceneStateMachine";
 import { ISceneStateMachine } from "../../interfaces/IStateMachine";
-import { IConnection } from "../../interfaces/IPacket";
 
 class Engine {
   private _sceneStateMachine: ISceneStateMachine;

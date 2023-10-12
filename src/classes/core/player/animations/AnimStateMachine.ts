@@ -34,7 +34,6 @@ export default class AnimStateMachine implements IAnimStateMachine {
     if (this._curState.State == nextState) {
       return;
     }
-
     this._curState.Transition(nextState); // transition current state to next state
     this._curState = this._stateMap[nextState]; // set next state to current
   }
@@ -74,7 +73,8 @@ export default class AnimStateMachine implements IAnimStateMachine {
         break;
       }
       case "sit": {
-        if (inputSys.inputs.w || inputSys.inputs.s) {
+        if (!inputSys.inputs.view) {
+          console.log("let's escape");
           this.Transition("idle");
         }
         break;

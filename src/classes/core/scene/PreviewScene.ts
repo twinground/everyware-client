@@ -7,7 +7,9 @@ import {
   ShadowGenerator,
   EnvironmentHelper,
   SceneLoader,
-  ArcRotateCamera,
+  StandardMaterial,
+  Texture,
+  MeshBuilder,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 // class
@@ -47,7 +49,27 @@ class PreviewScene implements ICustomScene {
     this._level.setMainColor(new Color3(36 / 255, 113 / 255, 214 / 255));
     this._level.ground.receiveShadows = true;
     // TODO : this is temp model
-    this.LoadWatch();
+    const monalisaMaterial = new StandardMaterial("test mat", this.scene);
+    const monalisaTexture = new Texture("/images/monalisa.png", this.scene);
+    monalisaMaterial.diffuseTexture = monalisaTexture;
+    const panel = MeshBuilder.CreateBox(
+      "test exhibit",
+      { width: 1.5, height: 1.5, depth: 0.3 },
+      this.scene
+    );
+    const background = MeshBuilder.CreateBox(
+      "test background",
+      {
+        width: 1.5,
+        height: 2.5,
+        depth: 0.29,
+      },
+      this.scene
+    );
+    panel.material = monalisaMaterial;
+    panel.rotate(new Vector3(0, 0, 1), Math.PI);
+    panel.parent = background;
+    background.position.set(0, 0.5, -3);
 
     // Camera Setup
     this._camera = new UniversalCamera(
@@ -55,6 +77,7 @@ class PreviewScene implements ICustomScene {
       new Vector3(0, 0, 0),
       this.scene
     );
+    this._camera.setTarget(background.position);
     this._camera.attachControl(true);
 
     // Light Setup
@@ -66,17 +89,6 @@ class PreviewScene implements ICustomScene {
     this._light.shadowMaxZ = 130;
     this._light.shadowMinZ = 10;
     this._shadowGenerator = new ShadowGenerator(1024, this._light);
-  }
-
-  async LoadWatch() {
-    const watchGLB = await SceneLoader.ImportMeshAsync(
-      "",
-      "./models/",
-      "watch.glb",
-      this.scene
-    );
-
-    watchGLB.meshes[0].position.set(0, 0.5, 3);
   }
 }
 

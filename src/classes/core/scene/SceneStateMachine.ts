@@ -81,7 +81,7 @@ class SceneStateMachine implements ISceneStateMachine {
       this._currentScene.scene.onBeforeRenderObservable.removeCallback(
         boundedModifyAlpha
       );
-      console.log("dispose post process & render callback");
+      console.log("dispose postprocess & render callback");
       postProcess.dispose();
     }, 1701); // 60 frames per second * 0.015 => 0.6 per second
     // cos(0) = 1, cos(pi/2) = 0, pi/2 = 1.517 -> need 1685ms for fade out
@@ -99,6 +99,15 @@ class SceneStateMachine implements ISceneStateMachine {
 
     switch (nextSceneType) {
       case 0: // WorldScene
+        // preprocess for local player
+        const localPlayer = this._worldScene.LocalPlayer;
+        localPlayer.Controller.UpdateViewMode(false);
+        this._worldScene.isViewing = false;
+        localPlayer.CurAnim = localPlayer.Animations.standUp;
+        localPlayer.SendTransformPacket();
+        localPlayer.CurAnim = localPlayer.Animations.idle;
+        localPlayer.SendTransformPacket();
+        localPlayer.ZoomOutFollowCam();
         this._currentScene = this._worldScene;
         break;
 
@@ -106,6 +115,7 @@ class SceneStateMachine implements ISceneStateMachine {
         this._currentScene = this._previewScene;
         break;
     }
+    this._currentScene.scene.attachControl();
 
     this.FadeScene(0.0);
   }

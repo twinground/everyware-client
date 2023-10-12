@@ -90,6 +90,7 @@ class WorldScene implements ICustomScene {
 
       target.Mesh.position.set(x, 0, z); // update position
       target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+
       if (target.CurAnim.name != state) {
         this.scene.onBeforeRenderObservable.runCoroutineAsync(
           target.AnimationBlending(
@@ -176,6 +177,10 @@ class WorldScene implements ICustomScene {
     return asset;
   }
 
+  /**
+   * This function makes available synchronous initial connection packet send
+   * @returns promise object to wait connection
+   */
   public async WaitConnection(): Promise<void> {
     return new Promise<void>((resolve) => {
       // Check the WebSocket state in an interval
@@ -196,6 +201,7 @@ class WorldScene implements ICustomScene {
   public CreateViewButton(linkMesh: Mesh) {
     const viewButton = createButton(linkMesh, this._advancedTexture);
 
+    // view mode event
     viewButton.onPointerClickObservable.add(() => {
       this._isViewing = true;
       this._player.Mesh.position = linkMesh.position
@@ -210,7 +216,11 @@ class WorldScene implements ICustomScene {
       // player camera zoom in
       this._player.ZoomInFollowCam();
       // start animation and change anim state.
-      this._player.Controller.UpdateViewMode();
+      this._player.Controller.UpdateViewMode(true);
+      this._player.CurAnim = this._player.Animations.sitDown;
+      this._player.SendTransformPacket();
+      this._player.CurAnim = this._player.Animations.sitting;
+      this._player.SendTransformPacket();
 
       viewButton.isVisible = false;
     });
@@ -237,6 +247,17 @@ class WorldScene implements ICustomScene {
     });
 
     this._viewButtons.push(viewButton);
+  }
+
+  /**
+   * Getter / Setter
+   */
+  get LocalPlayer() {
+    return this._player;
+  }
+
+  set isViewing(v: boolean) {
+    this._isViewing = v;
   }
 }
 

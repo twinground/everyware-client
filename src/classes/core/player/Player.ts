@@ -164,6 +164,7 @@ class Player extends TransformNode {
     let nextWeight = 0;
 
     to.play(true); // play next animation first
+    this._curAnim = to;
 
     while (nextWeight < 1) {
       curWeight -= ratio; // decrement current animation weight by given ratio
@@ -199,6 +200,15 @@ class Player extends TransformNode {
     this._followCamera.setTarget(newTargetPosition);
     this._followCamera.heightOffset = 0.5;
     this._followCamera.radius = 0;
+  }
+
+  // Zoom out
+  public ZoomOutFollowCam() {
+    this._followCamera.radius = 7;
+    this._followCamera.rotationOffset = 180;
+    this._followCamera.heightOffset = 5;
+    this._followCamera.cameraAcceleration = 0.05;
+    this._followCamera.lockedTarget = this._mesh;
   }
 
   // publish Transform Packet
