@@ -319,7 +319,7 @@ const setupRenderer = function () {
   container.style.height = "100%";
   container.style.zIndex = "-1";
 
-  let canvasZone = document.getElementById("canvasZone");
+  let canvasZone = document.getElementById("CanvasZone");
   canvasZone.insertBefore(container, canvasZone.firstChild);
 
   let renderer = new CSS3DRenderer();

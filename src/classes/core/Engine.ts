@@ -28,9 +28,10 @@ class Engine {
    * private methods
    */
   private CreateCanvas() {
+    const canvasZone = document.getElementById("CanvasZone");
     this._canvas = document.createElement("canvas");
     this._canvas.id = "RenderCanvas";
-    document.body.appendChild(this._canvas);
+    canvasZone.appendChild(this._canvas);
   }
 
   // TODO : remember last player's position when a user finishs preview
