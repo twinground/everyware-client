@@ -8,7 +8,7 @@ import {
   DirectionalLight,
   Mesh,
 } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, Button, Image } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
 // class
 import Level from "../level/Level";

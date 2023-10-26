@@ -8,6 +8,7 @@ import {
   EnvironmentHelper,
   SceneLoader,
   ArcRotateCamera,
+  MeshBuilder,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 // class
@@ -15,6 +16,7 @@ import Engine from "../Engine";
 import ICustomScene from "../../../interfaces/ICustomScene";
 import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
 import { createExitButton } from "../ui/ExitButton";
+import { setupRenderer, createCSSobject } from "../renderer/CSSRenderer";
 
 class PreviewScene implements ICustomScene {
   public scene: Scene;
@@ -24,6 +26,8 @@ class PreviewScene implements ICustomScene {
   private _advancedTexture: AdvancedDynamicTexture;
   private _shadowGenerator: ShadowGenerator;
   private _exitButton: Button;
+  private _plane;
+  private _CSSobject;
 
   constructor(
     private engine: Engine,
@@ -39,6 +43,30 @@ class PreviewScene implements ICustomScene {
     this._exitButton.onPointerClickObservable.add(() => {
       this._sceneMachine.UpdateMachine(0);
     });
+
+    //test CSSRenderer
+    this._plane = MeshBuilder.CreatePlane(
+      "youtube",
+      { width: 1, height: 1 },
+      this.scene
+    );
+    this._plane.rotation = new Vector3(0, 0, 0);
+    this._plane.rotationQuaternion = null;
+    this._plane.scaling.x = 6;
+    this._plane.scaling.y = 4;
+    this._plane.checkCollisions = true;
+
+    let existingRenderer = document.getElementById("css-container");
+    if (existingRenderer) existingRenderer.remove();
+    let renderer = setupRenderer();
+    this._CSSobject = createCSSobject(
+      this._plane,
+      this.scene,
+      "qgKbpe4qvno",
+      renderer
+    );
+    console.log(this._CSSobject);
+    //createMaskingScreen(plane, scene, renderer)
 
     // Level setup
     this._level = this.scene.createDefaultEnvironment({
