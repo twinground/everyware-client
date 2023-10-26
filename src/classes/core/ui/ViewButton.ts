@@ -13,9 +13,10 @@ export function createButton(
   viewButton.height = "40px";
   viewButton.color = "white";
   viewButton.background = "grey";
+  viewButton.alpha = 0.7;
   viewButton.linkWithMesh(linkMesh);
   viewButton.linkOffsetY = -85;
-  viewButton.linkOffsetX = 55;
+  viewButton.linkOffsetX = 70;
 
   return viewButton;
 }

@@ -1,5 +1,3 @@
-import type { IAnimState } from "../../../../interfaces/IStateMachine";
-import type InputSystem from "../InputSystem";
 import Player from "../Player";
 
 export class AnimState {
@@ -48,7 +46,6 @@ export class IdleState extends AnimState {
               )
             );
           });
-
         break;
       }
       case "walk": {
@@ -74,6 +71,7 @@ export class IdleState extends AnimState {
             0.05
           )
         );
+        break;
       }
     }
   }
@@ -144,7 +142,37 @@ export class SitState extends AnimState {
     this._state = "sit";
   }
 
-  Transition(nextState: string): void {}
+  Transition(nextState: string): void {
+    switch (nextState) {
+      case "idle":
+        this.player.scene.stopAllAnimations();
+
+        this.player.scene.onBeforeRenderObservable
+          .runCoroutineAsync(
+            this.player.AnimationBlending(
+              this.player.Animations.standUp,
+              this.player.Animations.sitting,
+              0.05
+            )
+          )
+          .then(() => {
+            this.player.scene.stopAllAnimations();
+            this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+              this.player.AnimationBlending(
+                this.player.Animations.idle,
+                this.player.Animations.standUp,
+                0.05
+              )
+            );
+          });
+
+        break;
+
+      default:
+        console.log("impossible anim state transition");
+        break;
+    }
+  }
 }
 
 // TODO : less important. implement later
@@ -155,5 +183,5 @@ export class Talking extends AnimState {
     this._state = "talk";
   }
 
-  Transition(nextState: string): void {}
+  Transition(_nextState: string): void {}
 }

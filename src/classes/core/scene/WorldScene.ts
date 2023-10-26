@@ -7,6 +7,9 @@ import {
   Vector3,
   DirectionalLight,
   Mesh,
+  GizmoManager,
+  ExecuteCodeAction,
+  ActionManager,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Image } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
@@ -43,17 +46,20 @@ class WorldScene implements ICustomScene {
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
   private _isViewing: boolean;
+  private _gizman: GizmoManager;
+  private _gizmode: number;
 
   constructor(
-    readonly engine: Engine,
-    readonly canvas: HTMLCanvasElement,
+    private engine: Engine,
     private _socket: Socket,
     private _sceneMachine: ISceneStateMachine,
     public expoName: string
   ) {
     // Initialize Scene
-    this._engine = engine;
-    this.scene = new Scene(this._engine.BabylonEngine);
+    this.scene = new Scene(engine.BabylonEngine);
+    this.scene.actionManager = new ActionManager();
+    this._gizman = new GizmoManager(this.scene);
+    this._gizmode = 0;
 
     // Socket Event callback definition for "connection" and "transform"
     this._socket.On("connection").Add((data: IConnection) => {
@@ -90,6 +96,7 @@ class WorldScene implements ICustomScene {
 
       target.Mesh.position.set(x, 0, z); // update position
       target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+
       if (target.CurAnim.name != state) {
         this.scene.onBeforeRenderObservable.runCoroutineAsync(
           target.AnimationBlending(
@@ -104,25 +111,20 @@ class WorldScene implements ICustomScene {
     });
 
     this._socket.On("disconnection").Add((data: IDisconnection) => {
+      this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
       delete this._remotePlayerMap[data.session_id];
     });
 
-    // Busy-waiting for connection establishment.
+    // Promise-based-waiting for connection establishment.
     // There is no reason to proceed scene if there is an unexpected error on socket connection
-    let start = Date.now();
-    while (this._socket.WebSock.CONNECTING) {
-      let duration = Date.now() - start;
-      if (duration > 50000) {
-        break; // if suspend time is over 5 seconds, give up service to this client. (fatal error happened in this case).
-      }
-    }
-
-    const connectionData: IConnection = {
-      session_id: this._socket.id,
-      expo_name: expoName,
-      transforms: [],
-    };
-    this._socket.Send(1, connectionData);
+    this.WaitConnection().then(() => {
+      const connectionData: IConnection = {
+        session_id: this._socket.id,
+        expo_name: expoName,
+        transforms: [],
+      };
+      this._socket.Send(1, connectionData);
+    });
 
     // Fullscreen mode GUI
     this._advancedTexture =
@@ -151,6 +153,8 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons = [];
     this._isViewing = false;
+
+    this.SetGizmoInteraction();
   }
 
   /**
@@ -183,12 +187,30 @@ class WorldScene implements ICustomScene {
   }
 
   /**
+   * This function makes available synchronous initial connection packet send
+   * @returns promise object to wait connection
+   */
+  public async WaitConnection(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      // Check the WebSocket state in an interval
+      const interval = setInterval(() => {
+        // If the WebSocket is open, resolve the promise and clear the interval
+        if (this._socket.WebSock.readyState === WebSocket.OPEN) {
+          resolve();
+          clearInterval(interval);
+        }
+      }, 100); // Check every 100 milliseconds
+    });
+  }
+
+  /**
    * Create view button UI and enroll events on the button.
    * @param linkMesh a mesh will be linked to button UI
    */
   public CreateViewButton(linkMesh: Mesh) {
     const viewButton = createButton(linkMesh, this._advancedTexture);
 
+    // view mode event
     viewButton.onPointerClickObservable.add(() => {
       this._isViewing = true;
       this._player.Mesh.position = linkMesh.position
@@ -203,7 +225,11 @@ class WorldScene implements ICustomScene {
       // player camera zoom in
       this._player.ZoomInFollowCam();
       // start animation and change anim state.
-      this._player.Controller.UpdateViewMode();
+      this._player.Controller.UpdateViewMode(true);
+      this._player.CurAnim = this._player.Animations.sitDown;
+      this._player.SendTransformPacket();
+      this._player.CurAnim = this._player.Animations.sitting;
+      this._player.SendTransformPacket();
 
       viewButton.isVisible = false;
     });
@@ -230,6 +256,51 @@ class WorldScene implements ICustomScene {
     });
 
     this._viewButtons.push(viewButton);
+  }
+
+  public SetGizmoInteraction() {
+    this.scene.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+        let key = evt.sourceEvent.key;
+        if (key == "R" || key == "ㄲ") {
+          //shift + R
+          ++this._gizmode;
+          this._gizmode %= 4;
+
+          switch (this._gizmode) {
+            case 0:
+              this._gizman.rotationGizmoEnabled = false;
+              break;
+            case 1:
+              this._gizman.positionGizmoEnabled = true;
+              break;
+            case 2:
+              this._gizman.positionGizmoEnabled = false;
+              this._gizman.scaleGizmoEnabled = true;
+              break;
+            case 3:
+              this._gizman.scaleGizmoEnabled = false;
+              this._gizman.rotationGizmoEnabled = true;
+              break;
+          }
+        }
+      })
+    );
+  }
+
+  /**
+   * Getter / Setter
+   */
+  get LocalPlayer() {
+    return this._player;
+  }
+
+  get GizmoManager() {
+    return this._gizman;
+  }
+
+  set isViewing(v: boolean) {
+    this._isViewing = v;
   }
 }
 
