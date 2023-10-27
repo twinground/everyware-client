@@ -10,6 +10,7 @@ import {
   GizmoManager,
   ExecuteCodeAction,
   ActionManager,
+  HemisphericLight,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Image } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
@@ -39,7 +40,7 @@ class WorldScene implements ICustomScene {
   public scene: Scene;
   private _engine: Engine;
   private _level: Level;
-  private _light: DirectionalLight;
+  private _light: HemisphericLight;
   private _shadowGenerator: ShadowGenerator;
   private _player: Player;
   private _remotePlayerMap: { [userId: string]: RemotePlayer } = {};
@@ -131,14 +132,12 @@ class WorldScene implements ICustomScene {
       AdvancedDynamicTexture.CreateFullscreenUI("EXPO_GUI");
 
     // Light Setup
-    this._light = new DirectionalLight(
-      "main-light",
-      new Vector3(0, -1, -1),
+    this._light = new HemisphericLight(
+      "hemi",
+      new Vector3(0, 50, 0),
       this.scene
     );
-    this._light.shadowMaxZ = 130;
-    this._light.shadowMinZ = 10;
-    this._shadowGenerator = new ShadowGenerator(1024, this._light);
+    this._light.intensity = 0.6;
 
     // player construct
     this.LoadModelAsset().then((asset) => {
@@ -173,10 +172,10 @@ class WorldScene implements ICustomScene {
     mesh.scaling.setAll(0.8); // scale mesh
     mesh.parent = null; // remove parent after extracting
 
-    this._shadowGenerator.addShadowCaster(mesh, true);
-    for (let i = 0; i < meshes.length; i++) {
-      meshes[i].receiveShadows = false;
-    }
+    // this._shadowGenerator.addShadowCaster(mesh, true);
+    // for (let i = 0; i < meshes.length; i++) {
+    //   meshes[i].receiveShadows = false;
+    // }
 
     const asset: PlayerAsset = {
       mesh,

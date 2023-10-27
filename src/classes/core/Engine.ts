@@ -43,6 +43,7 @@ class Engine {
       this._canvas,
       undefined
     );
+
     //this._babylonEngine.displayLoadingUI();
     this._sceneStateMachine = new SceneStateMachine(
       this,
