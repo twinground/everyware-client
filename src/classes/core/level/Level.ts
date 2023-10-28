@@ -5,23 +5,13 @@ import {
   SceneLoader,
   ActionManager,
   Mesh,
-  Texture,
   Quaternion,
-  StandardMaterial,
   Vector3,
   EnvironmentHelper,
-  Animation,
   SpotLight,
   PBRMaterial,
 } from "@babylonjs/core";
-import {
-  AdvancedDynamicTexture,
-  StackPanel,
-  Control,
-  Slider,
-  Image,
-  ImageBasedSlider,
-} from "@babylonjs/gui";
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
 import Player from "../player/Player";
 import WorldScene from "../scene/WorldScene";
@@ -39,6 +29,7 @@ class Level {
   public spotLight: SpotLight;
   public cameraExposure: number;
   public isDarkMode: boolean = false;
+  public pbrMaterial: PBRMaterial;
 
   constructor(
     public scene: Scene,
@@ -46,22 +37,27 @@ class Level {
     public player: Player,
     readonly worldScene: WorldScene
   ) {
+    // field overwrite
     this.scene = scene;
     this.player = player;
 
+    // environment setup
     this.cameraExposure = 0.6;
     this.environment = this.scene.createDefaultEnvironment({
-      // groundSize: 100,
-      // enableGroundMirror: true,
-      // groundMirrorFallOffDistance: 4,
-      // groundColor: new Color3(0, 0, 0),
-      // groundMirrorBlurKernel: 1,
-      // groundMirrorSizeRatio: 1,
+      groundSize: 100,
+      groundColor: new Color3(0, 0, 0),
       enableGroundShadow: true,
     });
 
     this.environment.setMainColor(ENV_COLOR);
 
+    // PBR material
+    this.pbrMaterial = new PBRMaterial("reflectional-mat", this.scene);
+    this.pbrMaterial.metallic = 0.0;
+    this.pbrMaterial.roughness = 0;
+    this.pbrMaterial.subSurface.isRefractionEnabled = true;
+
+    // collision area
     this._collisionArea = MeshBuilder.CreateBox(
       "AVAILABLE_RANGE_TO_VIEW",
       { width: 2, height: 2, depth: 2 },
@@ -71,32 +67,25 @@ class Level {
     this._collisionArea.visibility = 0;
     this._collisionArea.position.set(0, 0.3, -5);
 
-    const ground = MeshBuilder.CreateGround(
-      "ground-mesh",
-      {
-        width: 50,
-        height: 50,
-      },
-      this.scene
-    );
-
+    // lighting
     this.spotLight = new SpotLight(
       "spot-light",
-      new Vector3(0, 0, -5),
-      new Vector3(0, 1, 0),
+      new Vector3(0, 1, -4.5),
+      new Vector3(0, 1, -0.1),
       Math.PI,
       1,
       this.scene
     );
-    // this.spotLight.diffuse = new Color3(255 / 255, 240 / 255, 197 / 255);
-    this.spotLight.diffuse = Color3.Yellow();
+    this.spotLight.diffuse = new Color3(255 / 255, 240 / 255, 197 / 255);
+    this.spotLight.shadowEnabled = true;
     this.spotLight.intensity = 0.5;
 
-    this.Load().then(() => {
+    this.LoadMeshes().then(() => {
       // create view mode button (async)
       this.worldScene.CreateViewButton(this._collisionArea);
     });
 
+    // dark mode slider UI
     const modeSlider = document.querySelector(".slider");
     modeSlider.addEventListener("click", () => {
       let colorStep = 2;
@@ -115,42 +104,40 @@ class Level {
           boundedDarkModeCallback
         );
         this.isDarkMode = !this.isDarkMode;
-      }, 2125);
+      }, 2500);
     });
   }
 
-  public async Load() {
-    const chairGLB = await SceneLoader.ImportMeshAsync(
+  public async LoadMeshes() {
+    const monitorGLB = await SceneLoader.ImportMeshAsync(
       "",
       "./models/",
-      "chair.glb",
+      "monitor.glb",
       this.scene
     );
 
-    const chairMesh = chairGLB.meshes[0];
-    const monalisaMaterial = new StandardMaterial("test mat", this.scene);
-    const monalisaTexture = new Texture("/images/monalisa.png", this.scene);
-    monalisaMaterial.diffuseTexture = monalisaTexture;
-    const panel = MeshBuilder.CreateBox(
-      "test exhibit",
-      { width: 1.5, height: 1.5, depth: 0.3 },
-      this.scene
+    const moniotrMesh = monitorGLB.meshes[0];
+    moniotrMesh.rotationQuaternion = Quaternion.FromEulerAngles(
+      0,
+      -Math.PI / 2,
+      0
     );
-    const background = MeshBuilder.CreateBox(
-      "test background",
+
+    const shelf = MeshBuilder.CreateBox(
+      "shelf",
       {
-        width: 1.5,
-        height: 2.5,
-        depth: 0.29,
+        width: 0.6,
+        height: 0.7,
+        depth: 0.6,
       },
       this.scene
     );
-    panel.material = monalisaMaterial;
-    panel.rotate(new Vector3(0, 0, 1), Math.PI);
-    background.position.set(0, 1.5, -7.5);
-    panel.parent = background;
+    shelf.position.y += 0.2;
+    shelf.material = this.pbrMaterial;
 
-    chairMesh.parent = this._collisionArea;
+    moniotrMesh.parent = shelf;
+    moniotrMesh.position.y += 0.4;
+    shelf.parent = this._collisionArea;
   }
 
   public ConvertToColorMode(

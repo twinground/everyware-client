@@ -1,7 +1,7 @@
 import { AnimationGroup, AbstractMesh } from "@babylonjs/core";
 import {
   IdleState,
-  SitState,
+  PreviewState,
   WalkBackState,
   WalkState,
 } from "../classes/core/player/animations/AnimStates";
@@ -29,19 +29,12 @@ export type StateMap = {
   idle: IdleState;
   walk: WalkState;
   walkBack: WalkBackState;
-  sit: SitState;
+  preview: PreviewState;
 };
 
 export type PlayerAnimations = {
-  clap: AnimationGroup;
   idle: AnimationGroup;
-  sitDown: AnimationGroup;
-  sitting: AnimationGroup;
-  standUp: AnimationGroup;
   thumbsUp: AnimationGroup;
-  turnBack: AnimationGroup;
-  turnLeft: AnimationGroup;
-  turnRight: AnimationGroup;
   walkBack: AnimationGroup;
   walkFor: AnimationGroup;
 };

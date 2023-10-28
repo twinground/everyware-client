@@ -16,7 +16,7 @@ export function createButton(
   viewButton.alpha = 0.7;
   viewButton.linkWithMesh(linkMesh);
   viewButton.linkOffsetY = -85;
-  viewButton.linkOffsetX = 70;
+  viewButton.linkOffsetX = 90;
 
   return viewButton;
 }

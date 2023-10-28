@@ -101,8 +101,6 @@ class SceneStateMachine implements ISceneStateMachine {
         const localPlayer = this._worldScene.LocalPlayer;
         localPlayer.Controller.UpdateViewMode(false);
         this._worldScene.isViewing = false;
-        localPlayer.CurAnim = localPlayer.Animations.standUp;
-        localPlayer.SendTransformPacket();
         localPlayer.CurAnim = localPlayer.Animations.idle;
         localPlayer.SendTransformPacket();
         localPlayer.ZoomOutFollowCam();

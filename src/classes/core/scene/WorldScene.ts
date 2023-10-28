@@ -12,7 +12,8 @@ import {
   ActionManager,
   HemisphericLight,
 } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button, Image } from "@babylonjs/gui";
+import * as LOADER from "@babylonjs/loaders";
+import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
 // class
 import Level from "../level/Level";
@@ -153,7 +154,9 @@ class WorldScene implements ICustomScene {
     this._viewButtons = [];
     this._isViewing = false;
 
+    // TODO : Use this debuggers only for development
     this.SetGizmoInteraction();
+    this.SetInpsector();
   }
 
   /**
@@ -161,10 +164,11 @@ class WorldScene implements ICustomScene {
    * @returns asset
    */
   public async LoadModelAsset() {
+    //this._gltf2Loader.loadAsync(this.scene, "./models/character2.glb")
     const { meshes, animationGroups } = await SceneLoader.ImportMeshAsync(
       "",
       "./models/",
-      "player.glb",
+      "character2.glb",
       this.scene
     );
 
@@ -179,7 +183,7 @@ class WorldScene implements ICustomScene {
 
     const asset: PlayerAsset = {
       mesh,
-      animationGroups: animationGroups.slice(1),
+      animationGroups: animationGroups.slice(2),
     };
 
     return asset;
@@ -212,12 +216,6 @@ class WorldScene implements ICustomScene {
     // view mode event
     viewButton.onPointerClickObservable.add(() => {
       this._isViewing = true;
-      this._player.Mesh.position = linkMesh.position
-        .clone()
-        .addInPlace(new Vector3(0, -0.3, 0));
-      this._player.Mesh.rotationQuaternion = linkMesh
-        .getChildMeshes()[0]
-        .rotationQuaternion.clone();
 
       // fade out scene
       this._sceneMachine.UpdateMachine(1); // 1 : PreviewScene
@@ -225,9 +223,7 @@ class WorldScene implements ICustomScene {
       this._player.ZoomInFollowCam();
       // start animation and change anim state.
       this._player.Controller.UpdateViewMode(true);
-      this._player.CurAnim = this._player.Animations.sitDown;
-      this._player.SendTransformPacket();
-      this._player.CurAnim = this._player.Animations.sitting;
+      this._player.CurAnim = this._player.Animations.thumbsUp;
       this._player.SendTransformPacket();
 
       viewButton.isVisible = false;
@@ -240,15 +236,15 @@ class WorldScene implements ICustomScene {
       ) {
         viewButton.isVisible = true;
 
-        for (let child of linkMesh.getChildMeshes()) {
+        for (let child of linkMesh.getChildMeshes().slice(1)) {
           child.outlineColor = OUTLINE_COLOR;
-          child.outlineWidth = 0.08;
+          child.outlineWidth = 0.02;
           child.renderOutline = true;
         }
       } else {
         viewButton.isVisible = false;
 
-        for (let child of linkMesh.getChildMeshes()) {
+        for (let child of linkMesh.getChildMeshes().slice(1)) {
           child.renderOutline = false;
         }
       }
@@ -257,6 +253,9 @@ class WorldScene implements ICustomScene {
     this._viewButtons.push(viewButton);
   }
 
+  /**
+   * Mesh debugger with gizmo manager
+   */
   public SetGizmoInteraction() {
     this.scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
@@ -282,6 +281,20 @@ class WorldScene implements ICustomScene {
               this._gizman.rotationGizmoEnabled = true;
               break;
           }
+        }
+      })
+    );
+  }
+
+  /**
+   * set babylon inspector
+   */
+  public SetInpsector() {
+    this.scene.actionManager.registerAction(
+      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+        let key = evt.sourceEvent.key;
+        if (key == "D") {
+          this.scene.debugLayer.show({ embedMode: true });
         }
       })
     );
