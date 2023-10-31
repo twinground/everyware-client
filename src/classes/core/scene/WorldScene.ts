@@ -5,31 +5,30 @@ import {
   ShadowGenerator,
   Color3,
   Vector3,
-  DirectionalLight,
   Mesh,
   GizmoManager,
   ExecuteCodeAction,
   ActionManager,
   HemisphericLight,
 } from "@babylonjs/core";
-import * as LOADER from "@babylonjs/loaders";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
-import ICustomScene from "../../../interfaces/ICustomScene";
+import { Inspector } from "@babylonjs/inspector";
 // class
 import Level from "../level/Level";
 import Player from "../player/Player";
 import Engine from "../Engine";
+import Socket from "../../network/SocketClient";
+import RemotePlayer from "../player/RemotePlayer";
+import { createButton } from "../ui/ViewButton";
+import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
 // type
+import ICustomScene from "../../../interfaces/ICustomScene";
 import { PlayerAsset } from "../../../types/PlayerType";
 import {
   IConnection,
   IDisconnection,
   ITransform,
 } from "../../../interfaces/IPacket";
-import Socket from "../../network/SocketClient";
-import RemotePlayer from "../player/RemotePlayer";
-import { createButton } from "../ui/ViewButton";
-import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
 
@@ -294,7 +293,7 @@ class WorldScene implements ICustomScene {
       new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
         let key = evt.sourceEvent.key;
         if (key == "D") {
-          this.scene.debugLayer.show({ embedMode: true });
+          Inspector.Show(this.scene, { embedMode: true });
         }
       })
     );

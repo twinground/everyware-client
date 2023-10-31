@@ -44,8 +44,6 @@ class Level {
     // environment setup
     this.cameraExposure = 0.6;
     this.environment = this.scene.createDefaultEnvironment({
-      groundSize: 100,
-      groundColor: new Color3(0, 0, 0),
       enableGroundShadow: true,
     });
 
@@ -53,8 +51,8 @@ class Level {
 
     // PBR material
     this.pbrMaterial = new PBRMaterial("reflectional-mat", this.scene);
-    this.pbrMaterial.metallic = 0.0;
-    this.pbrMaterial.roughness = 0;
+    this.pbrMaterial.metallic = 0;
+    this.pbrMaterial.roughness = 1;
     this.pbrMaterial.subSurface.isRefractionEnabled = true;
 
     // collision area
@@ -76,7 +74,7 @@ class Level {
       1,
       this.scene
     );
-    this.spotLight.diffuse = new Color3(255 / 255, 240 / 255, 197 / 255);
+    this.spotLight.diffuse = Color3.Yellow();
     this.spotLight.shadowEnabled = true;
     this.spotLight.intensity = 0.5;
 
@@ -90,7 +88,7 @@ class Level {
     modeSlider.addEventListener("click", () => {
       let colorStep = 2;
       let exposureStep = 0.003;
-      let intensityStep = 0.01;
+      let intensityStep = 0.05;
       const boundedDarkModeCallback = this.ConvertToColorMode.bind(
         this,
         mainColor,
@@ -109,6 +107,15 @@ class Level {
   }
 
   public async LoadMeshes() {
+    const boothGLB = await SceneLoader.ImportMeshAsync(
+      "",
+      "./models/",
+      "booth.glb",
+      this.scene
+    );
+    const boothMesh = boothGLB.meshes[0];
+    boothMesh.scaling.setAll(0.5);
+
     const monitorGLB = await SceneLoader.ImportMeshAsync(
       "",
       "./models/",
@@ -135,6 +142,16 @@ class Level {
     shelf.position.y += 0.2;
     shelf.material = this.pbrMaterial;
 
+    const ground = MeshBuilder.CreateGround(
+      "ground-mesh",
+      {
+        width: 50,
+        height: 50,
+      },
+      this.scene
+    );
+    ground.material = this.pbrMaterial;
+
     moniotrMesh.parent = shelf;
     moniotrMesh.position.y += 0.4;
     shelf.parent = this._collisionArea;
@@ -157,8 +174,9 @@ class Level {
         mainColor.b -= colorStep;
       }
 
-      if (this.spotLight.intensity < 2.5) {
-        this.spotLight.intensity += intensityStep;
+      if (this.spotLight.intensity < 5.0) {
+        //this.spotLight.intensity += intensityStep;
+        this.spotLight.intensity = 20;
       }
 
       if (this.cameraExposure > 0.2) {
