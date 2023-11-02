@@ -83,7 +83,7 @@ class Player extends TransformNode {
     );
     this._followCamera.radius = 5.5;
     this._followCamera.rotationOffset = 180;
-    this._followCamera.heightOffset = 2.0;
+    this._followCamera.heightOffset = 1.0;
     this._followCamera.cameraAcceleration = 0.05; // control camera rotation speed
 
     // Universal camera configuration
@@ -101,18 +101,21 @@ class Player extends TransformNode {
     this.scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
         if (evt.sourceEvent.key == "Control") {
-          this.scene.activeCamera = this._arcRotCamera;
-          this._arcRotCamera.attachControl(
-            this.scene.getEngine().getRenderingCanvas(),
-            true
-          );
-        }
-      })
-    );
-    this.scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        if (evt.sourceEvent.key == "Control") {
-          this.scene.activeCamera = this._followCamera;
+          switch (this.scene.activeCamera.name) {
+            case "arc-rotate-cam": {
+              this.scene.activeCamera = this._followCamera;
+              this._followCamera.detachControl();
+              break;
+            }
+            case "follow-cam": {
+              this.scene.activeCamera = this._arcRotCamera;
+              this._arcRotCamera.attachControl(
+                this.scene.getEngine().getRenderingCanvas(),
+                true
+              );
+              break;
+            }
+          }
         }
       })
     );

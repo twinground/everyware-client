@@ -137,7 +137,7 @@ class WorldScene implements ICustomScene {
       new Vector3(0, 50, 0),
       this.scene
     );
-    this._light.intensity = 0.6;
+    this._light.intensity = 1;
 
     // player construct
     this.LoadModelAsset().then((asset) => {

@@ -10,6 +10,7 @@ import {
   EnvironmentHelper,
   SpotLight,
   PBRMaterial,
+  PointLight,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
@@ -110,11 +111,11 @@ class Level {
     const boothGLB = await SceneLoader.ImportMeshAsync(
       "",
       "./models/",
-      "booth.glb",
+      "booth-v3.glb",
       this.scene
     );
     const boothMesh = boothGLB.meshes[0];
-    boothMesh.scaling.setAll(0.5);
+    boothMesh.scaling.setAll(0.6);
 
     const monitorGLB = await SceneLoader.ImportMeshAsync(
       "",
