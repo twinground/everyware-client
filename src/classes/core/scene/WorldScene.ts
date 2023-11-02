@@ -56,6 +56,7 @@ class WorldScene implements ICustomScene {
     private _sceneMachine: ISceneStateMachine,
     public expoName: string
   ) {
+    this.TutorialOnboarding();
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
     this.scene.actionManager = new ActionManager();
@@ -312,6 +313,87 @@ class WorldScene implements ICustomScene {
 
   set isViewing(v: boolean) {
     this._isViewing = v;
+  }
+
+  /**
+   * Simple tutorial secene function
+   */
+  private TutorialOnboarding() {
+    const imgSources = [
+      "/images/monalisa.png",
+      "/images/night-mode.png",
+      "/images/monalisa.png",
+    ];
+
+    let textList = ["NEXT", "SKIP"];
+
+    const bodyElement = document.body;
+    const imgElement = document.createElement("img");
+    const switchElement = document.getElementsByClassName("switch");
+    const tutorialButton = [
+      document.createElement("div"),
+      document.createElement("div"),
+    ];
+
+    // Create nest, skip button
+    for (let i = 0; i < tutorialButton.length; i++) {
+      tutorialButton[i].classList.add("tutorial-button");
+      tutorialButton[i].textContent = textList[i];
+      tutorialButton[i].style.right = `${130 - i * 100}px`;
+      bodyElement.appendChild(tutorialButton[i]);
+    }
+
+    switchElement[0].classList.add("hidden");
+
+    // set img source
+    imgElement.src = imgSources[0]; // 이미지 파일 경로를 지정
+    imgElement.style.width = "100%";
+    imgElement.style.height = "100%";
+    imgElement.style.zIndex = "10";
+    imgElement.style.position = "relative";
+
+    // append img to body
+    bodyElement.appendChild(imgElement);
+    bodyElement.prepend(imgElement);
+
+    //add event listener
+    let flag = 1;
+    tutorialButton[0].addEventListener("click", () => {
+      if (flag < 3) {
+        this.ChangeImageSource(imgElement, imgSources[flag]);
+        flag += 1;
+      } else if (flag >= 3) {
+        this.SkipTutorialImg(switchElement, tutorialButton, imgElement);
+      }
+    });
+
+    tutorialButton[1].addEventListener("click", () => {
+      this.SkipTutorialImg(switchElement, tutorialButton, imgElement);
+    });
+  }
+
+  private ChangeImageSource(
+    imgElement: HTMLImageElement,
+    newSrc: string
+  ): void {
+    imgElement.style.transition = "opacity 0.5s";
+    imgElement.style.opacity = "0";
+    setTimeout(function () {
+      imgElement.src = newSrc;
+      imgElement.style.transition = "opacity 0.5s";
+      imgElement.style.opacity = "1";
+    }, 500);
+  }
+
+  private SkipTutorialImg(switchElement, tutorialButton, imgElement) {
+    switchElement[0].classList.remove("hidden");
+    imgElement.style.transition = "opacity 0.5s";
+    imgElement.style.opacity = "0";
+    setTimeout(function () {
+      imgElement.remove();
+      tutorialButton[0].remove();
+      tutorialButton[1].remove();
+    }, 500);
   }
 }
 
