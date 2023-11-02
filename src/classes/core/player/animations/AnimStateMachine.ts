@@ -2,7 +2,7 @@
 import {
   AnimState,
   IdleState,
-  SitState,
+  PreviewState,
   WalkBackState,
   WalkState,
 } from "./AnimStates";
@@ -24,7 +24,7 @@ export default class AnimStateMachine implements IAnimStateMachine {
       idle: new IdleState(player),
       walk: new WalkState(player),
       walkBack: new WalkBackState(player),
-      sit: new SitState(player),
+      preview: new PreviewState(player),
     };
 
     this._curState = this._stateMap.idle;
@@ -34,7 +34,6 @@ export default class AnimStateMachine implements IAnimStateMachine {
     if (this._curState.State == nextState) {
       return;
     }
-
     this._curState.Transition(nextState); // transition current state to next state
     this._curState = this._stateMap[nextState]; // set next state to current
   }
@@ -47,7 +46,7 @@ export default class AnimStateMachine implements IAnimStateMachine {
         } else if (inputSys.inputs.s || inputSys.inputs.ㄴ) {
           this.Transition("walkBack");
         } else if (inputSys.inputs.view) {
-          this.Transition("sit");
+          this.Transition("preview");
         }
         break;
       }
@@ -73,8 +72,8 @@ export default class AnimStateMachine implements IAnimStateMachine {
         }
         break;
       }
-      case "sit": {
-        if (inputSys.inputs.w || inputSys.inputs.s) {
+      case "preview": {
+        if (!inputSys.inputs.view) {
           this.Transition("idle");
         }
         break;

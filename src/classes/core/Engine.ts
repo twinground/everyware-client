@@ -11,7 +11,6 @@ import Socket from "../network/SocketClient";
 // interface
 import SceneStateMachine from "./scene/SceneStateMachine";
 import { ISceneStateMachine } from "../../interfaces/IStateMachine";
-import { IConnection } from "../../interfaces/IPacket";
 
 class Engine {
   private _sceneStateMachine: ISceneStateMachine;
@@ -28,9 +27,10 @@ class Engine {
    * private methods
    */
   private CreateCanvas() {
+    const canvasZone = document.getElementById("CanvasZone");
     this._canvas = document.createElement("canvas");
     this._canvas.id = "RenderCanvas";
-    document.body.appendChild(this._canvas);
+    canvasZone.appendChild(this._canvas);
   }
 
   // TODO : remember last player's position when a user finishs preview
@@ -43,6 +43,7 @@ class Engine {
       this._canvas,
       undefined
     );
+
     //this._babylonEngine.displayLoadingUI();
     this._sceneStateMachine = new SceneStateMachine(
       this,
@@ -89,7 +90,7 @@ class Engine {
         "uniform float fadeLevel; " +
         "void main(void){" +
         "vec4 baseColor = texture2D(textureSampler, vUV) * fadeLevel;" +
-        "baseColor.a = 0.0;" +
+        "baseColor.a = 1.0;" +
         "gl_FragColor = baseColor;" +
         "}"
     );

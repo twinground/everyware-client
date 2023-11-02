@@ -1,5 +1,3 @@
-import type { IAnimState } from "../../../../interfaces/IStateMachine";
-import type InputSystem from "../InputSystem";
 import Player from "../Player";
 
 export class AnimState {
@@ -28,27 +26,15 @@ export class IdleState extends AnimState {
 
   Transition(nextState: string): void {
     switch (nextState) {
-      case "sit": {
+      case "preview": {
         this.player.scene.stopAllAnimations();
-        this.player.scene.onBeforeRenderObservable
-          .runCoroutineAsync(
-            this.player.AnimationBlending(
-              this.player.Animations.sitDown,
-              this.player.Animations.idle,
-              0.05
-            )
+        this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+          this.player.AnimationBlending(
+            this.player.Animations.thumbsUp,
+            this.player.Animations.idle,
+            0.05
           )
-          .then(() => {
-            this.player.scene.stopAllAnimations();
-            this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
-              this.player.AnimationBlending(
-                this.player.Animations.sitting,
-                this.player.Animations.sitDown,
-                0.05
-              )
-            );
-          });
-
+        );
         break;
       }
       case "walk": {
@@ -74,6 +60,7 @@ export class IdleState extends AnimState {
             0.05
           )
         );
+        break;
       }
     }
   }
@@ -137,14 +124,31 @@ export class WalkBackState extends AnimState {
   }
 }
 
-export class SitState extends AnimState {
+export class PreviewState extends AnimState {
   constructor(public player: Player) {
     super(player);
 
-    this._state = "sit";
+    this._state = "preview";
   }
 
-  Transition(nextState: string): void {}
+  Transition(nextState: string): void {
+    switch (nextState) {
+      case "idle":
+        this.player.scene.stopAllAnimations();
+        this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
+          this.player.AnimationBlending(
+            this.player.Animations.thumbsUp,
+            this.player.Animations.idle,
+            0.05
+          )
+        );
+        break;
+
+      default:
+        console.log("impossible anim state transition");
+        break;
+    }
+  }
 }
 
 // TODO : less important. implement later
@@ -155,5 +159,5 @@ export class Talking extends AnimState {
     this._state = "talk";
   }
 
-  Transition(nextState: string): void {}
+  Transition(_nextState: string): void {}
 }

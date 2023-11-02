@@ -81,9 +81,9 @@ class Player extends TransformNode {
       this.scene,
       this._mesh
     );
-    this._followCamera.radius = 7;
+    this._followCamera.radius = 5.5;
     this._followCamera.rotationOffset = 180;
-    this._followCamera.heightOffset = 5;
+    this._followCamera.heightOffset = 1.0;
     this._followCamera.cameraAcceleration = 0.05; // control camera rotation speed
 
     // Universal camera configuration
@@ -101,19 +101,21 @@ class Player extends TransformNode {
     this.scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
         if (evt.sourceEvent.key == "Control") {
-          console.log("on");
-          this.scene.activeCamera = this._arcRotCamera;
-          this._arcRotCamera.attachControl(
-            this.scene.getEngine().getRenderingCanvas(),
-            true
-          );
-        }
-      })
-    );
-    this.scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        if (evt.sourceEvent.key == "Control") {
-          this.scene.activeCamera = this._followCamera;
+          switch (this.scene.activeCamera.name) {
+            case "arc-rotate-cam": {
+              this.scene.activeCamera = this._followCamera;
+              this._followCamera.detachControl();
+              break;
+            }
+            case "follow-cam": {
+              this.scene.activeCamera = this._arcRotCamera;
+              this._arcRotCamera.attachControl(
+                this.scene.getEngine().getRenderingCanvas(),
+                true
+              );
+              break;
+            }
+          }
         }
       })
     );
@@ -124,30 +126,16 @@ class Player extends TransformNode {
     // store animation assets
     this.scene.stopAllAnimations();
     // re-assign animation names by its key
-    asset.animationGroups[0].name = "clap";
-    asset.animationGroups[1].name = "idle";
-    asset.animationGroups[2].name = "sitDown";
-    asset.animationGroups[3].name = "sitting";
-    asset.animationGroups[4].name = "standUp";
-    asset.animationGroups[5].name = "thumbsUp";
-    asset.animationGroups[6].name = "turnBack";
-    asset.animationGroups[7].name = "turnLeft";
-    asset.animationGroups[8].name = "turnRight";
-    asset.animationGroups[9].name = "walkBack";
-    asset.animationGroups[10].name = "walkFor";
+    asset.animationGroups[0].name = "idle";
+    asset.animationGroups[1].name = "thumbsUp";
+    asset.animationGroups[2].name = "walkBack";
+    asset.animationGroups[3].name = "walkFor";
     // store animation asset by key
     this._animations = {
-      clap: asset.animationGroups[0],
-      idle: asset.animationGroups[1],
-      sitDown: asset.animationGroups[2],
-      sitting: asset.animationGroups[3],
-      standUp: asset.animationGroups[4],
-      thumbsUp: asset.animationGroups[5],
-      turnBack: asset.animationGroups[6],
-      turnLeft: asset.animationGroups[7],
-      turnRight: asset.animationGroups[8],
-      walkBack: asset.animationGroups[9],
-      walkFor: asset.animationGroups[10],
+      idle: asset.animationGroups[0],
+      thumbsUp: asset.animationGroups[1],
+      walkBack: asset.animationGroups[2],
+      walkFor: asset.animationGroups[3],
     };
     // play idle animation as an initial animation
     this._animations.idle.play(true);
@@ -164,6 +152,7 @@ class Player extends TransformNode {
     let nextWeight = 0;
 
     to.play(true); // play next animation first
+    this._curAnim = to;
 
     while (nextWeight < 1) {
       curWeight -= ratio; // decrement current animation weight by given ratio
@@ -199,6 +188,15 @@ class Player extends TransformNode {
     this._followCamera.setTarget(newTargetPosition);
     this._followCamera.heightOffset = 0.5;
     this._followCamera.radius = 0;
+  }
+
+  // Zoom out
+  public ZoomOutFollowCam() {
+    this._followCamera.radius = 7;
+    this._followCamera.rotationOffset = 180;
+    this._followCamera.heightOffset = 5;
+    this._followCamera.cameraAcceleration = 0.05;
+    this._followCamera.lockedTarget = this._mesh;
   }
 
   // publish Transform Packet

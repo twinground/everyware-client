@@ -30,7 +30,7 @@ export default class PlayerController {
     });
   }
 
-  UpdateViewMode() {
+  UpdateViewMode(value: boolean) {
     if (!this._player) {
       return;
     }
@@ -38,7 +38,7 @@ export default class PlayerController {
     /**
      * State Machine update
      */
-    this._inputSystem.inputs.view = true;
+    this._inputSystem.inputs.view = value;
     this._animStateMachine.UpdateMachine(this._inputSystem);
   }
 
@@ -76,12 +76,10 @@ export default class PlayerController {
 
     //product deltaTime to move character according to device frame rate
     if (this._inputSystem.inputs.w || this._inputSystem.inputs.ㅈ) {
-      this._player.CurAnim = this._player.Animations.walkFor;
       this._isTransformUpdated = true;
       velocity.z += acc.z * deltaTime;
     }
     if (this._inputSystem.inputs.s || this._inputSystem.inputs.ㄴ) {
-      this._player.CurAnim = this._player.Animations.walkBack;
       this._isTransformUpdated = true;
       velocity.z -= acc.z * deltaTime;
     }
