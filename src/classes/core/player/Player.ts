@@ -186,15 +186,15 @@ class Player extends TransformNode {
     newTargetPosition.y += 2;
     this._followCamera.cameraAcceleration = 0.012;
     this._followCamera.setTarget(newTargetPosition);
-    this._followCamera.heightOffset = 0.5;
+    this._followCamera.heightOffset = 3.0;
     this._followCamera.radius = 0;
   }
 
   // Zoom out
   public ZoomOutFollowCam() {
-    this._followCamera.radius = 7;
+    this._followCamera.radius = 5.5;
     this._followCamera.rotationOffset = 180;
-    this._followCamera.heightOffset = 5;
+    this._followCamera.heightOffset = 1.9;
     this._followCamera.cameraAcceleration = 0.05;
     this._followCamera.lockedTarget = this._mesh;
   }

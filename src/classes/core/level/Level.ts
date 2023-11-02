@@ -2,20 +2,24 @@ import {
   MeshBuilder,
   Scene,
   Color3,
-  SceneLoader,
   ActionManager,
   Mesh,
   Quaternion,
   Vector3,
   EnvironmentHelper,
-  SpotLight,
   PBRMaterial,
-  PointLight,
+  TransformNode,
+  Texture,
+  PBRBaseMaterial,
+  StandardMaterial,
+  NoiseProceduralTexture,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
 import Player from "../player/Player";
 import WorldScene from "../scene/WorldScene";
+import Booth from "./Booth";
+import { TextureHelper } from "@babylonjs/inspector/textureHelper";
 
 const ENV_COLOR = new Color3(255 / 255, 240 / 255, 197 / 255);
 const mainColor = {
@@ -25,12 +29,13 @@ const mainColor = {
 };
 
 class Level {
-  private _collisionArea: Mesh;
+  /* mesh */
   public environment: EnvironmentHelper;
-  public spotLight: SpotLight;
+  private rootBooth: Booth;
+  private _booths: Booth[] = [];
+  /* config */
   public cameraExposure: number;
   public isDarkMode: boolean = false;
-  public pbrMaterial: PBRMaterial;
 
   constructor(
     public scene: Scene,
@@ -39,62 +44,32 @@ class Level {
     readonly worldScene: WorldScene
   ) {
     // field overwrite
-    this.scene = scene;
+    this.scene = worldScene.scene;
     this.player = player;
 
     // environment setup
     this.cameraExposure = 0.6;
     this.environment = this.scene.createDefaultEnvironment({
+      skyboxSize: 200,
       enableGroundShadow: true,
+      sizeAuto: false,
+      rootPosition: new Vector3(0, -1, -50),
     });
-
     this.environment.setMainColor(ENV_COLOR);
 
-    // PBR material
-    this.pbrMaterial = new PBRMaterial("reflectional-mat", this.scene);
-    this.pbrMaterial.metallic = 0;
-    this.pbrMaterial.roughness = 1;
-    this.pbrMaterial.subSurface.isRefractionEnabled = true;
-
-    // collision area
-    this._collisionArea = MeshBuilder.CreateBox(
-      "AVAILABLE_RANGE_TO_VIEW",
-      { width: 2, height: 2, depth: 2 },
-      this.scene
-    );
-    this._collisionArea.actionManager = new ActionManager(this.scene);
-    this._collisionArea.visibility = 0;
-    this._collisionArea.position.set(0, 0.3, -5);
-
-    // lighting
-    this.spotLight = new SpotLight(
-      "spot-light",
-      new Vector3(0, 1, -4.5),
-      new Vector3(0, 1, -0.1),
-      Math.PI,
-      1,
-      this.scene
-    );
-    this.spotLight.diffuse = Color3.Yellow();
-    this.spotLight.shadowEnabled = true;
-    this.spotLight.intensity = 0.5;
-
-    this.LoadMeshes().then(() => {
-      // create view mode button (async)
-      this.worldScene.CreateViewButton(this._collisionArea);
-    });
+    // Load all mesh in this level
+    this.LoadMeshes();
 
     // dark mode slider UI
     const modeSlider = document.querySelector(".slider");
     modeSlider.addEventListener("click", () => {
       let colorStep = 2;
       let exposureStep = 0.003;
-      let intensityStep = 0.05;
-      const boundedDarkModeCallback = this.ConvertToColorMode.bind(
+      //let intensityStep = 0.05;
+      const boundedDarkModeCallback = this.ConvertColorMode.bind(
         this,
         mainColor,
         colorStep,
-        intensityStep,
         exposureStep
       );
       this.scene.onBeforeRenderObservable.add(boundedDarkModeCallback);
@@ -108,60 +83,47 @@ class Level {
   }
 
   public async LoadMeshes() {
-    const boothGLB = await SceneLoader.ImportMeshAsync(
-      "",
-      "./models/",
-      "booth-v3.glb",
-      this.scene
-    );
-    const boothMesh = boothGLB.meshes[0];
-    boothMesh.scaling.setAll(0.6);
-
-    const monitorGLB = await SceneLoader.ImportMeshAsync(
-      "",
-      "./models/",
-      "monitor.glb",
-      this.scene
+    this.rootBooth = new Booth(this.worldScene);
+    await this.rootBooth.LoadBooth(
+      new Vector3(6.5, 0, -9),
+      Quaternion.FromEulerAngles(0, 2 * Math.PI, 0)
     );
 
-    const moniotrMesh = monitorGLB.meshes[0];
-    moniotrMesh.rotationQuaternion = Quaternion.FromEulerAngles(
-      0,
-      -Math.PI / 2,
-      0
-    );
+    //left side booths
+    for (let i = 2; i < 5; i++) {
+      const newBoothInstance = this.rootBooth.rootMesh.instantiateHierarchy();
+      const newBooth = new Booth(this.worldScene, newBoothInstance);
+      newBooth.SetPosition(6.5, 0, -9 * i);
+      newBooth.SetCollisions(newBooth.rootMesh);
+      this._booths.push(newBooth);
+    }
 
-    const shelf = MeshBuilder.CreateBox(
-      "shelf",
-      {
-        width: 0.6,
-        height: 0.7,
-        depth: 0.6,
-      },
-      this.scene
-    );
-    shelf.position.y += 0.2;
-    shelf.material = this.pbrMaterial;
+    //right side booths
+    for (let i = 1; i < 5; i++) {
+      const newBoothInstance = this.rootBooth.rootMesh.instantiateHierarchy();
+      const newBooth = new Booth(this.worldScene, newBoothInstance);
+      newBooth.SetPosition(-6.5, 0, -9 * i);
+      newBooth.SetRotationQuat(Quaternion.FromEulerAngles(0, Math.PI, 0));
+      newBooth.SetCollisions(newBooth.rootMesh);
+      this._booths.push(newBooth);
+    }
 
     const ground = MeshBuilder.CreateGround(
       "ground-mesh",
       {
         width: 50,
-        height: 50,
+        height: 100,
       },
       this.scene
     );
-    ground.material = this.pbrMaterial;
-
-    moniotrMesh.parent = shelf;
-    moniotrMesh.position.y += 0.4;
-    shelf.parent = this._collisionArea;
+    ground.position.z -= 50; // Adjust position to center the ground mesh
+    // ground.material = groundMat;
   }
 
-  public ConvertToColorMode(
+  public ConvertColorMode(
     mainColor: { r: number; g: number; b: number },
     colorStep: number,
-    intensityStep: number,
+    //intensityStep: number,
     exposureStep: number
   ) {
     if (this.isDarkMode == false) {
@@ -173,11 +135,6 @@ class Level {
       }
       if (mainColor.b > 10.0) {
         mainColor.b -= colorStep;
-      }
-
-      if (this.spotLight.intensity < 5.0) {
-        //this.spotLight.intensity += intensityStep;
-        this.spotLight.intensity = 20;
       }
 
       if (this.cameraExposure > 0.2) {
@@ -198,10 +155,6 @@ class Level {
       }
       if (mainColor.b < 197.0) {
         mainColor.b += colorStep;
-      }
-
-      if (this.spotLight.intensity > 0.5) {
-        this.spotLight.intensity -= intensityStep;
       }
 
       if (this.cameraExposure < 0.7) {

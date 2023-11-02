@@ -5,7 +5,7 @@ export function createButton(
   linkMesh: Mesh,
   advancedTexture: AdvancedDynamicTexture
 ): Button {
-  const viewButton = Button.CreateSimpleButton("view-button", "관람하기");
+  const viewButton = Button.CreateSimpleButton("view-button", "체험하기");
   advancedTexture.addControl(viewButton);
 
   viewButton.isVisible = false;
