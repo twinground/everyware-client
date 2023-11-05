@@ -104,7 +104,7 @@ input:checked + .slider:before {
 
 .tutorial-button {
   position: fixed;
-  background-color: #3498db;
+  background-color: rgb(125, 81, 12);
   width: 40px;
   height: 20px;
   z-index: 10;
@@ -124,7 +124,7 @@ input:checked + .slider:before {
 }
 
 .tutorial-button:hover {
-  background-color: #2980b9;
+  background-color: #745a0c;
 }
 
 .background {

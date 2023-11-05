@@ -437,13 +437,13 @@ class WorldScene implements ICustomScene {
     backgroundElement: HTMLImageElement,
     newSrc: string
   ): void {
-    backgroundElement.style.transition = "opacity 0.5s";
-    backgroundElement.style.opacity = "0";
+    //backgroundElement.style.transition = "opacity 0.5s";
+    //backgroundElement.style.opacity = "0";
     setTimeout(function () {
       backgroundElement.src = newSrc;
-      backgroundElement.style.transition = "opacity 0.5s";
-      backgroundElement.style.opacity = "1";
-    }, 500);
+      //backgroundElement.style.transition = "opacity 0.5s";
+      //backgroundElement.style.opacity = "1";
+    }, 0);
   }
 
   private SkipTutorialImg(
@@ -460,7 +460,7 @@ class WorldScene implements ICustomScene {
       tutorialButton[0].remove();
       tutorialButton[1].remove();
       tutorialContainer.remove();
-    }, 500);
+    }, 0);
   }
 }
 
