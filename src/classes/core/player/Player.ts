@@ -12,6 +12,9 @@ import {
   TargetCamera,
   ExecuteCodeAction,
   ActionManager,
+  Skeleton,
+  Mesh,
+  MeshBuilder,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -22,6 +25,7 @@ import { ITransform } from "../../../interfaces/IPacket";
 class Player extends TransformNode {
   private _socket: Socket;
   private _mesh: AbstractMesh;
+  private _headMesh: AbstractMesh;
   private _arcRotCamera: ArcRotateCamera;
   private _followCamera: FollowCamera;
   private _universalCamera: UniversalCamera;
@@ -47,6 +51,9 @@ class Player extends TransformNode {
      */
     this._mesh = asset.mesh;
     this._mesh.parent = this;
+    this._headMesh = new AbstractMesh("player-head-abstract-mesh", this.scene);
+    this._headMesh.parent = this._mesh;
+    this._headMesh.position.y += 1.5;
 
     /**
      * ----- Player controller -----
@@ -192,10 +199,10 @@ class Player extends TransformNode {
 
   // Zoom out
   public ZoomOutFollowCam() {
-    this._followCamera.radius = 5.5;
+    this._followCamera.radius = 2.5;
     this._followCamera.rotationOffset = 180;
-    this._followCamera.heightOffset = 1.9;
-    this._followCamera.cameraAcceleration = 0.05;
+    this._followCamera.heightOffset = 0;
+    this._followCamera.cameraAcceleration = 0.02;
     this._followCamera.lockedTarget = this._mesh;
   }
 
@@ -223,6 +230,10 @@ class Player extends TransformNode {
    */
   get Mesh(): AbstractMesh {
     return this._mesh;
+  }
+
+  get HeadMesh(): AbstractMesh {
+    return this._headMesh;
   }
 
   get Animations(): PlayerAnimations {

@@ -10,6 +10,9 @@ import {
   ExecuteCodeAction,
   ActionManager,
   HemisphericLight,
+  FollowCamera,
+  TransformNode,
+  AbstractMesh,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import { Inspector } from "@babylonjs/inspector";
@@ -29,8 +32,10 @@ import {
   IDisconnection,
   ITransform,
 } from "../../../interfaces/IPacket";
+import Booth from "../level/Booth";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
+//type CollisionCallback = (targetMesh: Mesh) => void;
 
 /**
  * World Scene
@@ -39,14 +44,19 @@ const OUTLINE_COLOR = new Color3(1, 1, 0);
 class WorldScene implements ICustomScene {
   public scene: Scene;
   private _engine: Engine;
+  /* environment */
   private _level: Level;
   private _light: HemisphericLight;
   private _shadowGenerator: ShadowGenerator;
+  /* player-related */
   private _player: Player;
   private _remotePlayerMap: { [userId: string]: RemotePlayer } = {};
+  /* GUI */
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
+  /* boolean states */
   private _isViewing: boolean;
+  /* gizmo related */
   private _gizman: GizmoManager;
   private _gizmode: number;
 
@@ -58,9 +68,25 @@ class WorldScene implements ICustomScene {
   ) {
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
+    this.scene.collisionsEnabled = true;
     this.scene.actionManager = new ActionManager();
+
+    // Gizmo manager
     this._gizman = new GizmoManager(this.scene);
     this._gizmode = 0;
+
+    // Fullscreen mode GUI
+    this._advancedTexture =
+      AdvancedDynamicTexture.CreateFullscreenUI("EXPO_GUI");
+
+    // Light Setup
+    this._light = new HemisphericLight(
+      "hemi",
+      new Vector3(0, 50, 0),
+      this.scene
+    );
+    this._light.intensity = 1.5;
+    //this._shadowGenerator = new ShadowGenerator(1024, this._light);
 
     // Socket Event callback definition for "connection" and "transform"
     this._socket.On("connection").Add((data: IConnection) => {
@@ -127,18 +153,6 @@ class WorldScene implements ICustomScene {
       this._socket.Send(1, connectionData);
     });
 
-    // Fullscreen mode GUI
-    this._advancedTexture =
-      AdvancedDynamicTexture.CreateFullscreenUI("EXPO_GUI");
-
-    // Light Setup
-    this._light = new HemisphericLight(
-      "hemi",
-      new Vector3(0, 50, 0),
-      this.scene
-    );
-    this._light.intensity = 1;
-
     // player construct
     this.LoadModelAsset().then((asset) => {
       this._player = new Player(this.scene, this._socket, expoName, asset);
@@ -174,12 +188,7 @@ class WorldScene implements ICustomScene {
     let mesh = meshes[0]; // root mesh
     mesh.scaling.setAll(0.8); // scale mesh
     mesh.parent = null; // remove parent after extracting
-
-    // this._shadowGenerator.addShadowCaster(mesh, true);
-    // for (let i = 0; i < meshes.length; i++) {
-    //   meshes[i].receiveShadows = false;
-    // }
-
+    //this._shadowGenerator.addShadowCaster(mesh, true);
     const asset: PlayerAsset = {
       mesh,
       animationGroups: animationGroups.slice(2),
@@ -209,7 +218,7 @@ class WorldScene implements ICustomScene {
    * Create view button UI and enroll events on the button.
    * @param linkMesh a mesh will be linked to button UI
    */
-  public CreateViewButton(linkMesh: Mesh) {
+  public CreateDeskCollisionEvent(linkMesh: Mesh) {
     const viewButton = createButton(linkMesh, this._advancedTexture);
 
     // view mode event
@@ -234,8 +243,7 @@ class WorldScene implements ICustomScene {
         linkMesh.intersectsMesh(this._player.Mesh, false)
       ) {
         viewButton.isVisible = true;
-
-        for (let child of linkMesh.getChildMeshes().slice(1)) {
+        for (let child of linkMesh.getChildMeshes()) {
           child.outlineColor = OUTLINE_COLOR;
           child.outlineWidth = 0.02;
           child.renderOutline = true;
@@ -250,6 +258,34 @@ class WorldScene implements ICustomScene {
     });
 
     this._viewButtons.push(viewButton);
+  }
+  /**
+   * Create collision event and push the callback into callback queue
+   * @param targetMesh mesh to check collision from player mesh
+   */
+  public CreateBoothCollisionEvent(targetBooths: Booth[]) {
+    this.scene.onBeforeRenderObservable.add(() => {
+      let flag = false;
+      for (let booth of targetBooths) {
+        if (booth.boothCollision.intersectsMesh(this._player.Mesh, false)) {
+          flag = true;
+        }
+      }
+
+      if (flag) {
+        (this._player.CurrentCam as FollowCamera).radius = 2.5;
+        (this._player.CurrentCam as FollowCamera).heightOffset = 0;
+        (this._player.CurrentCam as FollowCamera).cameraAcceleration = 0.02;
+        (this._player.CurrentCam as FollowCamera).lockedTarget =
+          this._player.HeadMesh;
+      } else {
+        (this._player.CurrentCam as FollowCamera).radius = 5.5;
+        (this._player.CurrentCam as FollowCamera).cameraAcceleration = 0.02;
+        (this._player.CurrentCam as FollowCamera).heightOffset = 1.0;
+        (this._player.CurrentCam as FollowCamera).lockedTarget =
+          this._player.Mesh;
+      }
+    });
   }
 
   /**

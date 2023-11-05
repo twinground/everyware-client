@@ -15,8 +15,8 @@ export function createButton(
   viewButton.background = "grey";
   viewButton.alpha = 0.7;
   viewButton.linkWithMesh(linkMesh);
-  viewButton.linkOffsetY = -85;
-  viewButton.linkOffsetX = 90;
+  viewButton.linkOffsetY = -300;
+  viewButton.linkOffsetX = 100;
 
   return viewButton;
 }

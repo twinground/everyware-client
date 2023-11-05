@@ -27,6 +27,17 @@ const mainColor = {
   g: 240,
   b: 197,
 };
+const dummy_booth_data = [
+  "./images/board-1.jpeg",
+  "./images/board-2.jpg",
+  "./images/board-3.jpg",
+  "./images/board-4.jpg",
+  "./images/board-5.jpg",
+  "./images/board-6.png",
+  "./images/board-7.jpg",
+  "./images/board-8.jpg",
+  "./images/board-9.jpg",
+];
 
 class Level {
   /* mesh */
@@ -83,12 +94,16 @@ class Level {
   }
 
   public async LoadMeshes() {
-    this.rootBooth = new Booth(this.worldScene);
+    this.rootBooth = new Booth(this.worldScene, null, [
+      dummy_booth_data[Math.random() * 6],
+      dummy_booth_data[Math.random() * 6],
+      dummy_booth_data[Math.random() * 6],
+    ]);
     await this.rootBooth.LoadBooth(
       new Vector3(6.5, 0, -9),
       Quaternion.FromEulerAngles(0, 2 * Math.PI, 0)
     );
-
+    //TODO : change dummy booth data to response data from API server
     //left side booths
     for (let i = 2; i < 5; i++) {
       const newBoothInstance = this.rootBooth.rootMesh.instantiateHierarchy();
@@ -105,8 +120,14 @@ class Level {
       newBooth.SetPosition(-6.5, 0, -9 * i);
       newBooth.SetRotationQuat(Quaternion.FromEulerAngles(0, Math.PI, 0));
       newBooth.SetCollisions(newBooth.rootMesh);
+      newBooth.CreateBoardMesh();
       this._booths.push(newBooth);
     }
+
+    this.worldScene.CreateBoothCollisionEvent([
+      this.rootBooth,
+      ...this._booths,
+    ]);
 
     const ground = MeshBuilder.CreateGround(
       "ground-mesh",
