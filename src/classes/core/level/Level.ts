@@ -2,24 +2,17 @@ import {
   MeshBuilder,
   Scene,
   Color3,
-  ActionManager,
-  Mesh,
   Quaternion,
   Vector3,
   EnvironmentHelper,
-  PBRMaterial,
-  TransformNode,
-  Texture,
-  PBRBaseMaterial,
-  StandardMaterial,
-  NoiseProceduralTexture,
+  GlowLayer,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
 import Player from "../player/Player";
 import WorldScene from "../scene/WorldScene";
 import Booth from "./Booth";
-import { TextureHelper } from "@babylonjs/inspector/textureHelper";
+import Expo from "./Expo";
 
 const ENV_COLOR = new Color3(255 / 255, 240 / 255, 197 / 255);
 const mainColor = {
@@ -40,10 +33,13 @@ const dummy_booth_data = [
 ];
 
 class Level {
+  /* layer */
+  private _glowLayer: GlowLayer;
   /* mesh */
   public environment: EnvironmentHelper;
   private rootBooth: Booth;
   private _booths: Booth[] = [];
+  private _expo: Expo;
   /* config */
   public cameraExposure: number;
   public isDarkMode: boolean = false;
@@ -67,6 +63,12 @@ class Level {
       rootPosition: new Vector3(0, -1, -50),
     });
     this.environment.setMainColor(ENV_COLOR);
+    this._glowLayer = new GlowLayer("light-glow", this.scene, {
+      mainTextureSamples: 4,
+      mainTextureFixedSize: 1024,
+      blurKernelSize: 25,
+    });
+    this._glowLayer.intensity = 0;
 
     // Load all mesh in this level
     this.LoadMeshes();
@@ -75,12 +77,13 @@ class Level {
     const modeSlider = document.querySelector(".slider");
     modeSlider.addEventListener("click", () => {
       let colorStep = 2;
-      let exposureStep = 0.003;
-      //let intensityStep = 0.05;
+      let exposureStep = 0.005;
+      let intensityStep = 0.01;
       const boundedDarkModeCallback = this.ConvertColorMode.bind(
         this,
         mainColor,
         colorStep,
+        intensityStep,
         exposureStep
       );
       this.scene.onBeforeRenderObservable.add(boundedDarkModeCallback);
@@ -94,6 +97,14 @@ class Level {
   }
 
   public async LoadMeshes() {
+    /**
+     * Create Expo
+     */
+    this._expo = new Expo(this.scene);
+
+    /**
+     * Load and set Booths
+     */
     this.rootBooth = new Booth(this.worldScene, null, [
       dummy_booth_data[Math.random() * 6],
       dummy_booth_data[Math.random() * 6],
@@ -128,23 +139,12 @@ class Level {
       this.rootBooth,
       ...this._booths,
     ]);
-
-    const ground = MeshBuilder.CreateGround(
-      "ground-mesh",
-      {
-        width: 50,
-        height: 100,
-      },
-      this.scene
-    );
-    ground.position.z -= 50; // Adjust position to center the ground mesh
-    // ground.material = groundMat;
   }
 
   public ConvertColorMode(
     mainColor: { r: number; g: number; b: number },
     colorStep: number,
-    //intensityStep: number,
+    intensityStep: number,
     exposureStep: number
   ) {
     if (this.isDarkMode == false) {
@@ -165,6 +165,10 @@ class Level {
         });
       }
 
+      if (this._glowLayer.intensity < 1.0) {
+        this._glowLayer.intensity += intensityStep;
+      }
+
       ENV_COLOR.set(mainColor.r / 255, mainColor.g / 255, mainColor.b / 255);
       this.environment.setMainColor(ENV_COLOR);
     } else {
@@ -181,6 +185,10 @@ class Level {
       if (this.cameraExposure < 0.7) {
         this.cameraExposure += exposureStep;
         this.environment.updateOptions({ cameraExposure: this.cameraExposure });
+      }
+
+      if (this._glowLayer.intensity > 0.0) {
+        this._glowLayer.intensity -= intensityStep;
       }
 
       ENV_COLOR.set(mainColor.r / 255, mainColor.g / 255, mainColor.b / 255);

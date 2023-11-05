@@ -109,7 +109,6 @@ class PreviewScene implements ICustomScene {
         mesh.position.y -= 3.2;
         mesh.scaling.setAll(10.5);
         mesh.parent = null;
-        console.log("loaded");
       }
     );
 

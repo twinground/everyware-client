@@ -12,9 +12,6 @@ import {
   TargetCamera,
   ExecuteCodeAction,
   ActionManager,
-  Skeleton,
-  Mesh,
-  MeshBuilder,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -34,16 +31,20 @@ class Player extends TransformNode {
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
   public expoName: string;
+  public isOnline: boolean = false;
 
   constructor(
     readonly scene: Scene,
-    socket: Socket,
     expoName: string,
-    asset: PlayerAsset
+    asset: PlayerAsset,
+    socket?: Socket
   ) {
     super("player", scene);
     this.scene = scene;
-    this._socket = socket;
+    if (socket) {
+      this._socket = socket;
+      this.isOnline = true;
+    }
     this.expoName = expoName;
 
     /**
@@ -51,6 +52,7 @@ class Player extends TransformNode {
      */
     this._mesh = asset.mesh;
     this._mesh.parent = this;
+    this.position.set(0, 0, -10);
     this._headMesh = new AbstractMesh("player-head-abstract-mesh", this.scene);
     this._headMesh.parent = this._mesh;
     this._headMesh.position.y += 1.5;

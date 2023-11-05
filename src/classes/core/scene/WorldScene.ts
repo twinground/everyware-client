@@ -13,6 +13,7 @@ import {
   FollowCamera,
   TransformNode,
   AbstractMesh,
+  DirectionalLight,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import { Inspector } from "@babylonjs/inspector";
@@ -46,7 +47,8 @@ class WorldScene implements ICustomScene {
   private _engine: Engine;
   /* environment */
   private _level: Level;
-  private _light: HemisphericLight;
+  private _hemiLight: HemisphericLight;
+  private _dirLight: DirectionalLight;
   private _shadowGenerator: ShadowGenerator;
   /* player-related */
   private _player: Player;
@@ -62,9 +64,9 @@ class WorldScene implements ICustomScene {
 
   constructor(
     private engine: Engine,
-    private _socket: Socket,
     private _sceneMachine: ISceneStateMachine,
-    public expoName: string
+    public expoName: string,
+    private _socket?: Socket
   ) {
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
@@ -80,82 +82,93 @@ class WorldScene implements ICustomScene {
       AdvancedDynamicTexture.CreateFullscreenUI("EXPO_GUI");
 
     // Light Setup
-    this._light = new HemisphericLight(
-      "hemi",
+    this._hemiLight = new HemisphericLight(
+      "hemi-light",
       new Vector3(0, 50, 0),
       this.scene
     );
-    this._light.intensity = 1.5;
-    //this._shadowGenerator = new ShadowGenerator(1024, this._light);
+    //this._hemiLight.intensity = 1.5;
+    this._dirLight = new DirectionalLight(
+      "dir-light",
+      new Vector3(0, 1, 0),
+      this.scene
+    );
+    //this._shadowGenerator = new ShadowGenerator(1024, this._dirLight);
 
     // Socket Event callback definition for "connection" and "transform"
-    this._socket.On("connection").Add((data: IConnection) => {
-      // Initialize all the users exists in server before this connection
-      for (let userData of data.transforms) {
-        this.LoadModelAsset().then((asset) => {
-          const {
-            session_id,
+    if (this._socket) {
+      this._socket.On("connection").Add((data: IConnection) => {
+        // Initialize all the users exists in server before this connection
+        for (let userData of data.transforms) {
+          this.LoadModelAsset().then((asset) => {
+            const {
+              session_id,
+              position: { x, z },
+              quaternion: { y, w },
+              state,
+            } = userData;
+            this._remotePlayerMap[session_id] = new RemotePlayer(
+              this.scene,
+              asset
+            );
+            const target = this._remotePlayerMap[session_id];
+            target.Mesh.position.set(x, 0, z); // update position
+            target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+          });
+        }
+      });
+
+      this._socket.On("transform").Add((data: ITransform) => {
+        const {
+          session_id,
+          data: {
             position: { x, z },
             quaternion: { y, w },
             state,
-          } = userData;
-          this._remotePlayerMap[session_id] = new RemotePlayer(
-            this.scene,
-            asset
+          },
+        } = data; // Destruct Transformation packet
+        const target = this._remotePlayerMap[session_id];
+
+        target.Mesh.position.set(x, 0, z); // update position
+        target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+
+        if (target.CurAnim.name != state) {
+          this.scene.onBeforeRenderObservable.runCoroutineAsync(
+            target.AnimationBlending(
+              // blending animation
+              target.Animations[state],
+              target.Animations[target.CurAnim.name],
+              0.05
+            )
           );
-          const target = this._remotePlayerMap[session_id];
-          target.Mesh.position.set(x, 0, z); // update position
-          target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-        });
-      }
-    });
+          target.CurAnim = target.Animations[state];
+        }
+      });
 
-    this._socket.On("transform").Add((data: ITransform) => {
-      const {
-        session_id,
-        data: {
-          position: { x, z },
-          quaternion: { y, w },
-          state,
-        },
-      } = data; // Destruct Transformation packet
-      const target = this._remotePlayerMap[session_id];
+      this._socket.On("disconnection").Add((data: IDisconnection) => {
+        this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
+        delete this._remotePlayerMap[data.session_id];
+      });
 
-      target.Mesh.position.set(x, 0, z); // update position
-      target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-
-      if (target.CurAnim.name != state) {
-        this.scene.onBeforeRenderObservable.runCoroutineAsync(
-          target.AnimationBlending(
-            // blending animation
-            target.Animations[state],
-            target.Animations[target.CurAnim.name],
-            0.05
-          )
-        );
-        target.CurAnim = target.Animations[state];
-      }
-    });
-
-    this._socket.On("disconnection").Add((data: IDisconnection) => {
-      this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
-      delete this._remotePlayerMap[data.session_id];
-    });
-
-    // Promise-based-waiting for connection establishment.
-    // There is no reason to proceed scene if there is an unexpected error on socket connection
-    this.WaitConnection().then(() => {
-      const connectionData: IConnection = {
-        session_id: this._socket.id,
-        expo_name: expoName,
-        transforms: [],
-      };
-      this._socket.Send(1, connectionData);
-    });
+      // Promise-based-waiting for connection establishment.
+      // There is no reason to proceed scene if there is an unexpected error on socket connection
+      this.WaitConnection().then(() => {
+        const connectionData: IConnection = {
+          session_id: this._socket.id,
+          expo_name: expoName,
+          transforms: [],
+        };
+        this._socket.Send(1, connectionData);
+      });
+    }
 
     // player construct
     this.LoadModelAsset().then((asset) => {
-      this._player = new Player(this.scene, this._socket, expoName, asset);
+      if (this._socket) {
+        this._player = new Player(this.scene, expoName, asset, this._socket);
+      } else {
+        this._player = new Player(this.scene, expoName, asset);
+      }
       this._level = new Level(
         this.scene,
         this._advancedTexture,
@@ -232,7 +245,9 @@ class WorldScene implements ICustomScene {
       // start animation and change anim state.
       this._player.Controller.UpdateViewMode(true);
       this._player.CurAnim = this._player.Animations.thumbsUp;
-      this._player.SendTransformPacket();
+      if (this._socket) {
+        this._player.SendTransformPacket();
+      }
 
       viewButton.isVisible = false;
     });

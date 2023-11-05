@@ -120,7 +120,7 @@ export default class PlayerController {
     player.position.addInPlace(forward);
     player.position.addInPlace(sideways);
 
-    if (this._isTransformUpdated) {
+    if (this._player.isOnline && this._isTransformUpdated) {
       this._player.SendTransformPacket();
     }
 
