@@ -340,8 +340,9 @@ class WorldScene implements ICustomScene {
 
     const bodyElement = document.body;
     const tutorialContainer = document.createElement("div");
-    const backgroundContainer = document.createElement("div");
-    const backgroundElement = document.createElement("img");
+    const backgroundWrapperContainer = document.createElement("div");
+    const backgroundWrapper = document.createElement("div");
+    const backgroundElement = [];
     const expalinElement = document.createElement("img");
     const frameElement = document.createElement("img");
     const switchElement = document.getElementsByClassName("switch");
@@ -349,8 +350,10 @@ class WorldScene implements ICustomScene {
       document.createElement("div"),
       document.createElement("div"),
     ];
+
     //set tutorial-container
     tutorialContainer.classList.add("tutorial-container");
+    backgroundWrapperContainer.classList.add("bg-wrapper-container");
     bodyElement.appendChild(tutorialContainer);
     // Create nest, skip button
     for (let i = 0; i < tutorialButton.length; i++) {
@@ -363,23 +366,29 @@ class WorldScene implements ICustomScene {
     switchElement[0].classList.add("hidden");
 
     // set background img source
-    backgroundContainer.classList.add("background-wrapper");
-    backgroundElement.src = backgounrdImg[0]; // 이미지 파일 경로를 지정
-    backgroundElement.classList.add("background");
+    backgroundWrapper.classList.add("background-wrapper");
+    for (let i = 0; i < 3; i++) {
+      backgroundElement.push(document.createElement("img"));
+      backgroundElement[i].src = backgounrdImg[i];
+      backgroundElement[i].classList.add("background");
+      backgroundWrapper.appendChild(backgroundElement[i]);
+    }
 
     // set expalin img source
     expalinElement.src = explainImg[0];
     expalinElement.classList.add("explain");
+    expalinElement.style.opacity = "1";
 
     // set frame img source
     //frameElement.src = highlightFrame[0];
     frameElement.classList.add("highlight");
+    frameElement.style.opacity = "0";
 
     // append img to body
     //bodyElement.appendChild(tutorialContainer);
     bodyElement.prepend(tutorialContainer);
-    backgroundContainer.appendChild(backgroundElement);
-    tutorialContainer.appendChild(backgroundContainer);
+    backgroundWrapperContainer.appendChild(backgroundWrapper);
+    tutorialContainer.appendChild(backgroundWrapperContainer);
     tutorialContainer.appendChild(frameElement);
     tutorialContainer.appendChild(expalinElement);
 
@@ -390,34 +399,41 @@ class WorldScene implements ICustomScene {
     let highlight_idx = 0;
     tutorialButton[0].addEventListener("click", () => {
       if (flag == 1) {
-        this.ChangeImageSource(backgroundElement, backgounrdImg[bg_idx]);
-        expalinElement.src = explainImg[expalin_idx];
+        this.ChangeImageSource(backgroundWrapper, bg_idx);
+        this.HideExplainElement(expalinElement);
+        setTimeout(() => {
+          this.RepresentExplainElement(expalinElement, explainImg[expalin_idx]);
+          expalin_idx += 1;
+        }, 700);
         flag += 1;
         bg_idx += 1;
-        expalin_idx += 1;
       } else if (flag == 2) {
-        expalinElement.classList.add("hidden");
-        frameElement.src = highlightFrame[highlight_idx];
-        highlight_idx += 1;
+        this.HideExplainElement(expalinElement);
+        setTimeout(() => {
+          frameElement.src = highlightFrame[highlight_idx];
+          frameElement.style.opacity = "1";
+          highlight_idx += 1;
+        }, 500);
         flag += 1;
       } else if (flag == 3) {
-        frameElement.classList.add("hidden");
-        this.ChangeImageSource(backgroundElement, backgounrdImg[bg_idx]);
-        expalinElement.src = explainImg[expalin_idx];
-        expalinElement.classList.remove("hidden");
-        expalin_idx += 1;
+        frameElement.style.opacity = "0";
+        this.ChangeImageSource(backgroundWrapper, bg_idx);
+        setTimeout(() => {
+          this.RepresentExplainElement(expalinElement, explainImg[expalin_idx]);
+          expalin_idx += 1;
+        }, 1000);
         bg_idx += 1;
         flag += 1;
       } else if (flag == 4) {
-        expalinElement.classList.add("hidden");
+        this.HideExplainElement(expalinElement);
         frameElement.src = highlightFrame[highlight_idx];
-        frameElement.classList.remove("hidden");
+        frameElement.style.opacity = "1";
         flag += 1;
       } else if (flag == 5) {
         this.SkipTutorialImg(
           switchElement,
           tutorialButton,
-          backgroundElement,
+          backgroundWrapperContainer,
           tutorialContainer
         );
       }
@@ -427,40 +443,42 @@ class WorldScene implements ICustomScene {
       this.SkipTutorialImg(
         switchElement,
         tutorialButton,
-        backgroundElement,
+        backgroundWrapperContainer,
         tutorialContainer
       );
     });
   }
 
-  private ChangeImageSource(
-    backgroundElement: HTMLImageElement,
-    newSrc: string
-  ): void {
-    //backgroundElement.style.transition = "opacity 0.5s";
-    //backgroundElement.style.opacity = "0";
-    setTimeout(function () {
-      backgroundElement.src = newSrc;
-      //backgroundElement.style.transition = "opacity 0.5s";
-      //backgroundElement.style.opacity = "1";
-    }, 0);
+  private ChangeImageSource(backgroundWrapper: HTMLDivElement, bg_idx): void {
+    backgroundWrapper.style.transform = `translate(-${bg_idx * 100}vw)`;
+  }
+
+  private HideExplainElement(imgElement) {
+    imgElement.style.opacity = "0";
+  }
+
+  private RepresentExplainElement(imgElement, src) {
+    imgElement.src = src;
+    imgElement.style.opacity = "1";
   }
 
   private SkipTutorialImg(
     switchElement,
     tutorialButton,
-    backgroundElement,
+    backgroundWrapperContainer,
     tutorialContainer
   ) {
     switchElement[0].classList.remove("hidden");
-    backgroundElement.style.transition = "opacity 0.5s";
-    backgroundElement.style.opacity = "0";
+    tutorialContainer.style.transition = "opacity 1.5s";
+    tutorialContainer.style.opacity = "0";
+    // backgroundWrapperContainer.style.transition = "opacity 0.5s";
+    // backgroundWrapperContainer.style.opacity = "0";
     setTimeout(function () {
-      backgroundElement.remove();
+      backgroundWrapperContainer.remove();
       tutorialButton[0].remove();
       tutorialButton[1].remove();
       tutorialContainer.remove();
-    }, 0);
+    }, 500);
   }
 }
 
