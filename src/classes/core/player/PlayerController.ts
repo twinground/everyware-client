@@ -69,10 +69,9 @@ export default class PlayerController {
       Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
     velocity.addInPlace(frameDecceleration);
 
-    const player = this._player.Mesh;
+    const player = this._player;
     const axis = new Vector3(0, 1, 0);
     const acc = this._acceleration.clone();
-    const rot = player.rotationQuaternion.clone();
 
     //product deltaTime to move character according to device frame rate
     if (this._inputSystem.inputs.w || this._inputSystem.inputs.ㅈ) {
@@ -85,7 +84,7 @@ export default class PlayerController {
     }
     if (this._inputSystem.inputs.a || this._inputSystem.inputs.ㅁ) {
       this._isTransformUpdated = true;
-      rot.multiplyInPlace(
+      this._player.rotationQuaternion?.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
           4.0 * -Math.PI * deltaTime * this._acceleration.y
@@ -94,7 +93,7 @@ export default class PlayerController {
     }
     if (this._inputSystem.inputs.d || this._inputSystem.inputs.ㅇ) {
       this._isTransformUpdated = true;
-      rot.multiplyInPlace(
+      this._player.rotationQuaternion?.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
           4.0 * Math.PI * deltaTime * this._acceleration.y
@@ -102,23 +101,21 @@ export default class PlayerController {
       );
     }
 
-    player.rotationQuaternion = rot;
-
     const forward = new Vector3(0, 0, 1);
     forward.applyRotationQuaternionInPlace(
-      player.rotationQuaternion.normalize()
+      (this._player.rotationQuaternion as Quaternion).normalize()
     );
 
     const sideways = new Vector3(1, 0, 0);
     sideways.applyRotationQuaternionInPlace(
-      player.rotationQuaternion.normalize()
+      (this._player.rotationQuaternion as Quaternion).normalize()
     );
 
     sideways.scaleInPlace(velocity.x * deltaTime);
     forward.scaleInPlace(velocity.z * deltaTime);
 
-    player.position.addInPlace(forward);
-    player.position.addInPlace(sideways);
+    this._player.position.addInPlace(forward);
+    this._player.position.addInPlace(sideways);
 
     if (this._player.isOnline && this._isTransformUpdated) {
       this._player.SendTransformPacket();

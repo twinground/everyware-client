@@ -7,17 +7,19 @@ import {
   Mesh,
   TransformNode,
   MeshBuilder,
-  ActionManager,
   Node,
-  FollowCamera,
   StandardMaterial,
   Texture,
+  PBRMaterial,
+  Color3,
+  Nullable,
 } from "@babylonjs/core";
 import WorldScene from "../scene/WorldScene";
 
 class Booth {
   readonly scene: Scene;
   readonly worldScene: WorldScene;
+  // mesh
   public rootMesh: AbstractMesh | TransformNode;
   public deskCollision: Mesh;
   public boards: Mesh[] = [];
@@ -25,8 +27,12 @@ class Booth {
   public topLogo: Node;
   public boothCarpet: Mesh;
   public boothCollision: Mesh;
-  public boardURI: string[];
+  // texture & material
   public dummyTextures: Texture[];
+  public pbrMaterial: PBRMaterial;
+
+  // uris
+  public boardURI: string[] | undefined;
 
   constructor(
     worldScene: WorldScene,
@@ -36,9 +42,9 @@ class Booth {
     this.scene = worldScene.scene;
     this.worldScene = worldScene;
     this.boardURI = boardURIs;
+
     if (boothInstance) {
       this.rootMesh = boothInstance;
-
       for (let child of this.rootMesh.getChildren()) {
         if (child.id.match(RegExp("instance of board-*"))) {
           this.boards.push(child as Mesh);
@@ -51,6 +57,10 @@ class Booth {
         }
       }
     }
+
+    this.pbrMaterial = new PBRMaterial("booth-shared-pbr-material", this.scene);
+    this.pbrMaterial.roughness = 1;
+
     this.dummyTextures = [
       new Texture("./images/board-1.jpeg", this.scene),
       new Texture("./images/board-2.jpg", this.scene),
@@ -137,17 +147,19 @@ class Booth {
       board.position.set(3.7, 3, 0.715 + i * -2.5);
       const mat = new StandardMaterial("board-mat", this.scene);
 
+      mat.diffuseColor = new Color3(1, 1, 1);
+      mat.roughness = 0.5;
       mat.diffuseTexture = this.dummyTextures[Math.floor(Math.random() * 8)];
       board.material = mat;
     }
   }
 
   public SetPosition(x: number, y: number, z: number) {
-    this.rootMesh.position.set(x, y, z);
+    this.rootMesh?.position.set(x, y, z);
   }
 
   public SetRotationQuat(quat: Quaternion) {
-    this.rootMesh.rotationQuaternion = quat;
+    if (this.rootMesh) this.rootMesh.rotationQuaternion = quat;
   }
 }
 

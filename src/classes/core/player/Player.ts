@@ -12,6 +12,7 @@ import {
   TargetCamera,
   ExecuteCodeAction,
   ActionManager,
+  Quaternion,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -50,9 +51,15 @@ class Player extends TransformNode {
     /**
      * -----  Mesh initialization -----
      */
+    this.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
     this._mesh = asset.mesh;
     this._mesh.parent = this;
-    this.position.set(0, 0, -10);
+    this._mesh.rotationQuaternion = Quaternion.FromEulerAngles(
+      0,
+      -2 * Math.PI,
+      0
+    );
+    this.position.set(0, 0, -40);
     this._headMesh = new AbstractMesh("player-head-abstract-mesh", this.scene);
     this._headMesh.parent = this._mesh;
     this._headMesh.position.y += 1.5;

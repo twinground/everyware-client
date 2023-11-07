@@ -9,15 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@babylonjs/core": "^6.9.0",
-    "@babylonjs/inspector": "^6.9.0",
-    "@types/sockjs": "^0.3.34",
     "typescript": "^5.0.2",
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "@stomp/stompjs": "^7.0.0",
-    "recast-detour": "^1.6.2",
-    "sockjs": "^0.3.24"
+    "@babylonjs/core": "^6.9.0",
+    "@babylonjs/inspector": "^6.9.0",
+    "recast-detour": "^1.6.2"
   }
 }

@@ -113,7 +113,7 @@ class WorldScene implements ICustomScene {
             );
             const target = this._remotePlayerMap[session_id];
             target.Mesh.position.set(x, 0, z); // update position
-            target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+            target.Mesh.rotationQuaternion?.set(0, y, 0, w); // update quaternion
           });
         }
       });
@@ -129,8 +129,8 @@ class WorldScene implements ICustomScene {
         } = data; // Destruct Transformation packet
         const target = this._remotePlayerMap[session_id];
 
-        target.Mesh.position.set(x, 0, z); // update position
-        target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
+        target.position.set(x, 0, z); // update position
+        target.rotationQuaternion?.set(0, y, 0, w); // update quaternion
 
         if (target.CurAnim.name != state) {
           this.scene.onBeforeRenderObservable.runCoroutineAsync(
@@ -154,11 +154,11 @@ class WorldScene implements ICustomScene {
       // There is no reason to proceed scene if there is an unexpected error on socket connection
       this.WaitConnection().then(() => {
         const connectionData: IConnection = {
-          session_id: this._socket.id,
+          session_id: (this._socket as Socket).id,
           expo_name: expoName,
           transforms: [],
         };
-        this._socket.Send(1, connectionData);
+        (this._socket as Socket).Send(1, connectionData);
       });
     }
 
@@ -169,12 +169,7 @@ class WorldScene implements ICustomScene {
       } else {
         this._player = new Player(this.scene, expoName, asset);
       }
-      this._level = new Level(
-        this.scene,
-        this._advancedTexture,
-        this._player,
-        this
-      );
+      this._level = new Level(this._advancedTexture, this._player, this);
     });
 
     this._viewButtons = [];
@@ -219,7 +214,7 @@ class WorldScene implements ICustomScene {
       // Check the WebSocket state in an interval
       const interval = setInterval(() => {
         // If the WebSocket is open, resolve the promise and clear the interval
-        if (this._socket.WebSock.readyState === WebSocket.OPEN) {
+        if ((this._socket as Socket).WebSock.readyState === WebSocket.OPEN) {
           resolve();
           clearInterval(interval);
         }
@@ -359,6 +354,10 @@ class WorldScene implements ICustomScene {
 
   get GizmoManager() {
     return this._gizman;
+  }
+
+  get Engine() {
+    return this.engine;
   }
 
   set isViewing(v: boolean) {

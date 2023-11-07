@@ -1,5 +1,5 @@
 //module
-import { PostProcess, Color4 } from "@babylonjs/core";
+import { PostProcess, Color4, RecastJSPlugin } from "@babylonjs/core";
 // class
 import Socket from "../../network/SocketClient";
 import Engine from "../Engine";
@@ -17,6 +17,7 @@ class SceneStateMachine implements ISceneStateMachine {
   private _canvas: HTMLCanvasElement;
   private _socket: Socket | null;
   private _expoName: string;
+  private _navigationPlugin: RecastJSPlugin;
 
   constructor(
     engine: Engine,
@@ -29,7 +30,7 @@ class SceneStateMachine implements ISceneStateMachine {
     this._engine.BabylonEngine.displayLoadingUI();
     this._canvas = canvas;
     this._expoName = expoName;
-    if (this._socket) {
+    if (socket) {
       this._socket = socket;
       this._worldScene = new WorldScene(this._engine, this, expoName, socket);
     } else {

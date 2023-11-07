@@ -51,7 +51,7 @@ class PreviewScene implements ICustomScene {
     this._level = this.scene.createDefaultEnvironment({
       skyboxSize: 50,
       rootPosition: new Vector3(0, -7, 0),
-    });
+    }) as EnvironmentHelper;
     this._level.setMainColor(new Color3(255 / 255, 240 / 255, 197 / 255));
 
     // fullscreen gui
