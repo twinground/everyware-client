@@ -1,5 +1,5 @@
 //module
-import { PostProcess, Color4 } from "@babylonjs/core";
+import { PostProcess, Color4, RecastJSPlugin } from "@babylonjs/core";
 // class
 import Socket from "../../network/SocketClient";
 import Engine from "../Engine";
@@ -15,22 +15,28 @@ class SceneStateMachine implements ISceneStateMachine {
   private _previewScene: PreviewScene;
   private _engine: Engine;
   private _canvas: HTMLCanvasElement;
-  private _socket: Socket;
+  private _socket: Socket | null;
   private _expoName: string;
+  private _navigationPlugin: RecastJSPlugin;
 
   constructor(
     engine: Engine,
     canvas: HTMLCanvasElement,
-    socket: Socket,
-    expoName: string
+    expoName: string,
+    socket?: Socket
   ) {
     //initial scene
     this._engine = engine;
     this._engine.BabylonEngine.displayLoadingUI();
     this._canvas = canvas;
     this._expoName = expoName;
-    this._socket = socket;
-    this._worldScene = new WorldScene(this._engine, socket, this, expoName);
+    if (socket) {
+      this._socket = socket;
+      this._worldScene = new WorldScene(this._engine, this, expoName, socket);
+    } else {
+      this._worldScene = new WorldScene(this._engine, this, expoName);
+    }
+
     this._worldScene.scene.whenReadyAsync(true).then(() => {
       this._engine.BabylonEngine.hideLoadingUI();
     });
@@ -102,7 +108,10 @@ class SceneStateMachine implements ISceneStateMachine {
         localPlayer.Controller.UpdateViewMode(false);
         this._worldScene.isViewing = false;
         localPlayer.CurAnim = localPlayer.Animations.idle;
-        localPlayer.SendTransformPacket();
+        //TODO: change this packet to SendPreviewPacket
+        if (this._socket) {
+          localPlayer.SendTransformPacket();
+        }
         localPlayer.ZoomOutFollowCam();
         this._currentScene = this._worldScene;
         break;

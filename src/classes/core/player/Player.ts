@@ -12,6 +12,7 @@ import {
   TargetCamera,
   ExecuteCodeAction,
   ActionManager,
+  Quaternion,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
@@ -22,6 +23,7 @@ import { ITransform } from "../../../interfaces/IPacket";
 class Player extends TransformNode {
   private _socket: Socket;
   private _mesh: AbstractMesh;
+  private _headMesh: AbstractMesh;
   private _arcRotCamera: ArcRotateCamera;
   private _followCamera: FollowCamera;
   private _universalCamera: UniversalCamera;
@@ -30,23 +32,37 @@ class Player extends TransformNode {
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
   public expoName: string;
+  public isOnline: boolean = false;
 
   constructor(
     readonly scene: Scene,
-    socket: Socket,
     expoName: string,
-    asset: PlayerAsset
+    asset: PlayerAsset,
+    socket?: Socket
   ) {
     super("player", scene);
     this.scene = scene;
-    this._socket = socket;
+    if (socket) {
+      this._socket = socket;
+      this.isOnline = true;
+    }
     this.expoName = expoName;
 
     /**
      * -----  Mesh initialization -----
      */
+    this.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
     this._mesh = asset.mesh;
     this._mesh.parent = this;
+    this._mesh.rotationQuaternion = Quaternion.FromEulerAngles(
+      0,
+      -2 * Math.PI,
+      0
+    );
+    this.position.set(0, 0, -40);
+    this._headMesh = new AbstractMesh("player-head-abstract-mesh", this.scene);
+    this._headMesh.parent = this._mesh;
+    this._headMesh.position.y += 1.5;
 
     /**
      * ----- Player controller -----
@@ -186,16 +202,16 @@ class Player extends TransformNode {
     newTargetPosition.y += 2;
     this._followCamera.cameraAcceleration = 0.012;
     this._followCamera.setTarget(newTargetPosition);
-    this._followCamera.heightOffset = 0.5;
+    this._followCamera.heightOffset = 3.0;
     this._followCamera.radius = 0;
   }
 
   // Zoom out
   public ZoomOutFollowCam() {
-    this._followCamera.radius = 7;
+    this._followCamera.radius = 2.5;
     this._followCamera.rotationOffset = 180;
-    this._followCamera.heightOffset = 5;
-    this._followCamera.cameraAcceleration = 0.05;
+    this._followCamera.heightOffset = 0;
+    this._followCamera.cameraAcceleration = 0.02;
     this._followCamera.lockedTarget = this._mesh;
   }
 
@@ -223,6 +239,10 @@ class Player extends TransformNode {
    */
   get Mesh(): AbstractMesh {
     return this._mesh;
+  }
+
+  get HeadMesh(): AbstractMesh {
+    return this._headMesh;
   }
 
   get Animations(): PlayerAnimations {

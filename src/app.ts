@@ -3,8 +3,13 @@ import Socket from "./classes/network/SocketClient";
 
 const SERVER_URL = `ws://13.124.153.160:8080/`;
 const EXPO_NAME = "capstone";
-const socket = new Socket(SERVER_URL);
+const isOnline = false;
 
 window.addEventListener("DOMContentLoaded", () => {
-  new Engine(EXPO_NAME, socket);
+  if (isOnline) {
+    const socket = new Socket(SERVER_URL);
+    new Engine(EXPO_NAME, socket);
+  } else {
+    new Engine(EXPO_NAME, null);
+  }
 });

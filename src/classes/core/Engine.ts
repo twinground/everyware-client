@@ -16,10 +16,12 @@ class Engine {
   private _sceneStateMachine: ISceneStateMachine;
   private _canvas: HTMLCanvasElement;
   private _babylonEngine: BabylonEngine;
-  private _socket: Socket;
+  private _socket: Socket | null;
 
-  constructor(expoName: string, socket: Socket) {
-    this._socket = socket;
+  constructor(expoName: string, socket?: Socket) {
+    if (socket) {
+      this._socket = socket;
+    }
     this.Init(expoName);
   }
 
@@ -45,12 +47,20 @@ class Engine {
     );
 
     //this._babylonEngine.displayLoadingUI();
-    this._sceneStateMachine = new SceneStateMachine(
-      this,
-      this._canvas,
-      this._socket,
-      expoName
-    );
+    if (this._socket) {
+      this._sceneStateMachine = new SceneStateMachine(
+        this,
+        this._canvas,
+        expoName,
+        this._socket
+      );
+    } else {
+      this._sceneStateMachine = new SceneStateMachine(
+        this,
+        this._canvas,
+        expoName
+      );
+    }
 
     // define shaders
     this.DefineCustomShader();

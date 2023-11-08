@@ -10,6 +10,10 @@ import {
   ExecuteCodeAction,
   ActionManager,
   HemisphericLight,
+  FollowCamera,
+  TransformNode,
+  AbstractMesh,
+  DirectionalLight,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import { Inspector } from "@babylonjs/inspector";
@@ -29,8 +33,10 @@ import {
   IDisconnection,
   ITransform,
 } from "../../../interfaces/IPacket";
+import Booth from "../level/Booth";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
+//type CollisionCallback = (targetMesh: Mesh) => void;
 
 /**
  * World Scene
@@ -39,115 +45,132 @@ const OUTLINE_COLOR = new Color3(1, 1, 0);
 class WorldScene implements ICustomScene {
   public scene: Scene;
   private _engine: Engine;
+  /* environment */
   private _level: Level;
-  private _light: HemisphericLight;
+  private _hemiLight: HemisphericLight;
+  private _dirLight: DirectionalLight;
   private _shadowGenerator: ShadowGenerator;
+  /* player-related */
   private _player: Player;
   private _remotePlayerMap: { [userId: string]: RemotePlayer } = {};
+  /* GUI */
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
+  /* boolean states */
   private _isViewing: boolean;
+  /* gizmo related */
   private _gizman: GizmoManager;
   private _gizmode: number;
 
   constructor(
     private engine: Engine,
-    private _socket: Socket,
     private _sceneMachine: ISceneStateMachine,
-    public expoName: string
+    public expoName: string,
+    private _socket?: Socket
   ) {
+    this.TutorialOnboarding();
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
+    this.scene.collisionsEnabled = true;
     this.scene.actionManager = new ActionManager();
+
+    // Gizmo manager
     this._gizman = new GizmoManager(this.scene);
     this._gizmode = 0;
-
-    // Socket Event callback definition for "connection" and "transform"
-    this._socket.On("connection").Add((data: IConnection) => {
-      // Initialize all the users exists in server before this connection
-      for (let userData of data.transforms) {
-        this.LoadModelAsset().then((asset) => {
-          const {
-            session_id,
-            position: { x, z },
-            quaternion: { y, w },
-            state,
-          } = userData;
-          this._remotePlayerMap[session_id] = new RemotePlayer(
-            this.scene,
-            asset
-          );
-          const target = this._remotePlayerMap[session_id];
-          target.Mesh.position.set(x, 0, z); // update position
-          target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-        });
-      }
-    });
-
-    this._socket.On("transform").Add((data: ITransform) => {
-      const {
-        session_id,
-        data: {
-          position: { x, z },
-          quaternion: { y, w },
-          state,
-        },
-      } = data; // Destruct Transformation packet
-      const target = this._remotePlayerMap[session_id];
-
-      target.Mesh.position.set(x, 0, z); // update position
-      target.Mesh.rotationQuaternion.set(0, y, 0, w); // update quaternion
-
-      if (target.CurAnim.name != state) {
-        this.scene.onBeforeRenderObservable.runCoroutineAsync(
-          target.AnimationBlending(
-            // blending animation
-            target.Animations[state],
-            target.Animations[target.CurAnim.name],
-            0.05
-          )
-        );
-        target.CurAnim = target.Animations[state];
-      }
-    });
-
-    this._socket.On("disconnection").Add((data: IDisconnection) => {
-      this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
-      delete this._remotePlayerMap[data.session_id];
-    });
-
-    // Promise-based-waiting for connection establishment.
-    // There is no reason to proceed scene if there is an unexpected error on socket connection
-    this.WaitConnection().then(() => {
-      const connectionData: IConnection = {
-        session_id: this._socket.id,
-        expo_name: expoName,
-        transforms: [],
-      };
-      this._socket.Send(1, connectionData);
-    });
 
     // Fullscreen mode GUI
     this._advancedTexture =
       AdvancedDynamicTexture.CreateFullscreenUI("EXPO_GUI");
 
     // Light Setup
-    this._light = new HemisphericLight(
-      "hemi",
+    this._hemiLight = new HemisphericLight(
+      "hemi-light",
       new Vector3(0, 50, 0),
       this.scene
     );
-    this._light.intensity = 1;
+    //this._hemiLight.intensity = 1.5;
+    this._dirLight = new DirectionalLight(
+      "dir-light",
+      new Vector3(0, 1, 0),
+      this.scene
+    );
+    //this._shadowGenerator = new ShadowGenerator(1024, this._dirLight);
+
+    // Socket Event callback definition for "connection" and "transform"
+    if (this._socket) {
+      this._socket.On("connection").Add((data: IConnection) => {
+        // Initialize all the users exists in server before this connection
+        for (let userData of data.transforms) {
+          this.LoadModelAsset().then((asset) => {
+            const {
+              session_id,
+              position: { x, z },
+              quaternion: { y, w },
+              state,
+            } = userData;
+            this._remotePlayerMap[session_id] = new RemotePlayer(
+              this.scene,
+              asset
+            );
+            const target = this._remotePlayerMap[session_id];
+            target.Mesh.position.set(x, 0, z); // update position
+            target.Mesh.rotationQuaternion?.set(0, y, 0, w); // update quaternion
+          });
+        }
+      });
+
+      this._socket.On("transform").Add((data: ITransform) => {
+        const {
+          session_id,
+          data: {
+            position: { x, z },
+            quaternion: { y, w },
+            state,
+          },
+        } = data; // Destruct Transformation packet
+        const target = this._remotePlayerMap[session_id];
+
+        target.position.set(x, 0, z); // update position
+        target.rotationQuaternion?.set(0, y, 0, w); // update quaternion
+
+        if (target.CurAnim.name != state) {
+          this.scene.onBeforeRenderObservable.runCoroutineAsync(
+            target.AnimationBlending(
+              // blending animation
+              target.Animations[state],
+              target.Animations[target.CurAnim.name],
+              0.05
+            )
+          );
+          target.CurAnim = target.Animations[state];
+        }
+      });
+
+      this._socket.On("disconnection").Add((data: IDisconnection) => {
+        this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
+        delete this._remotePlayerMap[data.session_id];
+      });
+
+      // Promise-based-waiting for connection establishment.
+      // There is no reason to proceed scene if there is an unexpected error on socket connection
+      this.WaitConnection().then(() => {
+        const connectionData: IConnection = {
+          session_id: (this._socket as Socket).id,
+          expo_name: expoName,
+          transforms: [],
+        };
+        (this._socket as Socket).Send(1, connectionData);
+      });
+    }
 
     // player construct
     this.LoadModelAsset().then((asset) => {
-      this._player = new Player(this.scene, this._socket, expoName, asset);
-      this._level = new Level(
-        this.scene,
-        this._advancedTexture,
-        this._player,
-        this
-      );
+      if (this._socket) {
+        this._player = new Player(this.scene, expoName, asset, this._socket);
+      } else {
+        this._player = new Player(this.scene, expoName, asset);
+      }
+      this._level = new Level(this._advancedTexture, this._player, this);
     });
 
     this._viewButtons = [];
@@ -174,12 +197,7 @@ class WorldScene implements ICustomScene {
     let mesh = meshes[0]; // root mesh
     mesh.scaling.setAll(0.8); // scale mesh
     mesh.parent = null; // remove parent after extracting
-
-    // this._shadowGenerator.addShadowCaster(mesh, true);
-    // for (let i = 0; i < meshes.length; i++) {
-    //   meshes[i].receiveShadows = false;
-    // }
-
+    //this._shadowGenerator.addShadowCaster(mesh, true);
     const asset: PlayerAsset = {
       mesh,
       animationGroups: animationGroups.slice(2),
@@ -197,7 +215,7 @@ class WorldScene implements ICustomScene {
       // Check the WebSocket state in an interval
       const interval = setInterval(() => {
         // If the WebSocket is open, resolve the promise and clear the interval
-        if (this._socket.WebSock.readyState === WebSocket.OPEN) {
+        if ((this._socket as Socket).WebSock.readyState === WebSocket.OPEN) {
           resolve();
           clearInterval(interval);
         }
@@ -209,7 +227,7 @@ class WorldScene implements ICustomScene {
    * Create view button UI and enroll events on the button.
    * @param linkMesh a mesh will be linked to button UI
    */
-  public CreateViewButton(linkMesh: Mesh) {
+  public CreateDeskCollisionEvent(linkMesh: Mesh) {
     const viewButton = createButton(linkMesh, this._advancedTexture);
 
     // view mode event
@@ -223,7 +241,9 @@ class WorldScene implements ICustomScene {
       // start animation and change anim state.
       this._player.Controller.UpdateViewMode(true);
       this._player.CurAnim = this._player.Animations.thumbsUp;
-      this._player.SendTransformPacket();
+      if (this._socket) {
+        this._player.SendTransformPacket();
+      }
 
       viewButton.isVisible = false;
     });
@@ -234,8 +254,7 @@ class WorldScene implements ICustomScene {
         linkMesh.intersectsMesh(this._player.Mesh, false)
       ) {
         viewButton.isVisible = true;
-
-        for (let child of linkMesh.getChildMeshes().slice(1)) {
+        for (let child of linkMesh.getChildMeshes()) {
           child.outlineColor = OUTLINE_COLOR;
           child.outlineWidth = 0.02;
           child.renderOutline = true;
@@ -250,6 +269,34 @@ class WorldScene implements ICustomScene {
     });
 
     this._viewButtons.push(viewButton);
+  }
+  /**
+   * Create collision event and push the callback into callback queue
+   * @param targetMesh mesh to check collision from player mesh
+   */
+  public CreateBoothCollisionEvent(targetBooths: Booth[]) {
+    this.scene.onBeforeRenderObservable.add(() => {
+      let flag = false;
+      for (let booth of targetBooths) {
+        if (booth.boothCollision.intersectsMesh(this._player.Mesh, false)) {
+          flag = true;
+        }
+      }
+
+      if (flag) {
+        (this._player.CurrentCam as FollowCamera).radius = 2.5;
+        (this._player.CurrentCam as FollowCamera).heightOffset = 0;
+        (this._player.CurrentCam as FollowCamera).cameraAcceleration = 0.02;
+        (this._player.CurrentCam as FollowCamera).lockedTarget =
+          this._player.HeadMesh;
+      } else {
+        (this._player.CurrentCam as FollowCamera).radius = 5.5;
+        (this._player.CurrentCam as FollowCamera).cameraAcceleration = 0.02;
+        (this._player.CurrentCam as FollowCamera).heightOffset = 1.0;
+        (this._player.CurrentCam as FollowCamera).lockedTarget =
+          this._player.Mesh;
+      }
+    });
   }
 
   /**
@@ -310,8 +357,178 @@ class WorldScene implements ICustomScene {
     return this._gizman;
   }
 
+  get Engine() {
+    return this.engine;
+  }
+
   set isViewing(v: boolean) {
     this._isViewing = v;
+  }
+
+  /**
+   * Simple tutorial secene function
+   */
+  private TutorialOnboarding() {
+    const backgounrdImg = [
+      "/images/tutorial/background1.png",
+      "/images/tutorial/background2.png",
+      "/images/tutorial/background3.png",
+    ];
+
+    const explainImg = [
+      "/images/tutorial/explain1.png",
+      "/images/tutorial/explain2.png",
+      "/images/tutorial/explain3.png",
+    ];
+
+    const highlightFrame = [
+      "/images/tutorial/bg2_highlight.png",
+      "/images/tutorial/bg3_highlight.png",
+    ];
+
+    let textList = ["NEXT", "SKIP"];
+
+    const bodyElement = document.body;
+    const tutorialContainer = document.createElement("div");
+    const backgroundWrapperContainer = document.createElement("div");
+    const backgroundWrapper = document.createElement("div");
+    const backgroundElement: HTMLImageElement[] = [];
+    const expalinElement = document.createElement("img");
+    const frameElement = document.createElement("img");
+    const switchElement = document.getElementsByClassName("switch");
+    const tutorialButton = [
+      document.createElement("div"),
+      document.createElement("div"),
+    ];
+
+    //set tutorial-container
+    tutorialContainer.classList.add("tutorial-container");
+    backgroundWrapperContainer.classList.add("bg-wrapper-container");
+    bodyElement.appendChild(tutorialContainer);
+    // Create nest, skip button
+    for (let i = 0; i < tutorialButton.length; i++) {
+      tutorialButton[i].classList.add("tutorial-button");
+      tutorialButton[i].textContent = textList[i];
+      tutorialButton[i].style.right = `${130 - i * 100}px`;
+      bodyElement.appendChild(tutorialButton[i]);
+    }
+
+    switchElement[0].classList.add("hidden");
+
+    // set background img source
+    backgroundWrapper.classList.add("background-wrapper");
+    for (let i = 0; i < 3; i++) {
+      backgroundElement.push(document.createElement("img"));
+      backgroundElement[i].src = backgounrdImg[i];
+      backgroundElement[i].classList.add("background");
+      backgroundWrapper.appendChild(backgroundElement[i]);
+    }
+
+    // set expalin img source
+    expalinElement.src = explainImg[0];
+    expalinElement.classList.add("explain");
+    expalinElement.style.opacity = "1";
+
+    // set frame img source
+    //frameElement.src = highlightFrame[0];
+    frameElement.classList.add("highlight");
+    frameElement.style.opacity = "0";
+
+    // append img to body
+    //bodyElement.appendChild(tutorialContainer);
+    bodyElement.prepend(tutorialContainer);
+    backgroundWrapperContainer.appendChild(backgroundWrapper);
+    tutorialContainer.appendChild(backgroundWrapperContainer);
+    tutorialContainer.appendChild(frameElement);
+    tutorialContainer.appendChild(expalinElement);
+
+    //add event listener
+    let flag = 1;
+    let bg_idx = 1;
+    let expalin_idx = 1;
+    let highlight_idx = 0;
+    tutorialButton[0].addEventListener("click", () => {
+      if (flag == 1) {
+        this.ChangeImageSource(backgroundWrapper, bg_idx);
+        this.HideExplainElement(expalinElement);
+        setTimeout(() => {
+          this.RepresentExplainElement(expalinElement, explainImg[expalin_idx]);
+          expalin_idx += 1;
+        }, 700);
+        flag += 1;
+        bg_idx += 1;
+      } else if (flag == 2) {
+        this.HideExplainElement(expalinElement);
+        setTimeout(() => {
+          frameElement.src = highlightFrame[highlight_idx];
+          frameElement.style.opacity = "1";
+          highlight_idx += 1;
+        }, 500);
+        flag += 1;
+      } else if (flag == 3) {
+        frameElement.style.opacity = "0";
+        this.ChangeImageSource(backgroundWrapper, bg_idx);
+        setTimeout(() => {
+          this.RepresentExplainElement(expalinElement, explainImg[expalin_idx]);
+          expalin_idx += 1;
+        }, 1000);
+        bg_idx += 1;
+        flag += 1;
+      } else if (flag == 4) {
+        this.HideExplainElement(expalinElement);
+        frameElement.src = highlightFrame[highlight_idx];
+        frameElement.style.opacity = "1";
+        flag += 1;
+      } else if (flag == 5) {
+        this.SkipTutorialImg(
+          switchElement,
+          tutorialButton,
+          backgroundWrapperContainer,
+          tutorialContainer
+        );
+      }
+    });
+
+    tutorialButton[1].addEventListener("click", () => {
+      this.SkipTutorialImg(
+        switchElement,
+        tutorialButton,
+        backgroundWrapperContainer,
+        tutorialContainer
+      );
+    });
+  }
+
+  private ChangeImageSource(backgroundWrapper: HTMLDivElement, bg_idx): void {
+    backgroundWrapper.style.transform = `translate(-${bg_idx * 100}vw)`;
+  }
+
+  private HideExplainElement(imgElement) {
+    imgElement.style.opacity = "0";
+  }
+
+  private RepresentExplainElement(imgElement, src) {
+    imgElement.src = src;
+    imgElement.style.opacity = "1";
+  }
+
+  private SkipTutorialImg(
+    switchElement,
+    tutorialButton,
+    backgroundWrapperContainer,
+    tutorialContainer
+  ) {
+    switchElement[0].classList.remove("hidden");
+    tutorialContainer.style.transition = "opacity 1.5s";
+    tutorialContainer.style.opacity = "0";
+    // backgroundWrapperContainer.style.transition = "opacity 0.5s";
+    // backgroundWrapperContainer.style.opacity = "0";
+    setTimeout(function () {
+      backgroundWrapperContainer.remove();
+      tutorialButton[0].remove();
+      tutorialButton[1].remove();
+      tutorialContainer.remove();
+    }, 500);
   }
 }
 
