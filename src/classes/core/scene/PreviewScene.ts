@@ -121,12 +121,12 @@ class PreviewScene implements ICustomScene {
     videoViewMesh.actionManager = new ActionManager(this.scene);
     videoViewMesh.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnPickTrigger, function (_event) {
-        container.style.zIndex = 10;
+        (container as HTMLDivElement).style.zIndex = "10";
       })
     );
     document.addEventListener("click", (e: any) => {
       if (e.target.id === "CSS3DRendererDom") {
-        container.style.zIndex = "-1";
+        (container as HTMLDivElement).style.zIndex = "-1";
       }
     });
 
@@ -135,7 +135,10 @@ class PreviewScene implements ICustomScene {
     });
     //------------EVENTS--------------------------------
     this.scene.onBeforeRenderObservable.add(() => {
-      css3DRenderer.render(this.scene, this.scene.activeCamera);
+      (css3DRenderer as CSS3DRenderer).render(
+        this.scene,
+        this.scene.activeCamera
+      );
     });
 
     // Light Setup
@@ -166,13 +169,13 @@ class PreviewScene implements ICustomScene {
     css3DContainer.style.height = "100%";
     css3DContainer.style.zIndex = "-1";
 
-    canvasZone.insertBefore(css3DContainer, canvasZone.firstChild);
+    canvasZone?.insertBefore(css3DContainer, canvasZone.firstChild);
 
     let css3DRenderer = new CSS3DRenderer();
     css3DContainer.appendChild(css3DRenderer.domElement);
 
     //Set CSS container size same as WebGL Container Size
-    css3DRenderer.setSize(canvasZone.offsetWidth, canvasZone.offsetHeight);
+    css3DRenderer.setSize(canvasZone?.offsetWidth, canvasZone?.offsetHeight);
 
     let iframeContainer = document.createElement("div");
     iframeContainer.style.width = width + "px";
@@ -180,7 +183,7 @@ class PreviewScene implements ICustomScene {
     iframeContainer.style.backgroundColor = "#000";
     iframeContainer.id = "iframeContainer";
 
-    let CSSobject = new CSS3DObject(iframeContainer, this.scene);
+    let CSSobject = new CSS3DObject(iframeContainer);
     CSSobject.position.copyFrom(mesh.getAbsolutePosition());
     CSSobject.rotation.y = -mesh.rotation.y;
     CSSobject.scaling.copyFrom(mesh.scaling);

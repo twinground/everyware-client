@@ -392,7 +392,7 @@ class WorldScene implements ICustomScene {
     const tutorialContainer = document.createElement("div");
     const backgroundWrapperContainer = document.createElement("div");
     const backgroundWrapper = document.createElement("div");
-    const backgroundElement = [];
+    const backgroundElement: HTMLImageElement[] = [];
     const expalinElement = document.createElement("img");
     const frameElement = document.createElement("img");
     const switchElement = document.getElementsByClassName("switch");
