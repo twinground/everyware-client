@@ -36,7 +36,7 @@ import {
 import Booth from "../level/Booth";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
-//type CollisionCallback = (targetMesh: Mesh) => void;
+const GRAVITY = new Vector3(0, -9.81, 0);
 
 /**
  * World Scene
@@ -73,6 +73,9 @@ class WorldScene implements ICustomScene {
     this.scene = new Scene(engine.BabylonEngine);
     this.scene.collisionsEnabled = true;
     this.scene.actionManager = new ActionManager();
+
+    // enable physics
+    this.scene.enablePhysics(GRAVITY, this.engine.HavokPlugin);
 
     // Gizmo manager
     this._gizman = new GizmoManager(this.scene);

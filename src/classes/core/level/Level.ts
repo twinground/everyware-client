@@ -192,7 +192,9 @@ class Level {
           newBoothInstance as TransformNode
         );
         newBooth.SetPosition(6.5, 0, -9 * i);
-        newBooth.SetCollisions(newBooth.rootMesh);
+        newBooth.SetIntersectionEvent(newBooth.rootMesh);
+        newBooth.CreateBoardMesh();
+        newBooth.CreateCollisionAreas();
         this._booths.push(newBooth);
       }
     }
@@ -206,8 +208,9 @@ class Level {
       );
       newBooth.SetPosition(-6.5, 0, -9 * i);
       newBooth.SetRotationQuat(Quaternion.FromEulerAngles(0, Math.PI, 0));
-      newBooth.SetCollisions(newBooth.rootMesh);
+      newBooth.SetIntersectionEvent(newBooth.rootMesh);
       newBooth.CreateBoardMesh();
+      newBooth.CreateCollisionAreas();
       this._booths.push(newBooth);
     }
 

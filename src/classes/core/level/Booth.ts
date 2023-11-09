@@ -12,7 +12,8 @@ import {
   Texture,
   PBRMaterial,
   Color3,
-  Nullable,
+  PhysicsAggregate,
+  PhysicsShapeType,
 } from "@babylonjs/core";
 import WorldScene from "../scene/WorldScene";
 
@@ -45,17 +46,17 @@ class Booth {
 
     if (boothInstance) {
       this.rootMesh = boothInstance;
-      for (let child of this.rootMesh.getChildren()) {
-        if (child.id.match(RegExp("instance of board-*"))) {
-          this.boards.push(child as Mesh);
-        } else if (child.id == "instance of front-logo") {
-          this.frontLogo = child;
-        } else if (child.id == "instance of top-logo") {
-          this.topLogo = child;
-        } else if (child.id == "instance of booth-carpet") {
-          this.boothCarpet = child as Mesh;
-        }
-      }
+      // for (let child of this.rootMesh.getChildren()) {
+      //   if (child.id.match(RegExp("instance of board-*"))) {
+      //     this.boards.push(child as Mesh);
+      //   } else if (child.id == "instance of front-logo") {
+      //     this.frontLogo = child;
+      //   } else if (child.id == "instance of top-logo") {
+      //     this.topLogo = child;
+      //   } else if (child.id == "instance of booth-carpet") {
+      //     this.boothCarpet = child as Mesh;
+      //   }
+      // }
     }
 
     this.pbrMaterial = new PBRMaterial("booth-shared-pbr-material", this.scene);
@@ -83,6 +84,7 @@ class Booth {
     );
 
     this.rootMesh = boothGLB.meshes[0];
+
     for (let child of this.rootMesh.getChildren()) {
       if (child.id.match(RegExp("board-*"))) {
         this.boards.push(child as Mesh);
@@ -102,12 +104,14 @@ class Booth {
     // compute world matrix again
     this.boothCarpet.computeWorldMatrix(true);
     // set booth area collisions
-    this.SetCollisions(this.rootMesh);
+    this.SetIntersectionEvent(this.rootMesh);
     // set board textures
     this.CreateBoardMesh();
+    // create booth collisions
+    this.CreateCollisionAreas();
   }
 
-  public SetCollisions(parent: AbstractMesh | TransformNode) {
+  public SetIntersectionEvent(parent: AbstractMesh | TransformNode) {
     // desk collision area
     this.deskCollision = MeshBuilder.CreateBox(
       "collision-box-for-desk",
@@ -115,7 +119,6 @@ class Booth {
       this.scene
     );
     this.deskCollision.parent = parent;
-    //this.deskCollision.actionManager = new ActionManager(this.scene);
     this.deskCollision.visibility = 0;
     this.deskCollision.position.set(2.35, 0, 3.8);
 
@@ -151,6 +154,70 @@ class Booth {
       mat.roughness = 0.5;
       mat.diffuseTexture = this.dummyTextures[Math.floor(Math.random() * 8)];
       board.material = mat;
+    }
+  }
+
+  public CreateCollisionAreas() {
+    const pipeOne = MeshBuilder.CreateBox(
+      "pipe-one",
+      { width: 0.3, height: 2.5, depth: 0.3 },
+      this.scene
+    );
+    pipeOne.position.set(-1, 1.5, 2);
+
+    const pipeTwo = MeshBuilder.CreateBox(
+      "pipe-two",
+      { width: 0.3, height: 2.5, depth: 0.3 },
+      this.scene
+    );
+    pipeTwo.position.set(-2.8, 1.5, -5.5);
+
+    const wallOne = MeshBuilder.CreateBox(
+      "wall-one",
+      { width: 0.8, height: 2.5, depth: 11.5 },
+      this.scene
+    );
+    wallOne.position.set(3.8, 1.5, 0);
+
+    const wallTwo = MeshBuilder.CreateBox(
+      "wall-two",
+      { width: 4.5, height: 2.5, depth: 0.5 },
+      this.scene
+    );
+    wallTwo.position.set(1, 1.5, -5.5);
+
+    const wallThree = MeshBuilder.CreateBox(
+      "wall-three",
+      { width: 4.3, height: 2.5, depth: 0.5 },
+      this.scene
+    );
+    wallThree.position.set(1, 1.5, 5.5);
+
+    const frontDesk = MeshBuilder.CreateBox(
+      "front-desk",
+      { width: 1, height: 1, depth: 2.5 },
+      this.scene
+    );
+    frontDesk.position.set(-3.5, 0.5, -4.3);
+    // const monitor = MeshBuilder.CreateCylinder("monitor");
+
+    pipeOne.parent = this.rootMesh;
+    pipeTwo.parent = this.rootMesh;
+    wallOne.parent = this.rootMesh;
+    wallTwo.parent = this.rootMesh;
+    wallThree.parent = this.rootMesh;
+    frontDesk.parent = this.rootMesh;
+    // monitor.parent = this.rootMesh;
+
+    const meshes = [pipeOne, pipeTwo, wallOne, wallThree, wallTwo, frontDesk];
+    for (let mesh of meshes) {
+      const aggregation = new PhysicsAggregate(
+        mesh,
+        PhysicsShapeType.MESH,
+        { mass: 0 },
+        this.scene
+      );
+      mesh.visibility = 0;
     }
   }
 
