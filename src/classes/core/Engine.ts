@@ -1,7 +1,7 @@
 // library
 import "@babylonjs/core/Debug/debugLayer";
 import HavokPhysics from "@babylonjs/havok";
-import havokWasmUrl from "../../../assets/HavokPhysics.wasm?url"; // postinstalled wasm file, ignore error
+//import havokWasmUrl from "./physics/HavokPhysics.wasm?url"; // postinstalled wasm file, ignore error
 
 import "@babylonjs/inspector";
 import {
@@ -52,7 +52,7 @@ class Engine {
     );
 
     const havok = await HavokPhysics({
-      locateFile: () => havokWasmUrl,
+      locateFile: () => "./scripts/HavokPhysics.wasm?url",
     });
     this._physicsEngine = new HavokPlugin(true, havok);
 
