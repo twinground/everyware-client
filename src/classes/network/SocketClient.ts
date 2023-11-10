@@ -1,10 +1,4 @@
-import {
-  IConnection,
-  ITransform,
-  IPacket,
-  IInit,
-  IDisconnection,
-} from "../../interfaces/IPacket";
+import { IPacket, IInit } from "../../interfaces/IPacket";
 import { SocketEventMap } from "./SocketEventHandler";
 
 const NAME_MAP = {

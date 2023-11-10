@@ -1,5 +1,4 @@
 import {
-  MeshBuilder,
   Scene,
   Color3,
   Quaternion,
@@ -7,10 +6,8 @@ import {
   EnvironmentHelper,
   GlowLayer,
   RecastJSPlugin,
-  StandardMaterial,
   Mesh,
   ICrowd,
-  PointerEventTypes,
   TransformNode,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
@@ -19,8 +16,6 @@ import Player from "../player/Player";
 import WorldScene from "../scene/WorldScene";
 import Booth from "./Booth";
 import Expo from "./Expo";
-//scripts
-import Recast from "recast-detour";
 
 const ENV_COLOR = new Color3(255 / 255, 240 / 255, 197 / 255);
 const mainColor = {

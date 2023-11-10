@@ -5,7 +5,6 @@ import {
   Vector3,
   AnimationGroup,
   AbstractMesh,
-  TransformNode,
   AsyncCoroutine,
   FollowCamera,
   UniversalCamera,
@@ -14,7 +13,6 @@ import {
   ActionManager,
   Quaternion,
   PhysicsMotionType,
-  PhysicsViewer,
   Mesh,
   PhysicsAggregate,
   PhysicsShapeType,
@@ -98,13 +96,6 @@ class Player {
     this._capsuleAggregate.body.setMassProperties({
       inertia: new Vector3(0, 0, 0),
     });
-
-    // const debugPhysicsViewer = new PhysicsViewer(this.scene);
-    // for (const mesh of scene.rootNodes) {
-    //   if ((mesh as Mesh).physicsBody) {
-    //     debugPhysicsViewer.showBody((mesh as Mesh).physicsBody);
-    //   }
-    // }
     /**
      * ----- Player controller -----
      */

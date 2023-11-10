@@ -11,8 +11,6 @@ import {
   ActionManager,
   HemisphericLight,
   FollowCamera,
-  TransformNode,
-  AbstractMesh,
   DirectionalLight,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";

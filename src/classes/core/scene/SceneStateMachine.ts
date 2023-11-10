@@ -1,5 +1,5 @@
 //module
-import { PostProcess, Color4, RecastJSPlugin } from "@babylonjs/core";
+import { PostProcess } from "@babylonjs/core";
 // class
 import Socket from "../../network/SocketClient";
 import Engine from "../Engine";
@@ -17,7 +17,6 @@ class SceneStateMachine implements ISceneStateMachine {
   private _canvas: HTMLCanvasElement;
   private _socket: Socket | null;
   private _expoName: string;
-  private _navigationPlugin: RecastJSPlugin;
 
   constructor(
     engine: Engine,
