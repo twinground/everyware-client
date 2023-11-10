@@ -116,8 +116,6 @@ export default class PlayerController {
     sideways.y = -9.81;
 
     this._player.RigidBody.setLinearVelocity(forward.addInPlace(sideways));
-    // console.log(this._player.ParentMesh.position);
-    // console.log(this._player.Mesh.rotationQuaternion);
 
     if (this._player.isOnline && this._isTransformUpdated) {
       this._player.SendTransformPacket();

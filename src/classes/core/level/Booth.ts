@@ -46,17 +46,6 @@ class Booth {
 
     if (boothInstance) {
       this.rootMesh = boothInstance;
-      // for (let child of this.rootMesh.getChildren()) {
-      //   if (child.id.match(RegExp("instance of board-*"))) {
-      //     this.boards.push(child as Mesh);
-      //   } else if (child.id == "instance of front-logo") {
-      //     this.frontLogo = child;
-      //   } else if (child.id == "instance of top-logo") {
-      //     this.topLogo = child;
-      //   } else if (child.id == "instance of booth-carpet") {
-      //     this.boothCarpet = child as Mesh;
-      //   }
-      // }
     }
 
     this.pbrMaterial = new PBRMaterial("booth-shared-pbr-material", this.scene);
@@ -107,6 +96,8 @@ class Booth {
     this.SetIntersectionEvent(this.rootMesh);
     // set board textures
     this.CreateBoardMesh();
+    // set logo textures
+    this.CreateLogoMesh();
     // create booth collisions
     this.CreateCollisionAreas();
   }
@@ -133,6 +124,48 @@ class Booth {
 
     // create UI button and intersection event
     this.worldScene.CreateDeskCollisionEvent(this.deskCollision);
+  }
+
+  public CreateLogoMesh() {
+    const frontLogoMat = new StandardMaterial("board-mat", this.scene);
+    const frontLogo = MeshBuilder.CreatePlane(
+      `frontLogo-mesh`,
+      {
+        width: 1.8,
+        height: 0.65,
+      },
+      this.scene
+    );
+
+    frontLogo.parent = this.rootMesh;
+    frontLogo.rotation.y = Math.PI / 2;
+    frontLogo.position.set(-3.985, 0.9, -4.3);
+
+    frontLogoMat.diffuseColor = new Color3(1, 1, 1);
+    frontLogoMat.roughness = 0.5;
+    frontLogoMat.diffuseTexture =
+      this.dummyTextures[Math.floor(Math.random() * 8)];
+    frontLogo.material = frontLogoMat;
+
+    const topLogoMat = new StandardMaterial("board-mat", this.scene);
+    const topLogo = MeshBuilder.CreatePlane(
+      `topLogo-mesh`,
+      {
+        width: 3.25,
+        height: 1.35,
+      },
+      this.scene
+    );
+
+    topLogo.parent = this.rootMesh;
+    topLogo.rotation.y = Math.PI / 2;
+    topLogo.position.set(-1.1, 4.32, 3.67);
+
+    topLogoMat.diffuseColor = new Color3(1, 1, 1);
+    topLogoMat.roughness = 0.5;
+    topLogoMat.diffuseTexture =
+      this.dummyTextures[Math.floor(Math.random() * 8)];
+    topLogo.material = topLogoMat;
   }
 
   public CreateBoardMesh() {

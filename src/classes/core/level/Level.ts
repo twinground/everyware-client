@@ -194,6 +194,7 @@ class Level {
         newBooth.SetPosition(6.5, 0, -9 * i);
         newBooth.SetIntersectionEvent(newBooth.rootMesh);
         newBooth.CreateBoardMesh();
+        newBooth.CreateLogoMesh();
         newBooth.CreateCollisionAreas();
         this._booths.push(newBooth);
       }
@@ -210,6 +211,7 @@ class Level {
       newBooth.SetRotationQuat(Quaternion.FromEulerAngles(0, Math.PI, 0));
       newBooth.SetIntersectionEvent(newBooth.rootMesh);
       newBooth.CreateBoardMesh();
+      newBooth.CreateLogoMesh();
       newBooth.CreateCollisionAreas();
       this._booths.push(newBooth);
     }
