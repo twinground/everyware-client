@@ -189,19 +189,19 @@ class PreviewScene implements ICustomScene {
     CSSobject.scaling.copyFrom(mesh.scaling);
 
     //append iframe
-    let iframe = document.createElement("iframe");
-    iframe.id = "video-" + videoID;
-    iframe.style.width = width + "px";
-    iframe.style.height = height + "px";
-    iframe.style.border = "0px";
-    iframe.allow = "autoplay";
-    // iframe.src = [
-    //   "https://www.youtube.com/embed/",
-    //   videoID,
-    //   "?rel=0&enablejsapi=1&disablekb=1&autoplay=1&controls=0&fs=0&modestbranding=1",
-    // ].join("");
-    iframe.src = "https://babylonjs.com";
-    iframeContainer.appendChild(iframe);
+    iframeContainer.innerHTML = `
+      <iframe 
+        width="${width}" 
+        height="${height}" 
+        src="https://www.youtube.com/embed/HpS_hHTMPF0?si=eKsi8naKJJWl4fyx" 
+        title="YouTube video player" 
+        frameborder="0" 
+        allow="accelerometer; 
+        autoplay; clipboard-write; 
+        encrypted-media; 
+        gyroscope; picture-in-picture; 
+        web-share" allowfullscreen></iframe>
+    `;
 
     let depthMask = new StandardMaterial("VideoViewMaterial", scene);
     depthMask.backFaceCulling = true;
