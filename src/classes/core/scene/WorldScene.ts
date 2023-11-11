@@ -34,6 +34,7 @@ import {
   ITransform,
 } from "../../../interfaces/IPacket";
 import Booth from "../level/Booth";
+import ChatBox from "../ui/ChatBox";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
 const GRAVITY = new Vector3(0, -9.81, 0);
@@ -69,6 +70,9 @@ class WorldScene implements ICustomScene {
     private _socket?: Socket
   ) {
     this.TutorialOnboarding();
+    //TODO wh test
+    const chatBox = new ChatBox(expoName, "wh", _socket);
+
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
     this.scene.collisionsEnabled = true;

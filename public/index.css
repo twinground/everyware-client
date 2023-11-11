@@ -178,3 +178,73 @@ input:checked + .slider:before {
 .bg-wrapper-container {
   overflow: hidden;
 }
+
+.temp-chat-parent {
+  display: block;
+  flex-direction: column;
+  position: absolute;
+  bottom: 0%;
+  left: 0%;
+  width: 30rem;
+  height: 20rem;
+  z-index: 4;
+  background-color: rgb(0, 0, 0);
+}
+
+.chat-container {
+  display: block;
+  background-color: rgb(111, 30, 30);
+  width: 100%;
+  height: 100%;
+}
+
+.size-toggle-button {
+  position: absolute;
+  right: -0.8rem;
+  top: -0.8rem;
+  width: 2rem;
+  height: 2rem;
+  background-color: rgb(30, 54, 111);
+}
+
+.chat-display-page {
+  display: block;
+  background-color: rgb(78, 39, 39);
+  width: 100%;
+  height: 85%;
+}
+
+.chat-page-text-wrapper {
+  display: block;
+  background-color: rgb(194, 115, 115);
+  width: 100%;
+  height: 100%;
+}
+
+.chat-recived-text {
+  display: block;
+  background-color: rgb(33, 125, 54);
+  width: 100%;
+  height: 10%;
+}
+
+.chat-input-page {
+  display: flex;
+  background-color: rgb(115, 194, 135);
+  width: 100%;
+  height: 15%;
+}
+
+.chat-text-field {
+  display: block;
+  background-color: rgb(63, 45, 195);
+  width: 80%;
+  height: 100%;
+}
+
+.chat-send-button {
+  display: block;
+  background-color: rgb(195, 45, 145);
+  width: 20%;
+  height: 100%;
+}
