@@ -16,7 +16,7 @@ export default class PlayerController {
     this._player = _player;
     this._inputSystem = new InputSystem(this.scene, this._player);
     this._velocity = new Vector3(0, 0, 0);
-    this._acceleration = new Vector3(1.0, 0.25, 2500.0);
+    this._acceleration = new Vector3(1.0, 0.25, 2000.0);
     this._decceleration = new Vector3(-0.0005, -0.0001, -10.0);
     this._animStateMachine = new AnimStateMachine(this._player);
     this._isTransformUpdated = false;

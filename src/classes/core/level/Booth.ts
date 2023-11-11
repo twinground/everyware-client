@@ -14,8 +14,10 @@ import {
   Color3,
   PhysicsAggregate,
   PhysicsShapeType,
+  Color4,
 } from "@babylonjs/core";
 import WorldScene from "../scene/WorldScene";
+import Player from "../player/Player";
 
 class Booth {
   readonly scene: Scene;
@@ -28,6 +30,7 @@ class Booth {
   public topLogo: Node;
   public boothCarpet: Mesh;
   public boothCollision: Mesh;
+  public boardCollisions: Mesh[] = [];
   // texture & material
   public dummyTextures: Texture[];
   public pbrMaterial: PBRMaterial;
@@ -122,6 +125,20 @@ class Booth {
     this.boothCollision.parent = parent;
     this.boothCollision.visibility = 0;
 
+    // board collision area
+    for (let i = 0; i < 3; i++) {
+      const boardCollisionMesh = MeshBuilder.CreateBox(
+        `board-${i}-collision`,
+        { width: 1.3, height: 3, depth: 1.3 },
+        this.scene
+      );
+      boardCollisionMesh.parent = parent;
+      boardCollisionMesh.position.set(1.5, 0.5, 0.6 + i * -2.5);
+      boardCollisionMesh.visibility = 0;
+
+      this.worldScene.CreateBoardCollisionEvent(this, boardCollisionMesh, i);
+    }
+
     // create UI button and intersection event
     this.worldScene.CreateDeskCollisionEvent(this.deskCollision);
   }
@@ -180,7 +197,10 @@ class Booth {
       );
       board.parent = this.rootMesh;
       board.rotation.y = Math.PI / 2;
-      board.position.set(3.7, 3, 0.715 + i * -2.5);
+      board.position.set(3.6, 3, 0.715 + i * -2.5);
+      board.edgesColor = new Color4(1, 1, 0, 0.5);
+      board.edgesWidth = 5;
+
       const mat = new StandardMaterial("board-mat", this.scene);
 
       mat.diffuseColor = new Color3(1, 1, 1);
@@ -232,7 +252,14 @@ class Booth {
       this.scene
     );
     frontDesk.position.set(-3.5, 0.5, -4.3);
-    // const monitor = MeshBuilder.CreateCylinder("monitor");
+
+    const monitor = MeshBuilder.CreateBox(
+      "monitor",
+      { width: 1, height: 1, depth: 3.5 },
+      this.scene
+    );
+    monitor.position.set(2.2, 0.5, 3.8);
+    monitor.rotation.y = -Math.PI / 4;
 
     pipeOne.parent = this.rootMesh;
     pipeTwo.parent = this.rootMesh;
@@ -240,11 +267,19 @@ class Booth {
     wallTwo.parent = this.rootMesh;
     wallThree.parent = this.rootMesh;
     frontDesk.parent = this.rootMesh;
-    // monitor.parent = this.rootMesh;
+    monitor.parent = this.rootMesh;
 
-    const meshes = [pipeOne, pipeTwo, wallOne, wallThree, wallTwo, frontDesk];
+    const meshes = [
+      pipeOne,
+      pipeTwo,
+      wallOne,
+      wallThree,
+      wallTwo,
+      frontDesk,
+      monitor,
+    ];
     for (let mesh of meshes) {
-      const aggregation = new PhysicsAggregate(
+      const _aggregation = new PhysicsAggregate(
         mesh,
         PhysicsShapeType.MESH,
         { mass: 0 },

@@ -225,6 +225,31 @@ class WorldScene implements ICustomScene {
   }
 
   /**
+   * Create board collision event and push the callback into callback queue
+   * @param targetBoard mesh to check collision from player mesh
+   */
+  public CreateBoardCollisionEvent(
+    booth: Booth,
+    targetBoard: Mesh,
+    index: number
+  ) {
+    this.scene.onBeforeRenderObservable.add(() => {
+      if (targetBoard.intersectsMesh(this._player.Mesh, false)) {
+        const targetImage = booth.rootMesh
+          .getChildMeshes()
+          .filter((mesh) => mesh.name == `board-${index}-image`)[0];
+        targetImage.enableEdgesRendering();
+      } else {
+        //TODO : need optimize
+        const targetImage = booth.rootMesh
+          .getChildMeshes()
+          .filter((mesh) => mesh.name == `board-${index}-image`)[0];
+        targetImage.disableEdgesRendering();
+      }
+    });
+  }
+
+  /**
    * Create view button UI and enroll events on the button.
    * @param linkMesh a mesh will be linked to button UI
    */
@@ -234,7 +259,6 @@ class WorldScene implements ICustomScene {
     // view mode event
     viewButton.onPointerClickObservable.add(() => {
       this._isViewing = true;
-
       // fade out scene
       this._sceneMachine.UpdateMachine(1); // 1 : PreviewScene
       // player camera zoom in
@@ -275,7 +299,7 @@ class WorldScene implements ICustomScene {
    * Create collision event and push the callback into callback queue
    * @param targetMesh mesh to check collision from player mesh
    */
-  public CreateBoothCollisionEvent(targetBooths: Booth[]) {
+  public CreateBoothCollisionEvent(targetBooths: Booth[], xs) {
     this.scene.onBeforeRenderObservable.add(() => {
       let flag = false;
       for (let booth of targetBooths) {

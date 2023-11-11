@@ -130,32 +130,6 @@ class Level {
         this.isDarkMode = !this.isDarkMode;
       }, 2500);
     });
-
-    // TODO : Below part are related to Recast plugin
-    // this.scene.onPointerObservable.add((pointerInfo) => {
-    //   switch (pointerInfo.type) {
-    //     case PointerEventTypes.POINTERDOWN:
-    //       if (pointerInfo.pickInfo?.hit) {
-    //         this.HandlerPointerDown();
-    //       }
-    //       break;
-    //   }
-    // });
-
-    // this.scene.onBeforeRenderObservable.add(() => {
-    //   if (this._crowd) {
-    //     this.player.position = this._crowd.getAgentPosition(0);
-    //     let velocity = this._crowd.getAgentVelocity(0);
-
-    //     if (velocity.length() > 0.2) {
-    //       velocity.normalize();
-    //       let desiredRotation = Math.atan2(velocity.x, velocity.z);
-    //       this.player.rotation.y =
-    //         this.player.rotation.y +
-    //         (desiredRotation - this.player.rotation.y) * 0.05;
-    //     }
-    //   }
-    // });
   }
 
   public async LoadMeshes() {
@@ -215,64 +189,7 @@ class Level {
       this.rootBooth,
       ...this._booths,
     ]);
-
-    /**
-     * Recast plugin
-     */
-    // const recast = await Recast.call({});
-    // this._navigationPlugin = new RecastJSPlugin(recast);
-    // // set navigation worker for processing parallel tasks.
-    // this._navigationPlugin.setWorkerURL("./scripts/workers/navMeshWorker.js");
-    // this._navigationPlugin.createNavMesh([this._expo.ground], NAV_PARAMAS);
-
-    // TODO : debug navigation mesh
-    // this._debugNavMesh = this._navigationPlugin.createDebugNavMesh(this.scene);
-    // const matDebug = new StandardMaterial("mat-debug-nav", this.scene);
-    // matDebug.diffuseColor = new Color3(0.1, 0.2, 1);
-    // matDebug.alpha = 0.2;
-    // this._debugNavMesh.material = matDebug;
-
-    // TODO : temp nav mesh crowd
-    // this._crowd = this._navigationPlugin.createCrowd(15, 0.1, this.scene);
-    // this._crowd.addAgent(this.player.position, AGENT_PARAMS, this.player);
   }
-
-  // GetGroundPosition() {
-  //   let pickInfo = this.scene.pick(this.scene.pointerX, this.scene.pointerY);
-  //   if (pickInfo.hit) {
-  //     return pickInfo.pickedPoint;
-  //   }
-  //   return null;
-  // }
-
-  // HandlerPointerDown() {
-  //   const startingPoint = this.GetGroundPosition();
-
-  //   if (startingPoint) {
-  //     setTimeout(() => {
-  //       this.player.CurrentCam.detachControl();
-  //     }, 0);
-
-  //     const agents = this._crowd.getAgents();
-  //     for (let i = 0; i < agents.length; i++) {
-  //       //TODO : move specific agent to target position
-  //       this._crowd.agentGoto(
-  //         agents[i],
-  //         this._navigationPlugin.getClosestPoint(startingPoint)
-  //       );
-  //       let pathPoints = this._navigationPlugin.computePath(
-  //         this._crowd.getAgentPosition(agents[0]),
-  //         this._navigationPlugin.getClosestPoint(startingPoint)
-  //       );
-
-  //       this.pathLine = MeshBuilder.CreateDashedLines(
-  //         "ribbon",
-  //         { points: pathPoints, updatable: true, instance: this.pathLine },
-  //         this.scene
-  //       );
-  //     }
-  //   }
-  // }
 
   public ConvertColorMode(
     mainColor: { r: number; g: number; b: number },

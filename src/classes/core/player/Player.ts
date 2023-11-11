@@ -116,11 +116,11 @@ class Player {
     );
     this._arcRotCamera.lowerBetaLimit = 0.1;
     this._arcRotCamera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    this._arcRotCamera.lowerRadiusLimit = 1;
-    this._arcRotCamera.upperRadiusLimit = 150;
+    this._arcRotCamera.lowerRadiusLimit = 3;
+    this._arcRotCamera.upperRadiusLimit = 10;
     this._arcRotCamera.setPosition(new Vector3(0, 0, -10));
     this._arcRotCamera.attachControl(true);
-    this._arcRotCamera.setTarget(this._mesh);
+    this._arcRotCamera.setTarget(this._headMesh);
 
     // Follow camera configuration
     this._followCamera = new FollowCamera(
