@@ -53,13 +53,33 @@ class ChatBox {
 
     //add event listener on button
     this._sendButtonDOM.addEventListener("click", () => {
-      this.Send(this._userName, this._textFieldDOM.value);
+      if (this._textFieldDOM.value != "") {
+        this.Send(this._userName, this._textFieldDOM.value);
 
-      //TODO test code for console, should be deleted
-      this.AddRecievedChat(this._userName, this._textFieldDOM.value);
-      //-------------------------------------------------------------
+        //TODO test code for console, should be deleted
+        this.AddRecievedChat(this._userName, this._textFieldDOM.value);
+        //-------------------------------------------------------------
+      }
 
       this._textFieldDOM.value = "";
+      this._textFieldDOM.focus();
+    });
+
+    this._textFieldDOM.addEventListener("keyup", (event) => {
+      // event.key === 'Enter'는 엔터 키를 눌렀을 때를 확인
+
+      if (event.key === "Enter") {
+        if (this._textFieldDOM.value != "") {
+          this.Send(this._userName, this._textFieldDOM.value);
+
+          //TODO test code for console, should be deleted
+          this.AddRecievedChat(this._userName, this._textFieldDOM.value);
+          //-------------------------------------------------------------
+        }
+
+        this._textFieldDOM.value = "";
+        this._textFieldDOM.focus();
+      }
     });
 
     if (this._isDefault) {
@@ -82,6 +102,9 @@ class ChatBox {
     text.classList.add("chat-recived-text");
     text.textContent = `${name} : ${message}`;
     this._chatPageTextWrapper.appendChild(text);
+    //chat-page-scroll option
+    this._chatPageTextWrapper.scrollTop =
+      this._chatPageTextWrapper.scrollHeight;
   }
 
   //TODO 이렇게 만든 컨테이너를 Parent컨테이너에 집어넣는 함수 왜 만들었냐 바깥에서 넣을 수 있게!
