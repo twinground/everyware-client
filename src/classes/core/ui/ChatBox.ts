@@ -101,6 +101,11 @@ class ChatBox {
     const text = document.createElement("span");
     text.classList.add("chat-recived-text");
     text.textContent = `${name} : ${message}`;
+    if (this._chatPageTextWrapper.children.length > 200) {
+      this._chatPageTextWrapper.removeChild(
+        this._chatPageTextWrapper.children[0]
+      );
+    }
     this._chatPageTextWrapper.appendChild(text);
     //chat-page-scroll option
     this._chatPageTextWrapper.scrollTop =
