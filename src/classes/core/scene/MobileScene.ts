@@ -25,7 +25,7 @@ import { createExitButton } from "../ui/ExitButton";
 import CSS3DObject from "../renderer/CSS3DObject.js";
 import CSS3DRenderer from "../renderer/CSSRenderer.js";
 
-const width = 1920;
+const width = 2000;
 const height = 1080;
 
 class MobileScene implements ICustomScene {
@@ -108,7 +108,7 @@ class MobileScene implements ICustomScene {
     screenMesh.actionManager = new ActionManager(this.scene);
     screenMesh.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnPickTrigger, function (_event) {
-        (container as HTMLDivElement).style.zIndex = "10";
+        (container as HTMLDivElement).style.zIndex = "1";
       })
     );
     document.addEventListener("click", (e: any) => {
@@ -165,16 +165,22 @@ class MobileScene implements ICustomScene {
 
     let CSSobject = new CSS3DObject(iframeContainer);
     CSSobject.position.copyFrom(mesh.getAbsolutePosition());
+    CSSobject.position.y -= 1.4;
+    CSSobject.position.x += 3.75;
     CSSobject.rotation.y = -mesh.rotation.y;
     CSSobject.scaling.copyFrom(mesh.scaling);
 
     let iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.right = "300px";
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "0px";
-    iframe.src = "http://www.gamejob.co.kr/main/home";
+    iframe.src =
+      "http://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
+    iframe.style.scale = "6 1.5";
+    iframe.style.translate = "-100%";
     iframeContainer.appendChild(iframe);
-
     let depthMask = new StandardMaterial("VideoViewMaterial", scene);
     depthMask.backFaceCulling = true;
     depthMask.alphaMode = BabylonEngine.ALPHA_COMBINE;
