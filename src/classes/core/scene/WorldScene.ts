@@ -254,7 +254,11 @@ class WorldScene implements ICustomScene {
    * @param linkMesh a mesh will be linked to button UI
    */
   public CreateDeskCollisionEvent(linkMesh: Mesh) {
-    const viewButton = createButton(linkMesh, this._advancedTexture);
+    const viewButton = createButton(
+      linkMesh,
+      "웹 체험하기",
+      this._advancedTexture
+    );
 
     // view mode event
     viewButton.onPointerClickObservable.add(() => {
@@ -299,7 +303,7 @@ class WorldScene implements ICustomScene {
    * Create collision event and push the callback into callback queue
    * @param targetMesh mesh to check collision from player mesh
    */
-  public CreateBoothCollisionEvent(targetBooths: Booth[], xs) {
+  public CreateBoothCollisionEvent(targetBooths: Booth[]) {
     this.scene.onBeforeRenderObservable.add(() => {
       let flag = false;
       for (let booth of targetBooths) {
@@ -322,6 +326,48 @@ class WorldScene implements ICustomScene {
           this._player.Mesh;
       }
     });
+  }
+
+  /**
+   * Transit to mobile scene
+   * @param linkMesh a mesh linked with UI and mesh intersection events.
+   */
+  public CreateMobileCollisionEvent(linkMesh: Mesh) {
+    const viewButton = createButton(
+      linkMesh,
+      "앱 체험하기",
+      this._advancedTexture
+    );
+
+    // view mode event
+    viewButton.onPointerClickObservable.add(() => {
+      this._isViewing = true;
+      // fade out scene
+      this._sceneMachine.UpdateMachine(2); // 1 : PreviewScene
+      // player camera zoom in
+      this._player.ZoomInFollowCam();
+      // start animation and change anim state.
+      this._player.Controller.UpdateViewMode(true);
+      this._player.CurAnim = this._player.Animations.thumbsUp;
+      if (this._socket) {
+        this._player.SendTransformPacket();
+      }
+
+      viewButton.isVisible = false;
+    });
+
+    this.scene.onBeforeRenderObservable.add(() => {
+      if (
+        !this._isViewing &&
+        linkMesh.intersectsMesh(this._player.Mesh, false)
+      ) {
+        viewButton.isVisible = true;
+      } else {
+        viewButton.isVisible = false;
+      }
+    });
+
+    this._viewButtons.push(viewButton);
   }
 
   /**

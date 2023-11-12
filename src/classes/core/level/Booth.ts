@@ -30,6 +30,7 @@ class Booth {
   public topLogo: Node;
   public boothCarpet: Mesh;
   public boothCollision: Mesh;
+  public mobileCollision: Mesh;
   public boardCollisions: Mesh[] = [];
   // texture & material
   public dummyTextures: Texture[];
@@ -139,8 +140,18 @@ class Booth {
       this.worldScene.CreateBoardCollisionEvent(this, boardCollisionMesh, i);
     }
 
+    this.mobileCollision = MeshBuilder.CreateBox(
+      "mobile-collision",
+      { width: 1.3, height: 3, depth: 1.3 },
+      this.scene
+    );
+    this.mobileCollision.position.set(-0.5, 1, 4);
+    this.mobileCollision.parent = parent;
+    this.mobileCollision.visibility = 0;
+
     // create UI button and intersection event
     this.worldScene.CreateDeskCollisionEvent(this.deskCollision);
+    this.worldScene.CreateMobileCollisionEvent(this.mobileCollision);
   }
 
   public CreateLogoMesh() {

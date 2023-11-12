@@ -4,15 +4,17 @@ import { PostProcess } from "@babylonjs/core";
 import Socket from "../../network/SocketClient";
 import Engine from "../Engine";
 import WorldScene from "./WorldScene";
+import PreviewScene from "./PreviewScene";
+import MobileScene from "./MobileScene";
 //interface
 import ICustomScene from "../../../interfaces/ICustomScene";
 import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
-import PreviewScene from "./PreviewScene";
 
 class SceneStateMachine implements ISceneStateMachine {
   private _currentScene: ICustomScene;
   private _worldScene: WorldScene;
   private _previewScene: PreviewScene;
+  private _mobileScene: MobileScene;
   private _engine: Engine;
   private _canvas: HTMLCanvasElement;
   private _socket: Socket | null;
@@ -40,7 +42,8 @@ class SceneStateMachine implements ISceneStateMachine {
       this._engine.BabylonEngine.hideLoadingUI();
     });
     this._previewScene = new PreviewScene(this._engine, this);
-    this._currentScene = this._worldScene;
+    this._mobileScene = new MobileScene(this._engine, this);
+    this._currentScene = this._mobileScene;
   }
 
   private IncrementAlpha(params: any) {
@@ -118,6 +121,9 @@ class SceneStateMachine implements ISceneStateMachine {
       case 1: // PreviewScene
         this._currentScene = this._previewScene;
         break;
+
+      case 2: // MobileScene
+        this._currentScene = this._mobileScene;
     }
     this._currentScene.scene.attachControl();
 
