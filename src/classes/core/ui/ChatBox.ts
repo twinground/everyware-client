@@ -6,11 +6,13 @@ import Socket from "../../network/SocketClient";
 class ChatBox {
   private _expoName: string;
   private _userName: string;
+  private _parent: HTMLElement;
   private _container: HTMLDivElement;
   private _textFieldDOM: HTMLInputElement;
   private _chatPageTextWrapper: HTMLDivElement;
   private _sendButtonDOM: HTMLDivElement;
   private _sizeToggleButtonDOM: HTMLElement;
+  private _openChatButtonDOM: HTMLDivElement;
   private _socket?: Socket;
   private _isOn: boolean;
   private _isDefault: boolean;
@@ -18,7 +20,7 @@ class ChatBox {
   constructor(expoName, userName, socket?: Socket) {
     // if you have parent out of this class turn _isDefault to false and call InputChatBox with parent element
     this._isDefault = true;
-
+    this._isOn = true;
     this._expoName = expoName;
     this._userName = userName;
 
@@ -26,12 +28,17 @@ class ChatBox {
 
     this._container = document.createElement("div");
     this._sizeToggleButtonDOM = document.createElement("div");
+    const textXDiv = document.createElement("div");
+    textXDiv.textContent = "x";
+    textXDiv.classList.add("unclickable");
+    this._sizeToggleButtonDOM.appendChild(textXDiv);
     const displayPage = document.createElement("div");
     this._chatPageTextWrapper = document.createElement("div");
     const inputPage = document.createElement("div");
     this._textFieldDOM = document.createElement("input");
     this._textFieldDOM.setAttribute("type", "text");
     this._sendButtonDOM = document.createElement("div");
+    this._sendButtonDOM.textContent = "전송";
 
     // add classs
     tempParent.classList.add("temp-chat-parent");
@@ -50,6 +57,13 @@ class ChatBox {
     this._container.appendChild(inputPage);
     inputPage.appendChild(this._textFieldDOM);
     inputPage.appendChild(this._sendButtonDOM);
+
+    //create open button
+    this._openChatButtonDOM = document.createElement("div");
+    this._openChatButtonDOM.classList.add("open-chat-button");
+    const openButtonIcon = document.createElement("img");
+    this._openChatButtonDOM.appendChild(openButtonIcon);
+    openButtonIcon.src = "/images/chat-button.png";
 
     //add event listener on button
     this._sendButtonDOM.addEventListener("click", () => {
@@ -82,9 +96,19 @@ class ChatBox {
       }
     });
 
+    this._sizeToggleButtonDOM.addEventListener("click", () => {
+      this.CloseChatUI();
+    });
+
+    this._openChatButtonDOM.addEventListener("click", () => {
+      this.OpenChatUI();
+    });
+
     if (this._isDefault) {
-      document.body.appendChild(tempParent);
-      this.InputChatBox(tempParent);
+      this._parent = tempParent;
+      document.body.appendChild(this._parent);
+      document.body.prepend(this._parent);
+      this.InputChatBox(this._parent);
     }
   }
 
@@ -115,6 +139,28 @@ class ChatBox {
   //TODO 이렇게 만든 컨테이너를 Parent컨테이너에 집어넣는 함수 왜 만들었냐 바깥에서 넣을 수 있게!
   public InputChatBox(parent: HTMLElement) {
     parent.appendChild(this._container);
+  }
+
+  private CloseChatUI() {
+    this._isOn = false;
+    this._parent.style.animation = "shrink 1s ease-in-out forwards";
+    setTimeout(() => {
+      this._parent.removeChild(this._container);
+      this._parent.appendChild(this._openChatButtonDOM);
+      this._parent.classList.add("temp-chat-parent-transform");
+      this._parent.style.animation = "expand 2s ease-in-out forwards";
+    }, 1300);
+  }
+
+  private OpenChatUI() {
+    this._isOn = true;
+    this._parent.style.animation = "shrink 1s ease-in-out forwards";
+    setTimeout(() => {
+      this._parent.removeChild(this._openChatButtonDOM);
+      this._parent.classList.remove("temp-chat-parent-transform");
+      this._parent.appendChild(this._container);
+      this._parent.style.animation = "expand 2s ease-in-out forwards";
+    }, 1300);
   }
 }
 
