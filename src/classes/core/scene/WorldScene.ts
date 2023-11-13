@@ -12,6 +12,7 @@ import {
   HemisphericLight,
   FollowCamera,
   DirectionalLight,
+  Quaternion,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import { Inspector } from "@babylonjs/inspector";
@@ -135,9 +136,11 @@ class WorldScene implements ICustomScene {
           },
         } = data; // Destruct Transformation packet
         const target = this._remotePlayerMap[session_id];
-
-        target.position.set(x, 0, z); // update position
-        target.rotationQuaternion?.set(0, y, 0, w); // update quaternion
+        if (!target) return;
+        if (!target.Mesh.rotationQuaternion)
+          target.Mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
+        target.Mesh.position.set(x, 0, z); // update position
+        target.Mesh.rotationQuaternion?.set(0, y, 0, w); // update quaternion
 
         if (target.CurAnim.name != state) {
           this.scene.onBeforeRenderObservable.runCoroutineAsync(
@@ -173,6 +176,7 @@ class WorldScene implements ICustomScene {
     this.LoadModelAsset().then((asset) => {
       if (this._socket) {
         this._player = new Player(this.scene, expoName, asset, this._socket);
+        this._player.SendTransformPacket();
       } else {
         this._player = new Player(this.scene, expoName, asset);
       }
