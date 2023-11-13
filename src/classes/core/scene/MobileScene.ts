@@ -15,6 +15,7 @@ import {
   Quaternion,
   SceneLoader,
   Color3,
+  Plane,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
