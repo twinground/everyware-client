@@ -43,7 +43,7 @@ class SceneStateMachine implements ISceneStateMachine {
     });
     this._previewScene = new PreviewScene(this._engine, this);
     this._mobileScene = new MobileScene(this._engine, this);
-    this._currentScene = this._mobileScene;
+    this._currentScene = this._worldScene;
   }
 
   private IncrementAlpha(params: any) {

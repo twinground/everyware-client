@@ -1,6 +1,7 @@
 // TODO : this is temp chat box -> woo hyeong will make new ui again
 //class
 
+import { IChatMessage } from "../../../interfaces/IPacket";
 import Socket from "../../network/SocketClient";
 
 class ChatBox {
@@ -20,9 +21,15 @@ class ChatBox {
   constructor(expoName, userName, socket?: Socket) {
     // if you have parent out of this class turn _isDefault to false and call InputChatBox with parent element
     this._isDefault = true;
-    this._isOn = true;
+    this._isOn = false;
     this._expoName = expoName;
     this._userName = userName;
+    if (socket) {
+      this._socket = socket;
+      this._socket.On("chatMessage").Add((data: IChatMessage) => {
+        this.AddRecievedChat(data.session_id.slice(0, 5), data.message);
+      });
+    }
 
     const tempParent = document.createElement("div");
 
@@ -68,11 +75,7 @@ class ChatBox {
     //add event listener on button
     this._sendButtonDOM.addEventListener("click", () => {
       if (this._textFieldDOM.value != "") {
-        this.Send(this._userName, this._textFieldDOM.value);
-
-        //TODO test code for console, should be deleted
-        this.AddRecievedChat(this._userName, this._textFieldDOM.value);
-        //-------------------------------------------------------------
+        this.SendChatMessage(this._userName, this._textFieldDOM.value);
       }
 
       this._textFieldDOM.value = "";
@@ -84,11 +87,7 @@ class ChatBox {
 
       if (event.key === "Enter") {
         if (this._textFieldDOM.value != "") {
-          this.Send(this._userName, this._textFieldDOM.value);
-
-          //TODO test code for console, should be deleted
-          this.AddRecievedChat(this._userName, this._textFieldDOM.value);
-          //-------------------------------------------------------------
+          this.SendChatMessage(this._userName, this._textFieldDOM.value);
         }
 
         this._textFieldDOM.value = "";
@@ -110,13 +109,21 @@ class ChatBox {
       document.body.prepend(this._parent);
       this.InputChatBox(this._parent);
     }
+
+    this.CloseChatUI();
   }
 
   //TODO ChatBox클래스의 _TextFieldDOM과 _userName을 통해 패킷 전송!
   //send함수 내에 소켓 전송 함수 구현하면 댐
-  private Send(name: string, text: string) {
-    console.log(name);
-    console.log(text);
+  private SendChatMessage(_name: string, text: string) {
+    if (this._socket) {
+      const chatData: IChatMessage = {
+        session_id: this._socket.id,
+        expo_name: this._expoName,
+        message: text,
+      };
+      this._socket.Send(4, chatData);
+    }
   }
 
   //TODO 소켓을 통해 전달받은 메시지에서 유저 이름과 채팅 내용을 UI(chatPageContainerDOM에 추가
@@ -143,23 +150,23 @@ class ChatBox {
 
   private CloseChatUI() {
     this._isOn = false;
-    this._parent.style.animation = "shrink 1s ease-in-out forwards";
+    this._parent.style.animation = "shrink 0.5s ease-in-out forwards";
     setTimeout(() => {
       this._parent.removeChild(this._container);
       this._parent.appendChild(this._openChatButtonDOM);
       this._parent.classList.add("temp-chat-parent-transform");
-      this._parent.style.animation = "expand 2s ease-in-out forwards";
+      this._parent.style.animation = "expand 0.5s ease-in-out forwards";
     }, 1300);
   }
 
   private OpenChatUI() {
     this._isOn = true;
-    this._parent.style.animation = "shrink 1s ease-in-out forwards";
+    this._parent.style.animation = "shrink 0.5s ease-in-out forwards";
     setTimeout(() => {
       this._parent.removeChild(this._openChatButtonDOM);
       this._parent.classList.remove("temp-chat-parent-transform");
       this._parent.appendChild(this._container);
-      this._parent.style.animation = "expand 2s ease-in-out forwards";
+      this._parent.style.animation = "expand 0.5s ease-in-out forwards";
     }, 1300);
   }
 }

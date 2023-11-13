@@ -29,6 +29,12 @@ export interface ITransform {
   };
 }
 
+export interface IChatMessage {
+  session_id: string;
+  expo_name: string;
+  message: string;
+}
+
 export interface IPacket {
   type: number;
   body: any;

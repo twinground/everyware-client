@@ -25,6 +25,7 @@ class Engine {
 
   constructor(expoName: string, socket?: Socket) {
     if (socket) {
+      console.log("server connected"); // TODO : debug purpose
       this._socket = socket;
     }
     this.Init(expoName);

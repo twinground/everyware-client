@@ -55,6 +55,7 @@ class WorldScene implements ICustomScene {
   /* GUI */
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
+  private _chatBox: ChatBox;
   /* boolean states */
   private _isViewing: boolean;
   /* gizmo related */
@@ -69,7 +70,7 @@ class WorldScene implements ICustomScene {
   ) {
     this.TutorialOnboarding();
     //TODO wh test
-    const chatBox = new ChatBox(expoName, "wh", _socket);
+    this._chatBox = new ChatBox(expoName, "wh", _socket);
 
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);

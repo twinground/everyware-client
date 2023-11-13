@@ -6,6 +6,7 @@ const NAME_MAP = {
   1: "connection",
   2: "transform",
   3: "disconnection",
+  4: "chatMessage",
 };
 
 class Socket {
