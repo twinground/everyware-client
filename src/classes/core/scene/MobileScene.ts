@@ -202,6 +202,12 @@ class MobileScene implements ICustomScene {
 
     return [css3DRenderer, css3DContainer];
   }
+
+  DisposeResource() {
+    this.scene.dispose();
+    this.RemoveDomNode("CSSContainer");
+    this.RemoveDomNode("CSS3DRendererDom");
+  }
 }
 
 export default MobileScene;

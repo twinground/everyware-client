@@ -41,8 +41,7 @@ class SceneStateMachine implements ISceneStateMachine {
     this._worldScene.scene.whenReadyAsync(true).then(() => {
       this._engine.BabylonEngine.hideLoadingUI();
     });
-    this._previewScene = new PreviewScene(this._engine, this);
-    this._mobileScene = new MobileScene(this._engine, this);
+
     this._currentScene = this._worldScene;
   }
 
@@ -115,14 +114,30 @@ class SceneStateMachine implements ISceneStateMachine {
           localPlayer.SendTransformPacket();
         }
         localPlayer.ZoomOutFollowCam();
+        if (this._previewScene && this._previewScene.scene) {
+          this._previewScene.DisposeResource();
+        }
+        if (this._mobileScene && this._mobileScene.scene) {
+          this._mobileScene.DisposeResource();
+        }
         this._currentScene = this._worldScene;
         break;
 
       case 1: // PreviewScene
+        this._previewScene = new PreviewScene(this._engine, this);
+        this._engine.BabylonEngine.displayLoadingUI();
+        this._previewScene.scene.whenReadyAsync(true).then(() => {
+          this._engine.BabylonEngine.hideLoadingUI();
+        });
         this._currentScene = this._previewScene;
         break;
 
       case 2: // MobileScene
+        this._mobileScene = new MobileScene(this._engine, this);
+        this._engine.BabylonEngine.displayLoadingUI();
+        this._mobileScene.scene.whenReadyAsync(true).then(() => {
+          this._engine.BabylonEngine.hideLoadingUI();
+        });
         this._currentScene = this._mobileScene;
     }
     this._currentScene.scene.attachControl();

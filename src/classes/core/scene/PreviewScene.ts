@@ -15,7 +15,9 @@ import {
   Axis,
   Quaternion,
   SceneLoader,
+  CubeTexture,
   Color3,
+  Mesh,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 // class
@@ -155,7 +157,7 @@ class PreviewScene implements ICustomScene {
     }
   }
 
-  SetupRenderer(mesh, scene) {
+  SetupRenderer(mesh: Mesh, scene: Scene) {
     const canvasZone = document.getElementById("CanvasZone");
     this.RemoveDomNode("CSSContainer");
     this.RemoveDomNode("CSS3DRendererDom");
@@ -220,6 +222,12 @@ class PreviewScene implements ICustomScene {
     this.scene.meshes[0] = mesh;
 
     return [css3DRenderer, css3DContainer];
+  }
+
+  DisposeResource() {
+    this.scene.dispose();
+    this.RemoveDomNode("CSSContainer");
+    this.RemoveDomNode("CSS3DRendererDom");
   }
 }
 
