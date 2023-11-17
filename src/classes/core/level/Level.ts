@@ -112,7 +112,7 @@ class Level {
     this._expo = new Expo(this.scene);
 
     // requeset booth informations
-    const response = await axios.get("http://13.124.153.160:8080/api/expos/1");
+    const response = await axios.get("https://13.124.153.160:8080/api/expos/1");
     const boothData = response.data;
 
     /**
