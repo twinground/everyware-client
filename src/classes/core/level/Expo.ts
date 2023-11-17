@@ -1,6 +1,10 @@
 import {
+  ActionManager,
+  ExecuteCodeAction,
   Mesh,
   MeshBuilder,
+  PhysicsAggregate,
+  PhysicsShapeType,
   Quaternion,
   Scene,
   SceneLoader,
@@ -17,6 +21,11 @@ class Expo extends TransformNode {
   public frontWall: Mesh;
   public ceiling: Mesh;
   public ground: Mesh;
+  private _leftWallAggregate: PhysicsAggregate;
+  private _rightWallAggregate: PhysicsAggregate;
+  private _backWallAggregate: PhysicsAggregate;
+  private _frontWallAggregate: PhysicsAggregate;
+  private _groundAggregate: PhysicsAggregate;
 
   constructor(scene: Scene) {
     super("expo-set", scene);
@@ -24,22 +33,34 @@ class Expo extends TransformNode {
     // left wall
     this.leftWall = MeshBuilder.CreatePlane(
       "left-wall",
-      { width: 40, height: 8 },
+      { width: 44, height: 8 },
       scene
     );
     this.leftWall.parent = this;
     this.leftWall.rotation.y = -Math.PI / 2;
-    this.leftWall.position.set(-11, 4, -20);
+    this.leftWall.position.set(-11, 4, -22);
+    this._leftWallAggregate = new PhysicsAggregate(
+      this.leftWall,
+      PhysicsShapeType.MESH,
+      { mass: 0 },
+      scene
+    );
 
     // right wall
     this.rightWall = MeshBuilder.CreatePlane(
       "right-wall",
-      { width: 40, height: 8 },
+      { width: 44, height: 8 },
       scene
     );
     this.rightWall.parent = this;
     this.rightWall.rotation.y = Math.PI / 2;
-    this.rightWall.position.set(11, 4, -20);
+    this.rightWall.position.set(11, 4, -22);
+    this._rightWallAggregate = new PhysicsAggregate(
+      this.rightWall,
+      PhysicsShapeType.MESH,
+      { mass: 0 },
+      scene
+    );
 
     // front wall
     this.frontWall = MeshBuilder.CreatePlane(
@@ -49,7 +70,13 @@ class Expo extends TransformNode {
     );
     this.frontWall.parent = this;
     this.frontWall.rotation.y = Math.PI;
-    this.frontWall.position.set(0, 4, -40);
+    this.frontWall.position.set(0, 4, -44);
+    this._frontWallAggregate = new PhysicsAggregate(
+      this.frontWall,
+      PhysicsShapeType.MESH,
+      { mass: 0 },
+      scene
+    );
 
     // back wall
     this.backWall = MeshBuilder.CreatePlane(
@@ -59,6 +86,12 @@ class Expo extends TransformNode {
     );
     this.backWall.parent = this;
     this.backWall.position.set(0, 4, 0);
+    this._backWallAggregate = new PhysicsAggregate(
+      this.backWall,
+      PhysicsShapeType.MESH,
+      { mass: 0 },
+      scene
+    );
 
     // ceiling
     this.ceiling = MeshBuilder.CreatePlane(
@@ -93,8 +126,12 @@ class Expo extends TransformNode {
     );
     this.ground.position.z -= 20;
     this.ground.parent = this;
-
-    this.position.set(0, 0, -4);
+    this._groundAggregate = new PhysicsAggregate(
+      this.ground,
+      PhysicsShapeType.BOX,
+      { mass: 0 },
+      scene
+    );
 
     this.LoadLightAsset();
   }

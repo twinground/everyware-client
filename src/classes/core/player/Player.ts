@@ -5,7 +5,6 @@ import {
   Vector3,
   AnimationGroup,
   AbstractMesh,
-  TransformNode,
   AsyncCoroutine,
   FollowCamera,
   UniversalCamera,
@@ -13,15 +12,22 @@ import {
   ExecuteCodeAction,
   ActionManager,
   Quaternion,
+  PhysicsMotionType,
+  Mesh,
+  PhysicsAggregate,
+  PhysicsShapeType,
+  MeshBuilder,
 } from "@babylonjs/core";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
 import Socket from "../../network/SocketClient";
 import { ITransform } from "../../../interfaces/IPacket";
+import Engine from "../Engine";
 
-class Player extends TransformNode {
+class Player {
   private _socket: Socket;
+  private _parentMesh: Mesh;
   private _mesh: AbstractMesh;
   private _headMesh: AbstractMesh;
   private _arcRotCamera: ArcRotateCamera;
@@ -31,17 +37,21 @@ class Player extends TransformNode {
   private _animations: PlayerAnimations;
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
+  private _capsuleAggregate: PhysicsAggregate;
+
+  //public
   public expoName: string;
   public isOnline: boolean = false;
 
   constructor(
+    readonly engine: Engine,
     readonly scene: Scene,
     expoName: string,
     asset: PlayerAsset,
     socket?: Socket
   ) {
-    super("player", scene);
     this.scene = scene;
+    this.engine = engine;
     if (socket) {
       this._socket = socket;
       this.isOnline = true;
@@ -51,23 +61,48 @@ class Player extends TransformNode {
     /**
      * -----  Mesh initialization -----
      */
-    this.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
     this._mesh = asset.mesh;
-    this._mesh.parent = this;
+    this._mesh.checkCollisions = true;
     this._mesh.rotationQuaternion = Quaternion.FromEulerAngles(
       0,
       -2 * Math.PI,
       0
     );
-    this.position.set(0, 0, -40);
+
     this._headMesh = new AbstractMesh("player-head-abstract-mesh", this.scene);
     this._headMesh.parent = this._mesh;
     this._headMesh.position.y += 1.5;
 
     /**
+     * -----  player collision body -----
+     */
+    this._parentMesh = MeshBuilder.CreateCapsule(
+      "player-capsule",
+      { height: 1.75, radius: 0.3 },
+      this.scene
+    );
+    this._parentMesh.position.y += 0.9;
+    this._parentMesh.bakeCurrentTransformIntoVertices();
+    this._parentMesh.addChild(this._mesh);
+    this._parentMesh.visibility = 0;
+    this._parentMesh.position.set(0, 0, -30);
+
+    // Set rigid body to character
+    this._capsuleAggregate = new PhysicsAggregate(
+      this._parentMesh,
+      PhysicsShapeType.CAPSULE,
+      { mass: 1, restitution: 0, friction: 0 },
+      scene
+    );
+    this._capsuleAggregate.body.setMotionType(PhysicsMotionType.DYNAMIC);
+
+    this._capsuleAggregate.body.setMassProperties({
+      inertia: new Vector3(0, 0, 0),
+    });
+    /**
      * ----- Player controller -----
      */
-    this._playerController = new PlayerController(this, this._scene);
+    this._playerController = new PlayerController(this, this.scene);
 
     /**
      * ----- Camera configuration -----
@@ -84,11 +119,11 @@ class Player extends TransformNode {
     );
     this._arcRotCamera.lowerBetaLimit = 0.1;
     this._arcRotCamera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    this._arcRotCamera.lowerRadiusLimit = 1;
-    this._arcRotCamera.upperRadiusLimit = 150;
+    this._arcRotCamera.lowerRadiusLimit = 3;
+    this._arcRotCamera.upperRadiusLimit = 10;
     this._arcRotCamera.setPosition(new Vector3(0, 0, -10));
     this._arcRotCamera.attachControl(true);
-    this._arcRotCamera.setTarget(this._mesh);
+    this._arcRotCamera.setTarget(this._headMesh);
 
     // Follow camera configuration
     this._followCamera = new FollowCamera(
@@ -100,16 +135,7 @@ class Player extends TransformNode {
     this._followCamera.radius = 5.5;
     this._followCamera.rotationOffset = 180;
     this._followCamera.heightOffset = 1.0;
-    this._followCamera.cameraAcceleration = 0.05; // control camera rotation speed
-
-    // Universal camera configuration
-    // Parameters : name, position, scene
-    this._universalCamera = new UniversalCamera(
-      "univeral-cam",
-      this._mesh.position,
-      this.scene
-    );
-    this._universalCamera.setTarget(this._mesh.position);
+    this._followCamera.cameraAcceleration = 0.05;
 
     // Initial camera setup
     this.scene.activeCamera = this._followCamera;
@@ -117,18 +143,13 @@ class Player extends TransformNode {
     this.scene.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
         if (evt.sourceEvent.key == "Control") {
-          switch (this.scene.activeCamera.name) {
+          switch (this.scene.activeCamera?.name) {
             case "arc-rotate-cam": {
               this.scene.activeCamera = this._followCamera;
-              this._followCamera.detachControl();
               break;
             }
             case "follow-cam": {
               this.scene.activeCamera = this._arcRotCamera;
-              this._arcRotCamera.attachControl(
-                this.scene.getEngine().getRenderingCanvas(),
-                true
-              );
               break;
             }
           }
@@ -184,14 +205,10 @@ class Player extends TransformNode {
     switch (type) {
       case 0: // arc rotate cam
         this.scene.activeCamera = this._arcRotCamera;
-        this.scene.activeCamera.attachControl();
         break;
       case 1: // follow cam
         this.scene.activeCamera = this._followCamera;
-        break;
-      case 2: // universal cam
-        this.scene.activeCamera = this._universalCamera;
-        this._universalCamera.attachControl();
+        this.scene.activeCamera.detachControl();
         break;
     }
   }
@@ -222,10 +239,13 @@ class Player extends TransformNode {
       session_id: this._socket.id,
       expo_name: this.expoName,
       data: {
-        position: { x: this._mesh.position.x, z: this._mesh.position.z },
+        position: {
+          x: this._parentMesh.position.x,
+          z: this._parentMesh.position.z,
+        },
         quaternion: {
-          y: this._mesh.rotationQuaternion.y,
-          w: this._mesh.rotationQuaternion.w,
+          y: this._mesh.rotationQuaternion?.y as number,
+          w: this._mesh.rotationQuaternion?.w as number,
         },
         state: this._curAnim.name,
       },
@@ -233,7 +253,6 @@ class Player extends TransformNode {
 
     this._socket.Send(2, transformData);
   }
-
   /**
    * Getter / Setter for member fields
    */
@@ -271,6 +290,14 @@ class Player extends TransformNode {
 
   get Socket(): Socket {
     return this._socket;
+  }
+
+  get ParentMesh(): Mesh {
+    return this._parentMesh;
+  }
+
+  get RigidBody() {
+    return this._capsuleAggregate.body;
   }
 }
 

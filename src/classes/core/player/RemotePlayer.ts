@@ -1,8 +1,6 @@
 // Module import
 import {
   Scene,
-  ArcRotateCamera,
-  Vector3,
   AnimationGroup,
   AbstractMesh,
   TransformNode,
@@ -28,29 +26,16 @@ class RemotePlayer extends TransformNode {
 
     // store animation assets
     this.scene.stopAllAnimations();
-    asset.animationGroups[0].name = "clap";
-    asset.animationGroups[1].name = "idle";
-    asset.animationGroups[2].name = "sitDown";
-    asset.animationGroups[3].name = "sitting";
-    asset.animationGroups[4].name = "standUp";
-    asset.animationGroups[5].name = "thumbsUp";
-    asset.animationGroups[6].name = "turnBack";
-    asset.animationGroups[7].name = "turnLeft";
-    asset.animationGroups[8].name = "turnRight";
-    asset.animationGroups[9].name = "walkBack";
-    asset.animationGroups[10].name = "walkFor";
+    asset.animationGroups[0].name = "idle";
+    asset.animationGroups[1].name = "thumbsUp";
+    asset.animationGroups[2].name = "walkBack";
+    asset.animationGroups[3].name = "walkFor";
+    // store animation asset by key
     this._animations = {
-      clap: asset.animationGroups[0],
-      idle: asset.animationGroups[1],
-      sitDown: asset.animationGroups[2],
-      sitting: asset.animationGroups[3],
-      standUp: asset.animationGroups[4],
-      thumbsUp: asset.animationGroups[5],
-      turnBack: asset.animationGroups[6],
-      turnLeft: asset.animationGroups[7],
-      turnRight: asset.animationGroups[8],
-      walkBack: asset.animationGroups[9],
-      walkFor: asset.animationGroups[10],
+      idle: asset.animationGroups[0],
+      thumbsUp: asset.animationGroups[1],
+      walkBack: asset.animationGroups[2],
+      walkFor: asset.animationGroups[3],
     };
 
     // play idle animation as an initial animation

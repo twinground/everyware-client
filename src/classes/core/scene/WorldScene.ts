@@ -11,9 +11,8 @@ import {
   ActionManager,
   HemisphericLight,
   FollowCamera,
-  TransformNode,
-  AbstractMesh,
   DirectionalLight,
+  Quaternion,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import { Inspector } from "@babylonjs/inspector";
@@ -34,9 +33,11 @@ import {
   ITransform,
 } from "../../../interfaces/IPacket";
 import Booth from "../level/Booth";
+import ChatBox from "../ui/ChatBox";
+import FeedbackComponent from "../ui/FeedbackComponent";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
-//type CollisionCallback = (targetMesh: Mesh) => void;
+const GRAVITY = new Vector3(0, -9.81, 0);
 
 /**
  * World Scene
@@ -56,11 +57,14 @@ class WorldScene implements ICustomScene {
   /* GUI */
   private _advancedTexture: AdvancedDynamicTexture;
   private _viewButtons: Button[];
+  private _chatBox: ChatBox;
   /* boolean states */
   private _isViewing: boolean;
   /* gizmo related */
   private _gizman: GizmoManager;
   private _gizmode: number;
+  /* UI */
+  private _feedbackComponent: FeedbackComponent;
 
   constructor(
     private engine: Engine,
@@ -69,10 +73,16 @@ class WorldScene implements ICustomScene {
     private _socket?: Socket
   ) {
     this.TutorialOnboarding();
+    //TODO wh test
+    this._chatBox = new ChatBox(expoName, "wh", _socket);
+
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
     this.scene.collisionsEnabled = true;
     this.scene.actionManager = new ActionManager();
+
+    // enable physics
+    this.scene.enablePhysics(GRAVITY, this.engine.HavokPlugin);
 
     // Gizmo manager
     this._gizman = new GizmoManager(this.scene);
@@ -94,7 +104,9 @@ class WorldScene implements ICustomScene {
       new Vector3(0, 1, 0),
       this.scene
     );
-    //this._shadowGenerator = new ShadowGenerator(1024, this._dirLight);
+
+    // ui
+    this._feedbackComponent = new FeedbackComponent();
 
     // Socket Event callback definition for "connection" and "transform"
     if (this._socket) {
@@ -129,9 +141,11 @@ class WorldScene implements ICustomScene {
           },
         } = data; // Destruct Transformation packet
         const target = this._remotePlayerMap[session_id];
-
-        target.position.set(x, 0, z); // update position
-        target.rotationQuaternion?.set(0, y, 0, w); // update quaternion
+        if (!target) return;
+        if (!target.Mesh.rotationQuaternion)
+          target.Mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, 0, 0);
+        target.Mesh.position.set(x, 0, z); // update position
+        target.Mesh.rotationQuaternion?.set(0, y, 0, w); // update quaternion
 
         if (target.CurAnim.name != state) {
           this.scene.onBeforeRenderObservable.runCoroutineAsync(
@@ -166,9 +180,16 @@ class WorldScene implements ICustomScene {
     // player construct
     this.LoadModelAsset().then((asset) => {
       if (this._socket) {
-        this._player = new Player(this.scene, expoName, asset, this._socket);
+        this._player = new Player(
+          this.engine,
+          this.scene,
+          expoName,
+          asset,
+          this._socket
+        );
+        this._player.SendTransformPacket();
       } else {
-        this._player = new Player(this.scene, expoName, asset);
+        this._player = new Player(this.engine, this.scene, expoName, asset);
       }
       this._level = new Level(this._advancedTexture, this._player, this);
     });
@@ -177,8 +198,8 @@ class WorldScene implements ICustomScene {
     this._isViewing = false;
 
     // TODO : Use this debuggers only for development
-    this.SetGizmoInteraction();
-    this.SetInpsector();
+    // this.SetGizmoInteraction();
+    // this.SetInpsector();
   }
 
   /**
@@ -228,12 +249,15 @@ class WorldScene implements ICustomScene {
    * @param linkMesh a mesh will be linked to button UI
    */
   public CreateDeskCollisionEvent(linkMesh: Mesh) {
-    const viewButton = createButton(linkMesh, this._advancedTexture);
+    const viewButton = createButton(
+      linkMesh,
+      "웹 체험하기",
+      this._advancedTexture
+    );
 
     // view mode event
     viewButton.onPointerClickObservable.add(() => {
       this._isViewing = true;
-
       // fade out scene
       this._sceneMachine.UpdateMachine(1); // 1 : PreviewScene
       // player camera zoom in
@@ -279,7 +303,14 @@ class WorldScene implements ICustomScene {
       let flag = false;
       for (let booth of targetBooths) {
         if (booth.boothCollision.intersectsMesh(this._player.Mesh, false)) {
+          booth.isInBooth = true;
+          if (!this._feedbackComponent.isRendered) {
+            const container = this._feedbackComponent.Render(booth.id);
+            this._feedbackComponent.isRendered = true;
+          }
           flag = true;
+        } else {
+          booth.isInBooth = false;
         }
       }
 
@@ -295,56 +326,102 @@ class WorldScene implements ICustomScene {
         (this._player.CurrentCam as FollowCamera).heightOffset = 1.0;
         (this._player.CurrentCam as FollowCamera).lockedTarget =
           this._player.Mesh;
+        if (this._feedbackComponent.isRendered) {
+          this._feedbackComponent.isRendered = false;
+          this._feedbackComponent.RemoveDomNodes("feedback-container");
+        }
       }
     });
   }
 
   /**
+   * Transit to mobile scene
+   * @param linkMesh a mesh linked with UI and mesh intersection events.
+   */
+  public CreateMobileCollisionEvent(linkMesh: Mesh) {
+    const viewButton = createButton(
+      linkMesh,
+      "앱 체험하기",
+      this._advancedTexture
+    );
+
+    // view mode event
+    viewButton.onPointerClickObservable.add(() => {
+      this._isViewing = true;
+      // fade out scene
+      this._sceneMachine.UpdateMachine(2); // 1 : PreviewScene
+      // player camera zoom in
+      this._player.ZoomInFollowCam();
+      // start animation and change anim state.
+      this._player.Controller.UpdateViewMode(true);
+      this._player.CurAnim = this._player.Animations.thumbsUp;
+      if (this._socket) {
+        this._player.SendTransformPacket();
+      }
+
+      viewButton.isVisible = false;
+    });
+
+    this.scene.onBeforeRenderObservable.add(() => {
+      if (
+        !this._isViewing &&
+        linkMesh.intersectsMesh(this._player.Mesh, false)
+      ) {
+        viewButton.isVisible = true;
+      } else {
+        viewButton.isVisible = false;
+      }
+    });
+
+    this._viewButtons.push(viewButton);
+  }
+
+  /**
    * Mesh debugger with gizmo manager
    */
-  public SetGizmoInteraction() {
-    this.scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        let key = evt.sourceEvent.key;
-        if (key == "R" || key == "ㄲ") {
-          //shift + R
-          ++this._gizmode;
-          this._gizmode %= 4;
+  // public SetGizmoInteraction() {
+  //   this.scene.actionManager.registerAction(
+  //     new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+  //       let key = evt.sourceEvent.key;
+  //       if (key == "R" || key == "ㄲ") {
+  //         //shift + R
+  //         ++this._gizmode;
+  //         this._gizmode %= 4;
 
-          switch (this._gizmode) {
-            case 0:
-              this._gizman.rotationGizmoEnabled = false;
-              break;
-            case 1:
-              this._gizman.positionGizmoEnabled = true;
-              break;
-            case 2:
-              this._gizman.positionGizmoEnabled = false;
-              this._gizman.scaleGizmoEnabled = true;
-              break;
-            case 3:
-              this._gizman.scaleGizmoEnabled = false;
-              this._gizman.rotationGizmoEnabled = true;
-              break;
-          }
-        }
-      })
-    );
-  }
+  //         switch (this._gizmode) {
+  //           case 0:
+  //             this._gizman.rotationGizmoEnabled = false;
+  //             break;
+  //           case 1:
+  //             this._gizman.positionGizmoEnabled = true;
+  //             break;
+  //           case 2:
+  //             this._gizman.positionGizmoEnabled = false;
+  //             this._gizman.scaleGizmoEnabled = true;
+  //             break;
+  //           case 3:
+  //             this._gizman.scaleGizmoEnabled = false;
+  //             this._gizman.rotationGizmoEnabled = true;
+  //             break;
+  //         }
+  //       }
+  //     })
+  //   );
+  // }
 
   /**
    * set babylon inspector
    */
-  public SetInpsector() {
-    this.scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        let key = evt.sourceEvent.key;
-        if (key == "D") {
-          Inspector.Show(this.scene, { embedMode: true });
-        }
-      })
-    );
-  }
+  // public SetInpsector() {
+  //   this.scene.actionManager.registerAction(
+  //     new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+  //       let key = evt.sourceEvent.key;
+  //       if (key == "D") {
+  //         Inspector.Show(this.scene, { embedMode: true });
+  //       }
+  //     })
+  //   );
+  // }
 
   /**
    * Getter / Setter

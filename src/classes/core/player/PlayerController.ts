@@ -5,8 +5,6 @@ import AnimStateMachine from "./animations/AnimStateMachine";
 import { IAnimStateMachine } from "../../../interfaces/IStateMachine";
 
 export default class PlayerController {
-  private static readonly PLAYER_WALK_SPEED = 0.03;
-  private static readonly ANIM_WALK_SPEED = 1;
   private _inputSystem: InputSystem;
   private _velocity: Vector3;
   private _acceleration: Vector3;
@@ -17,8 +15,8 @@ export default class PlayerController {
   constructor(private _player: Player, public scene: Scene) {
     this._player = _player;
     this._inputSystem = new InputSystem(this.scene, this._player);
-    this._velocity = Vector3.Zero();
-    this._acceleration = new Vector3(1.0, 0.25, 25.0);
+    this._velocity = new Vector3(0, 0, 0);
+    this._acceleration = new Vector3(1.0, 0.25, 2000.0);
     this._decceleration = new Vector3(-0.0005, -0.0001, -10.0);
     this._animStateMachine = new AnimStateMachine(this._player);
     this._isTransformUpdated = false;
@@ -69,7 +67,7 @@ export default class PlayerController {
       Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
     velocity.addInPlace(frameDecceleration);
 
-    const player = this._player;
+    const player = this._player.Mesh;
     const axis = new Vector3(0, 1, 0);
     const acc = this._acceleration.clone();
 
@@ -84,7 +82,7 @@ export default class PlayerController {
     }
     if (this._inputSystem.inputs.a || this._inputSystem.inputs.ㅁ) {
       this._isTransformUpdated = true;
-      this._player.rotationQuaternion?.multiplyInPlace(
+      player.rotationQuaternion?.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
           4.0 * -Math.PI * deltaTime * this._acceleration.y
@@ -93,7 +91,7 @@ export default class PlayerController {
     }
     if (this._inputSystem.inputs.d || this._inputSystem.inputs.ㅇ) {
       this._isTransformUpdated = true;
-      this._player.rotationQuaternion?.multiplyInPlace(
+      player.rotationQuaternion?.multiplyInPlace(
         Quaternion.RotationAxis(
           axis,
           4.0 * Math.PI * deltaTime * this._acceleration.y
@@ -103,19 +101,21 @@ export default class PlayerController {
 
     const forward = new Vector3(0, 0, 1);
     forward.applyRotationQuaternionInPlace(
-      (this._player.rotationQuaternion as Quaternion).normalize()
+      (player.rotationQuaternion as Quaternion).normalize()
     );
 
     const sideways = new Vector3(1, 0, 0);
     sideways.applyRotationQuaternionInPlace(
-      (this._player.rotationQuaternion as Quaternion).normalize()
+      (player.rotationQuaternion as Quaternion).normalize()
     );
 
     sideways.scaleInPlace(velocity.x * deltaTime);
     forward.scaleInPlace(velocity.z * deltaTime);
 
-    this._player.position.addInPlace(forward);
-    this._player.position.addInPlace(sideways);
+    forward.y = -9.81;
+    sideways.y = -9.81;
+
+    this._player.RigidBody.setLinearVelocity(forward.addInPlace(sideways));
 
     if (this._player.isOnline && this._isTransformUpdated) {
       this._player.SendTransformPacket();

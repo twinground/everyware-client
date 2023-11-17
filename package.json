@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "cp ./node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm ./assets/HavokPhysics.wasm",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
@@ -14,7 +15,9 @@
   },
   "dependencies": {
     "@babylonjs/core": "^6.9.0",
+    "@babylonjs/havok": "^1.2.1",
     "@babylonjs/inspector": "^6.9.0",
-    "recast-detour": "^1.6.2"
+    "axios": "^1.6.2",
+    "sweetalert": "^2.1.2"
   }
 }

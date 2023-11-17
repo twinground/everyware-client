@@ -1,8 +1,8 @@
 import {
-  Scene,
-  UniversalCamera,
-  Vector3,
   Color4,
+  Scene,
+  Vector3,
+  UniversalCamera,
   ShadowGenerator,
   EnvironmentHelper,
   ArcRotateCamera,
@@ -12,32 +12,28 @@ import {
   ExecuteCodeAction,
   StandardMaterial,
   Engine as BabylonEngine,
-  Axis,
   Quaternion,
   SceneLoader,
-  CubeTexture,
   Color3,
-  Mesh,
+  Plane,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
-// class
-import Engine from "../Engine";
 import ICustomScene from "../../../interfaces/ICustomScene";
+import Engine from "../Engine";
 import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
+// function
 import { createExitButton } from "../ui/ExitButton";
 import CSS3DObject from "../renderer/CSS3DObject.js";
 import CSS3DRenderer from "../renderer/CSSRenderer.js";
 
-const width = 1920;
+const width = 2000;
 const height = 1080;
 
-class PreviewScene implements ICustomScene {
+class MobileScene implements ICustomScene {
   public scene: Scene;
+  private _camera: ArcRotateCamera;
   private _level: EnvironmentHelper;
-  private _camera: UniversalCamera | ArcRotateCamera;
-  private _light: HemisphericLight;
   private _advancedTexture: AdvancedDynamicTexture;
-  private _shadowGenerator: ShadowGenerator;
   private _exitButton: Button;
 
   constructor(
@@ -45,10 +41,8 @@ class PreviewScene implements ICustomScene {
     private _sceneMachine: ISceneStateMachine
   ) {
     this.scene = new Scene(engine.BabylonEngine);
-    // The scene color should be transparent to show iframe render screen
-    // alpha value should be zero
     this.scene.clearColor = new Color4(0, 0.1, 0.1, 0);
-    // It's okay to use default environment
+
     this._level = this.scene.createDefaultEnvironment({
       skyboxSize: 50,
       rootPosition: new Vector3(0, -7, 0),
@@ -84,44 +78,38 @@ class PreviewScene implements ICustomScene {
     this._camera.upperRadiusLimit = 20;
     this._camera.attachControl(true);
 
-    // The CSS object will follow this mesh
-    let videoViewMesh = MeshBuilder.CreatePlane(
-      "videoViewMesh",
-      { width: 1, height: 1 },
-      this.scene
-    );
-    videoViewMesh.scaling.x = 6.3;
-    videoViewMesh.scaling.y = 3.5;
-    videoViewMesh.rotation.addInPlace(new Vector3(0, Math.PI, 0));
-
     SceneLoader.ImportMesh(
       "",
       "./models/",
-      "monitor.glb",
+      "galaxy_s8.glb",
       this.scene,
       (meshes) => {
         let mesh = meshes[0];
-        mesh.rotationQuaternion = Quaternion.FromEulerAngles(
-          0,
-          -Math.PI / 2,
-          0
-        );
+        mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, 2 * Math.PI, 0);
         mesh.position.z -= 0.02;
         mesh.position.y -= 3.2;
-        mesh.scaling.setAll(10.5);
+        mesh.scaling.setAll(0.7);
         mesh.parent = null;
       }
     );
 
-    // Setup the CSS css3DRenderer and Youtube object
-    let [css3DRenderer, container] = this.SetupRenderer(
-      videoViewMesh,
+    let screenMesh = MeshBuilder.CreatePlane(
+      "screenMesh",
+      { width: 1, height: 1 },
       this.scene
     );
-    videoViewMesh.actionManager = new ActionManager(this.scene);
-    videoViewMesh.actionManager.registerAction(
+    screenMesh.scaling.x = 3;
+    screenMesh.scaling.y = 6.5;
+    screenMesh.position.z += 0.2;
+    screenMesh.position.y += 0.25;
+    screenMesh.rotation.addInPlace(new Vector3(0, Math.PI, 0));
+
+    // Setup the CSS css3DRenderer and Youtube object
+    let [css3DRenderer, container] = this.SetupRenderer(screenMesh, this.scene);
+    screenMesh.actionManager = new ActionManager(this.scene);
+    screenMesh.actionManager.registerAction(
       new ExecuteCodeAction(ActionManager.OnPickTrigger, function (_event) {
-        (container as HTMLDivElement).style.zIndex = "10";
+        (container as HTMLDivElement).style.zIndex = "1";
       })
     );
     document.addEventListener("click", (e: any) => {
@@ -140,14 +128,6 @@ class PreviewScene implements ICustomScene {
         this.scene.activeCamera
       );
     });
-
-    // Light Setup
-    this._light = new HemisphericLight(
-      "light",
-      new Vector3(0, 1, 0),
-      this.scene
-    );
-    this._light.intensity = 0.7;
   }
 
   RemoveDomNode(id: string) {
@@ -157,7 +137,7 @@ class PreviewScene implements ICustomScene {
     }
   }
 
-  SetupRenderer(mesh: Mesh, scene: Scene) {
+  SetupRenderer(mesh, scene) {
     const canvasZone = document.getElementById("CanvasZone");
     this.RemoveDomNode("CSSContainer");
     this.RemoveDomNode("CSS3DRendererDom");
@@ -178,6 +158,7 @@ class PreviewScene implements ICustomScene {
     css3DRenderer.setSize(canvasZone?.offsetWidth, canvasZone?.offsetHeight);
 
     let iframeContainer = document.createElement("div");
+    iframeContainer.style.position = "absolute";
     iframeContainer.style.width = width + "px";
     iframeContainer.style.height = height + "px";
     iframeContainer.style.backgroundColor = "#000";
@@ -185,24 +166,22 @@ class PreviewScene implements ICustomScene {
 
     let CSSobject = new CSS3DObject(iframeContainer);
     CSSobject.position.copyFrom(mesh.getAbsolutePosition());
+    CSSobject.position.y -= 1.4;
+    CSSobject.position.x += 3.75;
     CSSobject.rotation.y = -mesh.rotation.y;
     CSSobject.scaling.copyFrom(mesh.scaling);
 
-    //append iframe
-    iframeContainer.innerHTML = `
-      <iframe 
-        width="${width}" 
-        height="${height}" 
-        src="https://www.youtube.com/embed/HpS_hHTMPF0?si=eKsi8naKJJWl4fyx" 
-        title="YouTube video player" 
-        frameborder="0" 
-        allow="accelerometer; 
-        autoplay; clipboard-write; 
-        encrypted-media; 
-        gyroscope; picture-in-picture; 
-        web-share" allowfullscreen></iframe>
-    `;
-
+    let iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.right = "300px";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "0px";
+    iframe.src =
+      "http://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
+    iframe.style.scale = "6 1.5";
+    iframe.style.translate = "-100%";
+    iframeContainer.appendChild(iframe);
     let depthMask = new StandardMaterial("VideoViewMaterial", scene);
     depthMask.backFaceCulling = true;
     depthMask.alphaMode = BabylonEngine.ALPHA_COMBINE;
@@ -231,4 +210,4 @@ class PreviewScene implements ICustomScene {
   }
 }
 
-export default PreviewScene;
+export default MobileScene;

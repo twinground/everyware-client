@@ -1,4 +1,4 @@
-import { AnimationGroup, AbstractMesh, Skeleton } from "@babylonjs/core";
+import { AnimationGroup, AbstractMesh } from "@babylonjs/core";
 import {
   IdleState,
   PreviewState,

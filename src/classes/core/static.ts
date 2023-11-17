@@ -1,7 +1,3 @@
-import { Vector3 } from "@babylonjs/core";
+const API_URL = "http://13.124.153.160:8080";
 
-const X_AXIS = new Vector3(1, 0, 0);
-const Y_AXIS = new Vector3(0, 1, 0);
-const Z_AXIS = new Vector3(0, 0, 1);
-
-export { X_AXIS, Y_AXIS, Z_AXIS };
+export { API_URL };

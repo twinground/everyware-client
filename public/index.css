@@ -123,10 +123,6 @@ input:checked + .slider:before {
   transition: background-color 0.3s;
 }
 
-.tutorial-button:hover {
-  background-color: #745a0c;
-}
-
 .background {
   position: relative;
   width: 100vw;
@@ -147,9 +143,12 @@ input:checked + .slider:before {
 .explain {
   position: absolute;
   z-index: 8;
-  top: 50%; /* 컨테이너의 상단에서 50% 떨어진 위치에 배치합니다. */
-  left: 50%; /* 컨테이너의 왼쪽에서 50% 떨어진 위치에 배치합니다. */
-  transform: translate(-50%, -50%); /* 이미지를 중앙으로 정렬합니다. */
+  top: 50%; /* ì»¨í…Œì´ë„ˆì˜ ìƒë‹¨ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
+  left: 50%; /* ì»¨í…Œì´ë„ˆì˜ ì™¼ìª½ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
+  transform: translate(
+    -50%,
+    -50%
+  ); /* ì´ë¯¸ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ì •ë ¬í•©ë‹ˆë‹¤. */
   width: 50%;
   height: 50%;
   transition: opacity 0.5s;
@@ -158,9 +157,12 @@ input:checked + .slider:before {
 .highlight {
   position: absolute;
   z-index: 9;
-  top: 50%; /* 컨테이너의 상단에서 50% 떨어진 위치에 배치합니다. */
-  left: 50%; /* 컨테이너의 왼쪽에서 50% 떨어진 위치에 배치합니다. */
-  transform: translate(-50%, -50%); /* 이미지를 중앙으로 정렬합니다. */
+  top: 50%; /* ì»¨í…Œì´ë„ˆì˜ ìƒë‹¨ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
+  left: 50%; /* ì»¨í…Œì´ë„ˆì˜ ì™¼ìª½ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
+  transform: translate(
+    -50%,
+    -50%
+  ); /* ì´ë¯¸ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ì •ë ¬í•©ë‹ˆë‹¤. */
   width: 100%;
   height: 100%;
   transition: opacity 0.3s;
@@ -177,4 +179,260 @@ input:checked + .slider:before {
 
 .bg-wrapper-container {
   overflow: hidden;
+}
+
+.temp-chat-parent {
+  display: inline-flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  width: 30rem;
+  height: 18rem;
+  z-index: 0;
+  border-color: #bdbdbd;
+  transform-origin: bottom left;
+  cursor: pointer;
+}
+
+.temp-chat-parent-transform {
+  width: 2rem;
+  height: 2rem;
+  padding: 0.75rem;
+  border-radius: 12rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid #eee;
+  box-shadow: 4px 4px 6px 1px rgba(0, 0, 0, 0.2);
+  transition: all 0.5s;
+}
+
+.temp-chat-parent-transform:hover {
+  bottom: 2.5rem;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.chat-container {
+  display: block;
+  width: auto;
+  height: -webkit-fill-available;
+  padding: 1.5rem 1rem 1rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 0.5rem;
+}
+
+.size-toggle-button {
+  position: absolute;
+  display: flex;
+  right: 0.3rem;
+  top: -1.5rem;
+  width: 3.5rem;
+  height: 1.5rem;
+  background-color: #eee;
+  border-top-right-radius: 1rem;
+  border-top-left-radius: 1rem;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.size-toggle-button::before,
+.size-toggle-button::after {
+  content: "";
+  position: absolute;
+  width: 2.5px;
+  height: 15px;
+  background-color: #444; /* Color of the 'x' */
+  transform: translate(5px, 3px) rotate(45deg);
+  transition: all 0.5s;
+}
+
+.size-toggle-button::before {
+  transform: translate(-5px, 3px) rotate(-45deg);
+  transition: all 0.5s;
+}
+
+.size-toggle-button:hover::after {
+  transform: rotate(45deg);
+}
+.size-toggle-button:hover::before {
+  transform: rotate(-45deg);
+}
+
+.chat-display-page {
+  display: block;
+  width: auto;
+  height: 70%;
+  opacity: 0.8;
+  border-radius: 0.5rem;
+
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chat-page-text-wrapper {
+  display: block;
+  width: auto;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.chat-recived-text {
+  display: block;
+  width: 100%;
+  height: auto;
+  word-break: break-all;
+}
+
+.chat-input-page {
+  display: flex;
+  width: 100%;
+  height: 13%;
+  overflow: hidden;
+}
+
+.chat-text-field {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  border-radius: 0.5rem;
+  border: 0.0625rem solid;
+  border-color: #bdbdbd;
+  width: 80%;
+  height: auto;
+  font-weight: 400;
+}
+
+.chat-send-button {
+  display: grid;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  margin-left: 0.5rem;
+  width: 15%;
+  height: auto;
+  font-weight: 400;
+  border-radius: 0.5rem;
+  border: 0.0625rem solid;
+  border-color: #bdbdbd;
+  text-align: center;
+  align-items: center;
+}
+
+.board-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(1, 1, 1, 0.7);
+}
+
+.board-image {
+  width: 40%;
+  height: 90%;
+}
+
+.close-icon {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.close-icon::before,
+.close-icon::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 35px;
+  background-color: #f0f0f0; /* Color of the 'x' */
+  transform: rotate(45deg);
+}
+
+.close-icon::before {
+  transform: rotate(-45deg);
+}
+
+.feedback-container {
+  position: absolute;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: column;
+  top: 30%;
+  left: 2rem;
+  width: 4.5rem;
+  height: 9rem;
+  border-radius: 1rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1, 0);
+  opacity: 0;
+  transition: all 0.5s ease-in-out;
+}
+
+.feedback-children {
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  padding-top: 0.1rem;
+  align-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  background-color: #fdfdfd;
+  border-radius: 1rem;
+  transition: all 0.3s;
+}
+
+.feedback-children:hover {
+  transform: scale(1.2, 1.2);
+}
+
+.like-number-text,
+.feedback-number-text {
+  width: 100%;
+  color: #777;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.fade-in {
+  transform: scale(1, 1);
+  opacity: 1;
+}
+
+@keyframes shrink {
+  0% {
+    transform: scale(1, 1);
+  }
+  100% {
+    transform: scale(0, 0);
+  }
+}
+
+@keyframes expand {
+  0% {
+    transform: scale(0, 0);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+.unclickable {
+  pointer-events: none;
+}
+
+.open-chat-button {
+  display: contents;
 }

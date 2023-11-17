@@ -1,10 +1,14 @@
 // library
 import "@babylonjs/core/Debug/debugLayer";
+import HavokPhysics from "@babylonjs/havok";
+//import havokWasmUrl from "./physics/HavokPhysics.wasm?url"; // postinstalled wasm file, ignore error
+
 import "@babylonjs/inspector";
 import {
   Engine as BabylonEngine,
   EngineFactory,
   Effect,
+  HavokPlugin,
 } from "@babylonjs/core";
 // class
 import Socket from "../network/SocketClient";
@@ -16,10 +20,12 @@ class Engine {
   private _sceneStateMachine: ISceneStateMachine;
   private _canvas: HTMLCanvasElement;
   private _babylonEngine: BabylonEngine;
+  private _physicsEngine: HavokPlugin;
   private _socket: Socket | null;
 
   constructor(expoName: string, socket?: Socket) {
     if (socket) {
+      console.log("server connected"); // TODO : debug purpose
       this._socket = socket;
     }
     this.Init(expoName);
@@ -32,7 +38,7 @@ class Engine {
     const canvasZone = document.getElementById("CanvasZone");
     this._canvas = document.createElement("canvas");
     this._canvas.id = "RenderCanvas";
-    canvasZone.appendChild(this._canvas);
+    canvasZone?.appendChild(this._canvas);
   }
 
   // TODO : remember last player's position when a user finishs preview
@@ -45,6 +51,11 @@ class Engine {
       this._canvas,
       undefined
     );
+
+    const havok = await HavokPhysics({
+      locateFile: () => "./scripts/HavokPhysics.wasm?url",
+    });
+    this._physicsEngine = new HavokPlugin(true, havok);
 
     //this._babylonEngine.displayLoadingUI();
     if (this._socket) {
@@ -120,6 +131,10 @@ class Engine {
 
   get BabylonEngine() {
     return this._babylonEngine;
+  }
+
+  get HavokPlugin() {
+    return this._physicsEngine;
   }
 }
 

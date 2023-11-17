@@ -3,9 +3,10 @@ import { Button, AdvancedDynamicTexture } from "@babylonjs/gui";
 
 export function createButton(
   linkMesh: Mesh,
+  text: string,
   advancedTexture: AdvancedDynamicTexture
 ): Button {
-  const viewButton = Button.CreateSimpleButton("view-button", "체험하기");
+  const viewButton = Button.CreateSimpleButton("view-button", text);
   advancedTexture.addControl(viewButton);
 
   viewButton.isVisible = false;
