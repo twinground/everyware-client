@@ -1,3 +1,7 @@
+import axios from "axios";
+import { API_URL } from "../static";
+import swal from "sweetalert";
+
 class FeedbackComponent {
   private _feedbackContainer: HTMLDivElement;
   private _likeBtn: HTMLDivElement;
@@ -5,9 +9,48 @@ class FeedbackComponent {
   private _likeNumber: HTMLDivElement;
   private _feedbackNumber: HTMLDivElement;
   public isRendered = false;
+  readonly boothId: number = -1;
+
   constructor() {}
 
-  private SetDomNodes() {
+  private async RequestLike() {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      // login needed
+      swal("Oops!", "로그인이 필요한 기능입니다.", "error", {
+        buttons: {
+          login: {
+            text: "로그인 하러가기",
+            value: true,
+          },
+          no: {
+            text: "다음에",
+            value: false,
+          },
+        },
+      }).then((value) => {
+        if (value) {
+          //window.location.href = ""
+        }
+      });
+      return;
+    }
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axios.post(`${API_URL}/booths/id/like`, {
+      headers: config,
+    });
+
+    if (response.status == 400) {
+      alert("권한이 없습니다.");
+    }
+  }
+
+  private SetDomNodes(boothId: number) {
     this._feedbackContainer = document.createElement("div");
     this._feedbackContainer.className = "feedback-container";
 
@@ -30,8 +73,6 @@ class FeedbackComponent {
     this._feedbackNumber = document.createElement("div");
     this._likeNumber.className = "like-number-text";
     this._feedbackNumber.className = "feedback-number-text";
-    this._likeNumber.innerText = "0";
-    this._feedbackNumber.innerText = "0";
 
     this._likeBtn.appendChild(likeImage);
     this._feedbackBtn.appendChild(feedbackImage);
@@ -42,6 +83,22 @@ class FeedbackComponent {
     setTimeout(() => {
       this._feedbackContainer.classList.add("fade-in");
     }, 10);
+
+    // Get likes and comments info from api server
+    console.log(`${API_URL}/booths/${boothId}/likes`);
+    axios.get(`${API_URL}/booths/${boothId}/likes`).then((res) => {
+      console.log("like data : " + res.data);
+      this._likeNumber.innerText = res + "";
+    });
+    axios.get(`${API_URL}/booths/${boothId}/comments`).then((res) => {
+      console.log("comment data : " + res.data);
+      this._likeNumber.innerText = res + "";
+    });
+    // enroll event listener
+    this._likeBtn.onclick = () => {
+      this.RequestLike();
+    };
+    this._feedbackBtn.addEventListener("click", () => {});
 
     return this._feedbackContainer;
   }
@@ -57,8 +114,8 @@ class FeedbackComponent {
     }, 500);
   }
 
-  Render() {
-    const container = this.SetDomNodes();
+  Render(boothId: number) {
+    const container = this.SetDomNodes(boothId);
 
     document.body.appendChild(container);
     return container;

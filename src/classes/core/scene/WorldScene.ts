@@ -305,7 +305,7 @@ class WorldScene implements ICustomScene {
         if (booth.boothCollision.intersectsMesh(this._player.Mesh, false)) {
           booth.isInBooth = true;
           if (!this._feedbackComponent.isRendered) {
-            const container = this._feedbackComponent.Render();
+            const container = this._feedbackComponent.Render(booth.id);
             this._feedbackComponent.isRendered = true;
           }
           flag = true;

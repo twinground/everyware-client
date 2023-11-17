@@ -149,12 +149,12 @@ class ChatBox {
 
   private CloseChatUI() {
     this._isOn = false;
-    this._parent.style.animation = "shrink 0.5s ease-out forwards";
+    this._parent.style.animation = "shrink 0.5s ease-in-out forwards";
     setTimeout(() => {
       this._parent.removeChild(this._container);
       this._parent.appendChild(this._openChatButtonDOM);
       this._parent.classList.add("temp-chat-parent-transform");
-      this._parent.style.animation = "expand 0.5s ease-out forwards";
+      this._parent.style.animation = "expand 0.5s ease-in-out forwards";
     }, 1300);
   }
 
@@ -165,7 +165,7 @@ class ChatBox {
       this._parent.removeChild(this._openChatButtonDOM);
       this._parent.classList.remove("temp-chat-parent-transform");
       this._parent.appendChild(this._container);
-      this._parent.style.animation = "expand 0.75s ease-out forwards";
+      this._parent.style.animation = "expand 0.75s ease-in-out forwards";
     }, 1300);
   }
 }

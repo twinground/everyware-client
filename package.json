@@ -17,6 +17,7 @@
     "@babylonjs/core": "^6.9.0",
     "@babylonjs/havok": "^1.2.1",
     "@babylonjs/inspector": "^6.9.0",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "sweetalert": "^2.1.2"
   }
 }
