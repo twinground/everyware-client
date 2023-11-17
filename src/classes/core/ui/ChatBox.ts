@@ -18,7 +18,7 @@ class ChatBox {
   private _isOn: boolean;
   private _isDefault: boolean;
 
-  constructor(expoName, userName, socket?: Socket) {
+  constructor(expoName: string, userName: string, socket?: Socket) {
     // if you have parent out of this class turn _isDefault to false and call InputChatBox with parent element
     this._isDefault = true;
     this._isOn = false;
@@ -36,7 +36,6 @@ class ChatBox {
     this._container = document.createElement("div");
     this._sizeToggleButtonDOM = document.createElement("div");
     const textXDiv = document.createElement("div");
-    textXDiv.textContent = "x";
     textXDiv.classList.add("unclickable");
     this._sizeToggleButtonDOM.appendChild(textXDiv);
     const displayPage = document.createElement("div");
@@ -70,7 +69,7 @@ class ChatBox {
     this._openChatButtonDOM.classList.add("open-chat-button");
     const openButtonIcon = document.createElement("img");
     this._openChatButtonDOM.appendChild(openButtonIcon);
-    openButtonIcon.src = "/images/chat-button.png";
+    openButtonIcon.src = "/images/messenger.png";
 
     //add event listener on button
     this._sendButtonDOM.addEventListener("click", () => {
@@ -128,7 +127,7 @@ class ChatBox {
 
   //TODO 소켓을 통해 전달받은 메시지에서 유저 이름과 채팅 내용을 UI(chatPageContainerDOM에 추가
   //이 함수를 소켓 이벤트 맵에서 추가해서 사용하면될듯!
-  private AddRecievedChat(name, message) {
+  private AddRecievedChat(name: string, message: string) {
     const text = document.createElement("span");
     text.classList.add("chat-recived-text");
     text.textContent = `${name} : ${message}`;
@@ -150,12 +149,12 @@ class ChatBox {
 
   private CloseChatUI() {
     this._isOn = false;
-    this._parent.style.animation = "shrink 0.5s ease-in-out forwards";
+    this._parent.style.animation = "shrink 0.5s ease-out forwards";
     setTimeout(() => {
       this._parent.removeChild(this._container);
       this._parent.appendChild(this._openChatButtonDOM);
       this._parent.classList.add("temp-chat-parent-transform");
-      this._parent.style.animation = "expand 0.5s ease-in-out forwards";
+      this._parent.style.animation = "expand 0.5s ease-out forwards";
     }, 1300);
   }
 
@@ -166,7 +165,7 @@ class ChatBox {
       this._parent.removeChild(this._openChatButtonDOM);
       this._parent.classList.remove("temp-chat-parent-transform");
       this._parent.appendChild(this._container);
-      this._parent.style.animation = "expand 0.5s ease-in-out forwards";
+      this._parent.style.animation = "expand 0.75s ease-out forwards";
     }, 1300);
   }
 }

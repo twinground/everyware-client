@@ -15,13 +15,23 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
   Color4,
+  Matrix,
+  ActionManager,
+  ExecuteCodeAction,
 } from "@babylonjs/core";
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
+// class
 import WorldScene from "../scene/WorldScene";
-import Player from "../player/Player";
+import BoardImage from "../ui/BoardImage";
+import { createButton } from "../ui/ViewButton";
+import { BoothData } from "../../../types/BoothDataType";
+
+const BLUE_COLOR = new Color4(52 / 255, 152 / 255, 219 / 255, 0.8);
 
 class Booth {
   readonly scene: Scene;
   readonly worldScene: WorldScene;
+  readonly advancedTexture: AdvancedDynamicTexture;
   // mesh
   public rootMesh: AbstractMesh | TransformNode;
   public deskCollision: Mesh;
@@ -33,39 +43,56 @@ class Booth {
   public mobileCollision: Mesh;
   public boardCollisions: Mesh[] = [];
   // texture & material
-  public dummyTextures: Texture[];
+  public topLogoTexture: Texture;
+  public bottomLogoTexture: Texture;
+  public boardImageTexture: Texture[];
   public pbrMaterial: PBRMaterial;
+  // ui
+  public boardImageUI: BoardImage;
+  // state
+  public isInBooth: boolean = false;
 
-  // uris
-  public boardURI: string[] | undefined;
+  // booth data
+  public id: number;
+  public title: string;
+  public topLogoURI: string;
+  public bottomLogoURI: string;
+  public boardImageURIS: string[];
 
   constructor(
     worldScene: WorldScene,
-    boothInstance?: TransformNode,
-    boardURIs?: string[]
+    advancedTexture: AdvancedDynamicTexture,
+    boothData: BoothData,
+    boothInstance?: TransformNode
   ) {
     this.scene = worldScene.scene;
     this.worldScene = worldScene;
-    this.boardURI = boardURIs;
+    this.advancedTexture = advancedTexture;
+
+    //data initialize
+    this.id = boothData.id;
+    this.title = boothData.title;
+    this.topLogoURI = boothData.boothMaterials.top_logos;
+    this.bottomLogoURI = boothData.boothMaterials.bottom_logos;
+    this.boardImageURIS = boothData.boothMaterials.images;
 
     if (boothInstance) {
       this.rootMesh = boothInstance;
     }
 
+    // texture and material
     this.pbrMaterial = new PBRMaterial("booth-shared-pbr-material", this.scene);
     this.pbrMaterial.roughness = 1;
 
-    this.dummyTextures = [
-      new Texture("./images/board-1.jpeg", this.scene),
-      new Texture("./images/board-2.jpg", this.scene),
-      new Texture("./images/board-3.jpg", this.scene),
-      new Texture("./images/board-4.jpg", this.scene),
-      new Texture("./images/board-5.jpg", this.scene),
-      new Texture("./images/board-6.png", this.scene),
-      new Texture("./images/board-7.jpg", this.scene),
-      new Texture("./images/board-8.jpg", this.scene),
-      new Texture("./images/board-9.jpg", this.scene),
+    this.topLogoTexture = new Texture(this.topLogoURI, this.scene);
+    this.bottomLogoTexture = new Texture(this.bottomLogoURI, this.scene);
+    this.boardImageTexture = [
+      new Texture(this.boardImageURIS[0], this.scene),
+      new Texture(this.boardImageURIS[1], this.scene),
+      new Texture(this.boardImageURIS[2], this.scene),
     ];
+
+    this.boardImageUI = new BoardImage();
   }
 
   async LoadBooth(pos: Vector3, quat: Quaternion) {
@@ -136,8 +163,6 @@ class Booth {
       boardCollisionMesh.parent = parent;
       boardCollisionMesh.position.set(1.5, 0.5, 0.6 + i * -2.5);
       boardCollisionMesh.visibility = 0;
-
-      this.worldScene.CreateBoardCollisionEvent(this, boardCollisionMesh, i);
     }
 
     this.mobileCollision = MeshBuilder.CreateBox(
@@ -155,9 +180,9 @@ class Booth {
   }
 
   public CreateLogoMesh() {
-    const frontLogoMat = new StandardMaterial("board-mat", this.scene);
-    const frontLogo = MeshBuilder.CreatePlane(
-      `frontLogo-mesh`,
+    const bottomLogoMat = new StandardMaterial("board-mat", this.scene);
+    const bottomLogo = MeshBuilder.CreatePlane(
+      `bottomLogo-mesh`,
       {
         width: 1.8,
         height: 0.65,
@@ -165,15 +190,14 @@ class Booth {
       this.scene
     );
 
-    frontLogo.parent = this.rootMesh;
-    frontLogo.rotation.y = Math.PI / 2;
-    frontLogo.position.set(-3.985, 0.9, -4.3);
+    bottomLogo.parent = this.rootMesh;
+    bottomLogo.rotation.y = Math.PI / 2;
+    bottomLogo.position.set(-3.985, 0.9, -4.3);
 
-    frontLogoMat.diffuseColor = new Color3(1, 1, 1);
-    frontLogoMat.roughness = 0.5;
-    frontLogoMat.diffuseTexture =
-      this.dummyTextures[Math.floor(Math.random() * 8)];
-    frontLogo.material = frontLogoMat;
+    bottomLogoMat.diffuseColor = new Color3(1, 1, 1);
+    bottomLogoMat.roughness = 0.5;
+    bottomLogoMat.diffuseTexture = this.bottomLogoTexture;
+    bottomLogo.material = bottomLogoMat;
 
     const topLogoMat = new StandardMaterial("board-mat", this.scene);
     const topLogo = MeshBuilder.CreatePlane(
@@ -191,33 +215,61 @@ class Booth {
 
     topLogoMat.diffuseColor = new Color3(1, 1, 1);
     topLogoMat.roughness = 0.5;
-    topLogoMat.diffuseTexture =
-      this.dummyTextures[Math.floor(Math.random() * 8)];
+    topLogoMat.diffuseTexture = this.topLogoTexture;
     topLogo.material = topLogoMat;
   }
 
   public CreateBoardMesh() {
-    for (let i = 0; i < 3; i++) {
-      const board = MeshBuilder.CreatePlane(
+    for (let i = 0; i < this.boardImageURIS.length; i++) {
+      const board = MeshBuilder.CreateBox(
         `board-${i}-image`,
         {
           width: 2,
           height: 3.8,
+          depth: 0.1,
         },
         this.scene
       );
+      board.isPickable = true;
       board.parent = this.rootMesh;
       board.rotation.y = Math.PI / 2;
       board.position.set(3.6, 3, 0.715 + i * -2.5);
-      board.edgesColor = new Color4(1, 1, 0, 0.5);
+      board.edgesColor = BLUE_COLOR;
       board.edgesWidth = 5;
+      const viewButton = createButton(
+        board,
+        "자세히 보기",
+        this.advancedTexture
+      );
+      viewButton.linkOffsetY = 0;
+      viewButton.linkOffsetX = 0;
+
+      viewButton.onPointerClickObservable.add(() => {
+        this.boardImageUI.Render(this.boardImageURIS[i]);
+      });
 
       const mat = new StandardMaterial("board-mat", this.scene);
-
       mat.diffuseColor = new Color3(1, 1, 1);
       mat.roughness = 0.5;
-      mat.diffuseTexture = this.dummyTextures[Math.floor(Math.random() * 8)];
+      mat.diffuseTexture = this.boardImageTexture[i];
       board.material = mat;
+
+      board.actionManager = new ActionManager(this.scene);
+
+      board.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {
+          if (this.isInBooth) {
+            board.enableEdgesRendering();
+            viewButton.isVisible = true;
+          }
+        })
+      );
+      board.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnPointerOutTrigger, () => {
+          board.disableEdgesRendering();
+          viewButton.isVisible = false;
+        })
+      );
     }
   }
 

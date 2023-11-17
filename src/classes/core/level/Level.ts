@@ -11,13 +11,17 @@ import {
   TransformNode,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
+import axios from "axios";
 // class
 import Player from "../player/Player";
 import WorldScene from "../scene/WorldScene";
 import Booth from "./Booth";
 import Expo from "./Expo";
+// type
+import { BoothData } from "../../../types/BoothDataType";
 
-const ENV_COLOR = new Color3(255 / 255, 240 / 255, 197 / 255);
+//const ENV_COLOR = new Color3(255 / 255, 240 / 255, 197 / 255);
+const ENV_COLOR = new Color3(52 / 255, 152 / 255, 219 / 255);
 const mainColor = {
   r: 255,
   g: 240,
@@ -34,31 +38,6 @@ const dummy_booth_data = [
   "./images/board-8.jpg",
   "./images/board-9.jpg",
 ];
-const NAV_PARAMAS = {
-  cs: 0.2,
-  ch: 0.2,
-  walkableSlopeAngle: 35,
-  walkableHeight: 1,
-  walkableClimb: 1,
-  walkableRadius: 1,
-  maxEdgeLen: 12,
-  maxSimplificationError: 1.3,
-  minRegionArea: 8,
-  mergeRegionArea: 20,
-  maxVertsPerPoly: 6,
-  detailSampleDist: 6,
-  detailSampleMaxError: 1,
-};
-
-const AGENT_PARAMS = {
-  radius: 0.1,
-  height: 0.2,
-  maxAcceleration: 4.0,
-  maxSpeed: 2.5,
-  collisionQueryRange: 0.5,
-  pathOptimizationRange: 0.0,
-  separationWeight: 1.0,
-};
 
 class Level {
   public scene: Scene;
@@ -72,12 +51,6 @@ class Level {
   /* config */
   public cameraExposure: number;
   public isDarkMode: boolean = false;
-  /* plugins */
-  private _navigationPlugin: RecastJSPlugin;
-  private _debugNavMesh: Mesh;
-  private _agents: any[] = [];
-  private _crowd: ICrowd;
-  private pathLine: any;
 
   constructor(
     public advancedTexture: AdvancedDynamicTexture,
@@ -107,7 +80,7 @@ class Level {
     this._glowLayer.intensity = 0;
 
     // Load all mesh in this level
-    this.LoadMeshes();
+    this.LoadMeshes(advancedTexture);
 
     // dark mode slider UI
     const modeSlider = document.querySelector(".slider");
@@ -132,57 +105,54 @@ class Level {
     });
   }
 
-  public async LoadMeshes() {
+  public async LoadMeshes(advancedTexture: AdvancedDynamicTexture) {
     /**
      * Create Expo
      */
     this._expo = new Expo(this.scene);
 
+    // requeset booth informations
+    const response = await axios.get("http://13.124.153.160:8080/api/expos/1");
+    const boothData = response.data;
+
     /**
      * Load and set Booths
      */
-    this.rootBooth = new Booth(this.worldScene, undefined, [
-      dummy_booth_data[Math.random() * 6],
-      dummy_booth_data[Math.random() * 6],
-      dummy_booth_data[Math.random() * 6],
-    ]);
-    await this.rootBooth.LoadBooth(
-      new Vector3(6.5, 0, -9),
-      Quaternion.FromEulerAngles(0, 2 * Math.PI, 0)
-    );
     //TODO : change dummy booth data to response data from API server
-    //left side booths
-    for (let i = 2; i < 5; i++) {
-      if (this.rootBooth) {
+    for (let i = 1; i < boothData.length + 1; i++) {
+      if (!this.rootBooth) {
+        this.rootBooth = new Booth(
+          this.worldScene,
+          advancedTexture,
+          boothData[i - 1] as BoothData,
+          undefined
+        );
+        await this.rootBooth.LoadBooth(
+          new Vector3(6.5, 0, -9),
+          Quaternion.FromEulerAngles(0, 2 * Math.PI, 0)
+        );
+      } else {
         const newBoothInstance =
           this.rootBooth.rootMesh?.instantiateHierarchy();
         const newBooth = new Booth(
           this.worldScene,
+          advancedTexture,
+          boothData[i - 1] as BoothData,
           newBoothInstance as TransformNode
         );
-        newBooth.SetPosition(6.5, 0, -9 * i);
+
+        if (i < 5) {
+          newBooth.SetPosition(6.5, 0, -9 * i);
+        } else {
+          newBooth.SetPosition(-6.5, 0, -9 * (i - 4));
+          newBooth.SetRotationQuat(Quaternion.FromEulerAngles(0, Math.PI, 0));
+        }
         newBooth.SetIntersectionEvent(newBooth.rootMesh);
         newBooth.CreateBoardMesh();
         newBooth.CreateLogoMesh();
         newBooth.CreateCollisionAreas();
         this._booths.push(newBooth);
       }
-    }
-
-    //right side booths
-    for (let i = 1; i < 5; i++) {
-      const newBoothInstance = this.rootBooth.rootMesh.instantiateHierarchy();
-      const newBooth = new Booth(
-        this.worldScene,
-        newBoothInstance as TransformNode
-      );
-      newBooth.SetPosition(-6.5, 0, -9 * i);
-      newBooth.SetRotationQuat(Quaternion.FromEulerAngles(0, Math.PI, 0));
-      newBooth.SetIntersectionEvent(newBooth.rootMesh);
-      newBooth.CreateBoardMesh();
-      newBooth.CreateLogoMesh();
-      newBooth.CreateCollisionAreas();
-      this._booths.push(newBooth);
     }
 
     this.worldScene.CreateBoothCollisionEvent([

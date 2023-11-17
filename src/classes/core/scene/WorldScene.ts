@@ -34,6 +34,7 @@ import {
 } from "../../../interfaces/IPacket";
 import Booth from "../level/Booth";
 import ChatBox from "../ui/ChatBox";
+import FeedbackComponent from "../ui/FeedbackComponent";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
 const GRAVITY = new Vector3(0, -9.81, 0);
@@ -62,6 +63,8 @@ class WorldScene implements ICustomScene {
   /* gizmo related */
   private _gizman: GizmoManager;
   private _gizmode: number;
+  /* UI */
+  private _feedbackComponent: FeedbackComponent;
 
   constructor(
     private engine: Engine,
@@ -101,7 +104,9 @@ class WorldScene implements ICustomScene {
       new Vector3(0, 1, 0),
       this.scene
     );
-    //this._shadowGenerator = new ShadowGenerator(1024, this._dirLight);
+
+    // ui
+    this._feedbackComponent = new FeedbackComponent();
 
     // Socket Event callback definition for "connection" and "transform"
     if (this._socket) {
@@ -175,10 +180,16 @@ class WorldScene implements ICustomScene {
     // player construct
     this.LoadModelAsset().then((asset) => {
       if (this._socket) {
-        this._player = new Player(this.scene, expoName, asset, this._socket);
+        this._player = new Player(
+          this.engine,
+          this.scene,
+          expoName,
+          asset,
+          this._socket
+        );
         this._player.SendTransformPacket();
       } else {
-        this._player = new Player(this.scene, expoName, asset);
+        this._player = new Player(this.engine, this.scene, expoName, asset);
       }
       this._level = new Level(this._advancedTexture, this._player, this);
     });
@@ -187,8 +198,8 @@ class WorldScene implements ICustomScene {
     this._isViewing = false;
 
     // TODO : Use this debuggers only for development
-    this.SetGizmoInteraction();
-    this.SetInpsector();
+    // this.SetGizmoInteraction();
+    // this.SetInpsector();
   }
 
   /**
@@ -230,31 +241,6 @@ class WorldScene implements ICustomScene {
           clearInterval(interval);
         }
       }, 100); // Check every 100 milliseconds
-    });
-  }
-
-  /**
-   * Create board collision event and push the callback into callback queue
-   * @param targetBoard mesh to check collision from player mesh
-   */
-  public CreateBoardCollisionEvent(
-    booth: Booth,
-    targetBoard: Mesh,
-    index: number
-  ) {
-    this.scene.onBeforeRenderObservable.add(() => {
-      if (targetBoard.intersectsMesh(this._player.Mesh, false)) {
-        const targetImage = booth.rootMesh
-          .getChildMeshes()
-          .filter((mesh) => mesh.name == `board-${index}-image`)[0];
-        targetImage.enableEdgesRendering();
-      } else {
-        //TODO : need optimize
-        const targetImage = booth.rootMesh
-          .getChildMeshes()
-          .filter((mesh) => mesh.name == `board-${index}-image`)[0];
-        targetImage.disableEdgesRendering();
-      }
     });
   }
 
@@ -317,7 +303,14 @@ class WorldScene implements ICustomScene {
       let flag = false;
       for (let booth of targetBooths) {
         if (booth.boothCollision.intersectsMesh(this._player.Mesh, false)) {
+          booth.isInBooth = true;
+          if (!this._feedbackComponent.isRendered) {
+            const container = this._feedbackComponent.Render();
+            this._feedbackComponent.isRendered = true;
+          }
           flag = true;
+        } else {
+          booth.isInBooth = false;
         }
       }
 
@@ -333,6 +326,10 @@ class WorldScene implements ICustomScene {
         (this._player.CurrentCam as FollowCamera).heightOffset = 1.0;
         (this._player.CurrentCam as FollowCamera).lockedTarget =
           this._player.Mesh;
+        if (this._feedbackComponent.isRendered) {
+          this._feedbackComponent.isRendered = false;
+          this._feedbackComponent.RemoveDomNodes("feedback-container");
+        }
       }
     });
   }
@@ -382,49 +379,49 @@ class WorldScene implements ICustomScene {
   /**
    * Mesh debugger with gizmo manager
    */
-  public SetGizmoInteraction() {
-    this.scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        let key = evt.sourceEvent.key;
-        if (key == "R" || key == "ㄲ") {
-          //shift + R
-          ++this._gizmode;
-          this._gizmode %= 4;
+  // public SetGizmoInteraction() {
+  //   this.scene.actionManager.registerAction(
+  //     new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+  //       let key = evt.sourceEvent.key;
+  //       if (key == "R" || key == "ㄲ") {
+  //         //shift + R
+  //         ++this._gizmode;
+  //         this._gizmode %= 4;
 
-          switch (this._gizmode) {
-            case 0:
-              this._gizman.rotationGizmoEnabled = false;
-              break;
-            case 1:
-              this._gizman.positionGizmoEnabled = true;
-              break;
-            case 2:
-              this._gizman.positionGizmoEnabled = false;
-              this._gizman.scaleGizmoEnabled = true;
-              break;
-            case 3:
-              this._gizman.scaleGizmoEnabled = false;
-              this._gizman.rotationGizmoEnabled = true;
-              break;
-          }
-        }
-      })
-    );
-  }
+  //         switch (this._gizmode) {
+  //           case 0:
+  //             this._gizman.rotationGizmoEnabled = false;
+  //             break;
+  //           case 1:
+  //             this._gizman.positionGizmoEnabled = true;
+  //             break;
+  //           case 2:
+  //             this._gizman.positionGizmoEnabled = false;
+  //             this._gizman.scaleGizmoEnabled = true;
+  //             break;
+  //           case 3:
+  //             this._gizman.scaleGizmoEnabled = false;
+  //             this._gizman.rotationGizmoEnabled = true;
+  //             break;
+  //         }
+  //       }
+  //     })
+  //   );
+  // }
 
   /**
    * set babylon inspector
    */
-  public SetInpsector() {
-    this.scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-        let key = evt.sourceEvent.key;
-        if (key == "D") {
-          Inspector.Show(this.scene, { embedMode: true });
-        }
-      })
-    );
-  }
+  // public SetInpsector() {
+  //   this.scene.actionManager.registerAction(
+  //     new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
+  //       let key = evt.sourceEvent.key;
+  //       if (key == "D") {
+  //         Inspector.Show(this.scene, { embedMode: true });
+  //       }
+  //     })
+  //   );
+  // }
 
   /**
    * Getter / Setter

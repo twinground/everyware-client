@@ -16,6 +16,7 @@
   "dependencies": {
     "@babylonjs/core": "^6.9.0",
     "@babylonjs/havok": "^1.2.1",
-    "@babylonjs/inspector": "^6.9.0"
+    "@babylonjs/inspector": "^6.9.0",
+    "axios": "^1.6.2"
   }
 }

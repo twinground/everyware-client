@@ -23,6 +23,7 @@ import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
 import Socket from "../../network/SocketClient";
 import { ITransform } from "../../../interfaces/IPacket";
+import Engine from "../Engine";
 
 class Player {
   private _socket: Socket;
@@ -43,12 +44,14 @@ class Player {
   public isOnline: boolean = false;
 
   constructor(
+    readonly engine: Engine,
     readonly scene: Scene,
     expoName: string,
     asset: PlayerAsset,
     socket?: Socket
   ) {
     this.scene = scene;
+    this.engine = engine;
     if (socket) {
       this._socket = socket;
       this.isOnline = true;
@@ -132,16 +135,7 @@ class Player {
     this._followCamera.radius = 5.5;
     this._followCamera.rotationOffset = 180;
     this._followCamera.heightOffset = 1.0;
-    this._followCamera.cameraAcceleration = 0.05; // control camera rotation speed
-
-    // Universal camera configuration
-    // Parameters : name, position, scene
-    this._universalCamera = new UniversalCamera(
-      "univeral-cam",
-      this._mesh.position,
-      this.scene
-    );
-    this._universalCamera.setTarget(this._mesh.position);
+    this._followCamera.cameraAcceleration = 0.05;
 
     // Initial camera setup
     this.scene.activeCamera = this._followCamera;
@@ -152,15 +146,10 @@ class Player {
           switch (this.scene.activeCamera?.name) {
             case "arc-rotate-cam": {
               this.scene.activeCamera = this._followCamera;
-              this._followCamera.detachControl();
               break;
             }
             case "follow-cam": {
               this.scene.activeCamera = this._arcRotCamera;
-              this._arcRotCamera.attachControl(
-                this.scene.getEngine().getRenderingCanvas(),
-                true
-              );
               break;
             }
           }
@@ -216,14 +205,10 @@ class Player {
     switch (type) {
       case 0: // arc rotate cam
         this.scene.activeCamera = this._arcRotCamera;
-        this.scene.activeCamera.attachControl();
         break;
       case 1: // follow cam
         this.scene.activeCamera = this._followCamera;
-        break;
-      case 2: // universal cam
-        this.scene.activeCamera = this._universalCamera;
-        this._universalCamera.attachControl();
+        this.scene.activeCamera.detachControl();
         break;
     }
   }
