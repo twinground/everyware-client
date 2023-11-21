@@ -18,12 +18,14 @@ import {
   PhysicsShapeType,
   MeshBuilder,
 } from "@babylonjs/core";
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 import PlayerController from "./PlayerController";
 import Socket from "../../network/SocketClient";
 import { ITransform } from "../../../interfaces/IPacket";
 import Engine from "../Engine";
+import NicknameUI from "../ui/NicknameUI";
 
 class Player {
   private _socket: Socket;
@@ -38,6 +40,7 @@ class Player {
   private _curAnim: AnimationGroup;
   private _playerController: PlayerController;
   private _capsuleAggregate: PhysicsAggregate;
+  private _nicknameTag: NicknameUI;
 
   //public
   public expoName: string;
@@ -48,6 +51,7 @@ class Player {
     readonly scene: Scene,
     expoName: string,
     asset: PlayerAsset,
+    advancedTexture: AdvancedDynamicTexture,
     socket?: Socket
   ) {
     this.scene = scene;
@@ -157,6 +161,14 @@ class Player {
       })
     );
 
+    /**
+     * character nickname tag
+     */
+    this._nicknameTag = new NicknameUI(
+      this._headMesh,
+      this._socket.name,
+      advancedTexture
+    );
     /**
      * ----- Animation asset initialization -----
      */

@@ -122,7 +122,9 @@ class WorldScene implements ICustomScene {
             } = userData;
             this._remotePlayerMap[session_id] = new RemotePlayer(
               this.scene,
-              asset
+              asset,
+              session_id.slice(0, 5),
+              this._advancedTexture
             );
             const target = this._remotePlayerMap[session_id];
             target.Mesh.position.set(x, 0, z); // update position
@@ -185,11 +187,18 @@ class WorldScene implements ICustomScene {
           this.scene,
           expoName,
           asset,
+          this._advancedTexture,
           this._socket
         );
         this._player.SendTransformPacket();
       } else {
-        this._player = new Player(this.engine, this.scene, expoName, asset);
+        this._player = new Player(
+          this.engine,
+          this.scene,
+          expoName,
+          asset,
+          this._advancedTexture
+        );
       }
       this._level = new Level(this._advancedTexture, this._player, this);
     });

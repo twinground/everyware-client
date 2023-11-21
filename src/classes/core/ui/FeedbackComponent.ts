@@ -1,6 +1,8 @@
 import axios from "axios";
 import { API_URL } from "../static";
 import swal from "sweetalert";
+// class
+import FormComponent from "./FormComponent";
 
 class FeedbackComponent {
   private _feedbackContainer: HTMLDivElement;
@@ -9,12 +11,13 @@ class FeedbackComponent {
   private _likeNumber: HTMLDivElement;
   private _feedbackNumber: HTMLDivElement;
   public isRendered = false;
-  readonly boothId: number = -1;
+  private boothId: number = -1;
 
   constructor() {}
 
-  private async RequestLike() {
+  private CheckToken(): string {
     const token = localStorage.getItem("accessToken");
+
     if (!token) {
       // login needed
       swal("Oops!", "로그인이 필요한 기능입니다.", "error", {
@@ -33,24 +36,46 @@ class FeedbackComponent {
           //window.location.href = ""
         }
       });
-      return;
+      return "";
     }
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    };
-    const response = await axios.post(`${API_URL}/booths/id/like`, {
-      headers: config,
-    });
 
-    if (response.status == 400) {
-      alert("권한이 없습니다.");
+    return token;
+  }
+
+  private async RequestLike() {
+    const token = this.CheckToken();
+    if (token != "") {
+      console.log(`${API_URL}/api/likes/${this.boothId}`);
+      const response = await axios.post(
+        `${API_URL}/api/likes/${this.boothId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      this._likeNumber.innerText = response.data;
+      // if success, alert
+
+      if (response.data.state == 400) {
+        // if fail, fail alert
+        alert("권한이 없습니다.");
+      }
+    }
+  }
+
+  private RequestForm() {
+    const token = this.CheckToken();
+    if (token != "") {
+      const feedbackForm = new FormComponent();
+      feedbackForm.Render(this.boothId, token);
     }
   }
 
   private SetDomNodes(boothId: number) {
+    this.boothId = boothId;
     this._feedbackContainer = document.createElement("div");
     this._feedbackContainer.className = "feedback-container";
 
@@ -85,18 +110,20 @@ class FeedbackComponent {
     }, 10);
 
     // Get likes and comments info from api server
-    console.log(`${API_URL}/booths/${boothId}/likes`);
-    axios.get(`${API_URL}/booths/${boothId}/likes`).then((res) => {
-      console.log("like data : " + res.data);
-      this._likeNumber.innerText = res + "";
+    axios.get(`${API_URL}/api/likes/${this.boothId}`).then((res) => {
+      this._likeNumber.innerText = res.data.data;
     });
-    axios.get(`${API_URL}/booths/${boothId}/comments`).then((res) => {
-      console.log("comment data : " + res.data);
-      this._likeNumber.innerText = res + "";
+    axios.get(`${API_URL}/api/comments/${this.boothId}`).then((res) => {
+      console.log(res);
+      this._feedbackNumber.innerText = "" + res.data.data.length;
     });
+
     // enroll event listener
     this._likeBtn.onclick = () => {
       this.RequestLike();
+    };
+    this._feedbackBtn.onclick = () => {
+      this.RequestForm();
     };
     this._feedbackBtn.addEventListener("click", () => {});
 

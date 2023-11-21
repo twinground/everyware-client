@@ -3,7 +3,7 @@ import Socket from "./classes/network/SocketClient";
 
 const SERVER_URL = `ws://13.124.153.160:8080`;
 const EXPO_NAME = "capstone";
-const isOnline = false;
+const isOnline = true;
 
 window.addEventListener("DOMContentLoaded", () => {
   if (isOnline) {

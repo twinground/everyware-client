@@ -6,15 +6,25 @@ import {
   TransformNode,
   AsyncCoroutine,
 } from "@babylonjs/core";
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
+// class
+import NicknameUI from "../ui/NicknameUI";
 // Type import
 import { PlayerAsset, PlayerAnimations } from "../../../types/PlayerType";
 
 class RemotePlayer extends TransformNode {
   private _mesh: AbstractMesh;
+  private _headMesh: AbstractMesh;
   private _animations: PlayerAnimations;
   private _curAnim: AnimationGroup;
+  private _nicknameTag: NicknameUI;
 
-  constructor(readonly scene: Scene, asset: PlayerAsset) {
+  constructor(
+    readonly scene: Scene,
+    asset: PlayerAsset,
+    name: string,
+    advancedTexture: AdvancedDynamicTexture
+  ) {
     super("player", scene);
     this.scene = scene;
 
@@ -23,6 +33,9 @@ class RemotePlayer extends TransformNode {
     // store loaded assets into member field.
     this._mesh = asset.mesh;
     this._mesh.parent = this;
+    this._headMesh = new AbstractMesh("player-head-abstract-mesh", this.scene);
+    this._headMesh.parent = this._mesh;
+    this._headMesh.position.y += 1.5;
 
     // store animation assets
     this.scene.stopAllAnimations();
@@ -37,6 +50,8 @@ class RemotePlayer extends TransformNode {
       walkBack: asset.animationGroups[2],
       walkFor: asset.animationGroups[3],
     };
+    // nickname
+    this._nicknameTag = new NicknameUI(this._headMesh, name, advancedTexture);
 
     // play idle animation as an initial animation
     this._animations.idle.play(true);

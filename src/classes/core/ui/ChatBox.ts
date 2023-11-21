@@ -27,7 +27,7 @@ class ChatBox {
     if (socket) {
       this._socket = socket;
       this._socket.On("chatMessage").Add((data: IChatMessage) => {
-        this.AddRecievedChat(data.session_id.slice(0, 5), data.message);
+        this.AddRecievedChat(this._socket.name, data.message);
       });
     }
 
