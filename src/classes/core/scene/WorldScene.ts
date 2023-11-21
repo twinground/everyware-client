@@ -377,53 +377,6 @@ class WorldScene implements ICustomScene {
   }
 
   /**
-   * Mesh debugger with gizmo manager
-   */
-  // public SetGizmoInteraction() {
-  //   this.scene.actionManager.registerAction(
-  //     new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-  //       let key = evt.sourceEvent.key;
-  //       if (key == "R" || key == "ㄲ") {
-  //         //shift + R
-  //         ++this._gizmode;
-  //         this._gizmode %= 4;
-
-  //         switch (this._gizmode) {
-  //           case 0:
-  //             this._gizman.rotationGizmoEnabled = false;
-  //             break;
-  //           case 1:
-  //             this._gizman.positionGizmoEnabled = true;
-  //             break;
-  //           case 2:
-  //             this._gizman.positionGizmoEnabled = false;
-  //             this._gizman.scaleGizmoEnabled = true;
-  //             break;
-  //           case 3:
-  //             this._gizman.scaleGizmoEnabled = false;
-  //             this._gizman.rotationGizmoEnabled = true;
-  //             break;
-  //         }
-  //       }
-  //     })
-  //   );
-  // }
-
-  /**
-   * set babylon inspector
-   */
-  // public SetInpsector() {
-  //   this.scene.actionManager.registerAction(
-  //     new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
-  //       let key = evt.sourceEvent.key;
-  //       if (key == "D") {
-  //         Inspector.Show(this.scene, { embedMode: true });
-  //       }
-  //     })
-  //   );
-  // }
-
-  /**
    * Getter / Setter
    */
   get LocalPlayer() {
@@ -447,20 +400,20 @@ class WorldScene implements ICustomScene {
    */
   private TutorialOnboarding() {
     const backgounrdImg = [
-      "/images/tutorial/background1.png",
-      "/images/tutorial/background2.png",
-      "/images/tutorial/background3.png",
+      "../../../../public/images/tutorial/background1.png",
+      "../../../../public/images/tutorial/background2.png",
+      "../../../../public/images/tutorial/background3.png",
     ];
 
     const explainImg = [
-      "/images/tutorial/explain1.png",
-      "/images/tutorial/explain2.png",
-      "/images/tutorial/explain3.png",
+      "../../../../public/images/tutorial/explain1.png",
+      "../../../../public/images/tutorial/explain2.png",
+      "../../../../public/images/tutorial/explain3.png",
     ];
 
     const highlightFrame = [
-      "/images/tutorial/bg2_highlight.png",
-      "/images/tutorial/bg3_highlight.png",
+      "../../../../public/images/tutorial/bg2_highlight.png",
+      "../../../../public/images/tutorial/bg3_highlight.png",
     ];
 
     let textList = ["NEXT", "SKIP"];
