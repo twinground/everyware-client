@@ -143,12 +143,12 @@ input:checked + .slider:before {
 .explain {
   position: absolute;
   z-index: 8;
-  top: 50%; /* ì»¨í…Œì´ë„ˆì˜ ìƒë‹¨ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
-  left: 50%; /* ì»¨í…Œì´ë„ˆì˜ ì™¼ìª½ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
+  top: 50%; /* Ã¬Â»Â¨Ã­â€¦Å’Ã¬ÂÂ´Ã«â€žË†Ã¬ÂËœ Ã¬Æ’ÂÃ«â€¹Â¨Ã¬â€”ÂÃ¬â€žÅ“ 50% Ã«â€“Â¨Ã¬â€“Â´Ã¬Â§â€ž Ã¬Å“â€žÃ¬Â¹ËœÃ¬â€”Â Ã«Â°Â°Ã¬Â¹ËœÃ­â€¢Â©Ã«â€¹Ë†Ã«â€¹Â¤. */
+  left: 50%; /* Ã¬Â»Â¨Ã­â€¦Å’Ã¬ÂÂ´Ã«â€žË†Ã¬ÂËœ Ã¬â„¢Â¼Ã¬ÂªÂ½Ã¬â€”ÂÃ¬â€žÅ“ 50% Ã«â€“Â¨Ã¬â€“Â´Ã¬Â§â€ž Ã¬Å“â€žÃ¬Â¹ËœÃ¬â€”Â Ã«Â°Â°Ã¬Â¹ËœÃ­â€¢Â©Ã«â€¹Ë†Ã«â€¹Â¤. */
   transform: translate(
     -50%,
     -50%
-  ); /* ì´ë¯¸ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ì •ë ¬í•©ë‹ˆë‹¤. */
+  ); /* Ã¬ÂÂ´Ã«Â¯Â¸Ã¬Â§â‚¬Ã«Â¥Â¼ Ã¬Â¤â€˜Ã¬â€¢â„¢Ã¬Å“Â¼Ã«Â¡Å“ Ã¬Â â€¢Ã«Â Â¬Ã­â€¢Â©Ã«â€¹Ë†Ã«â€¹Â¤. */
   width: 50%;
   height: 50%;
   transition: opacity 0.5s;
@@ -157,12 +157,12 @@ input:checked + .slider:before {
 .highlight {
   position: absolute;
   z-index: 9;
-  top: 50%; /* ì»¨í…Œì´ë„ˆì˜ ìƒë‹¨ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
-  left: 50%; /* ì»¨í…Œì´ë„ˆì˜ ì™¼ìª½ì—ì„œ 50% ë–¨ì–´ì§„ ìœ„ì¹˜ì— ë°°ì¹˜í•©ë‹ˆë‹¤. */
+  top: 50%; /* Ã¬Â»Â¨Ã­â€¦Å’Ã¬ÂÂ´Ã«â€žË†Ã¬ÂËœ Ã¬Æ’ÂÃ«â€¹Â¨Ã¬â€”ÂÃ¬â€žÅ“ 50% Ã«â€“Â¨Ã¬â€“Â´Ã¬Â§â€ž Ã¬Å“â€žÃ¬Â¹ËœÃ¬â€”Â Ã«Â°Â°Ã¬Â¹ËœÃ­â€¢Â©Ã«â€¹Ë†Ã«â€¹Â¤. */
+  left: 50%; /* Ã¬Â»Â¨Ã­â€¦Å’Ã¬ÂÂ´Ã«â€žË†Ã¬ÂËœ Ã¬â„¢Â¼Ã¬ÂªÂ½Ã¬â€”ÂÃ¬â€žÅ“ 50% Ã«â€“Â¨Ã¬â€“Â´Ã¬Â§â€ž Ã¬Å“â€žÃ¬Â¹ËœÃ¬â€”Â Ã«Â°Â°Ã¬Â¹ËœÃ­â€¢Â©Ã«â€¹Ë†Ã«â€¹Â¤. */
   transform: translate(
     -50%,
     -50%
-  ); /* ì´ë¯¸ì§€ë¥¼ ì¤‘ì•™ìœ¼ë¡œ ì •ë ¬í•©ë‹ˆë‹¤. */
+  ); /* Ã¬ÂÂ´Ã«Â¯Â¸Ã¬Â§â‚¬Ã«Â¥Â¼ Ã¬Â¤â€˜Ã¬â€¢â„¢Ã¬Å“Â¼Ã«Â¡Å“ Ã¬Â â€¢Ã«Â Â¬Ã­â€¢Â©Ã«â€¹Ë†Ã«â€¹Â¤. */
   width: 100%;
   height: 100%;
   transition: opacity 0.3s;
@@ -409,6 +409,119 @@ input:checked + .slider:before {
 .fade-in {
   transform: scale(1, 1);
   opacity: 1;
+}
+
+.form-container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 10rem;
+  left: 10rem;
+  width: 25rem;
+  height: 30rem;
+  border-radius: 2.5rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 2rem 0;
+}
+
+.form-rate-title {
+  height: 3rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.form-rate-button-container {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+}
+
+.form-rate-button {
+  display: inline-block;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 10rem;
+  outline: none;
+  border: 1px solid #aaa;
+  background: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all 0.3s;
+}
+
+.form-rate-button:hover,
+.clicked-state {
+  background-color: rgb(52, 152, 219);
+  color: #eee;
+  border: none;
+}
+
+.form-rate-description-container {
+  display: flex;
+  width: 80%;
+  font-size: 0.8rem;
+  justify-content: space-between;
+}
+
+.form-suggestion-title {
+  padding-top: 2rem;
+  height: 3rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.form-suggestion-textarea {
+  width: 90%;
+  height: 12rem;
+  border: 0.5px solid #aaa;
+}
+
+.form-submit-button {
+  width: 90%;
+  margin-top: 1rem;
+  height: 2.5rem;
+  text-align: center;
+  padding-top: 1.25rem;
+  background-color: rgb(52, 152, 219);
+  border-radius: 1rem;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #eee;
+  transition: all 0.3s;
+}
+
+.form-submit-button:hover {
+  background-color: rgba(52, 140, 200);
+}
+
+.form-exit-button {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.form-exit-button::before,
+.form-exit-button::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 15px;
+  background-color: black; /* Color of the 'x' */
+  transform: rotate(45deg);
+  transition: all 0.3s;
+}
+
+.form-exit-button::before {
+  transform: rotate(-45deg);
+}
+
+.form-exit-button:hover::before,
+.form-exit-button:hover::after {
+  background-color: #aaa;
 }
 
 @keyframes shrink {

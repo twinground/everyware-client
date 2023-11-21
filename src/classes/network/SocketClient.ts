@@ -12,9 +12,17 @@ const NAME_MAP = {
 class Socket {
   private _webSock: WebSocket;
   private _eventMap: SocketEventMap;
+  public name: string;
   public id: string;
 
   constructor(URL: string) {
+    const nickname = localStorage.getItem("nickname");
+    if (nickname) {
+      this.name = nickname;
+    } else {
+      //random guest index
+      this.name = `guest-${Math.floor(Math.random() * 1000)}`;
+    }
     this._webSock = new WebSocket(URL);
     this._eventMap = new SocketEventMap();
 

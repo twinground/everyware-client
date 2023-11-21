@@ -5,10 +5,12 @@ type TransformData = {
   state: string;
 };
 
+// TODO: add name when initialized
 export interface IInit {
   session_id: string;
 }
 
+// TODO: add name
 export interface IConnection {
   session_id: string;
   expo_name: string;
