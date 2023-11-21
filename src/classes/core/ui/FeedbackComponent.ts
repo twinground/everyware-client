@@ -9,12 +9,13 @@ class FeedbackComponent {
   private _likeNumber: HTMLDivElement;
   private _feedbackNumber: HTMLDivElement;
   public isRendered = false;
-  readonly boothId: number = -1;
+  private boothId: number = -1;
 
   constructor() {}
 
   private async RequestLike() {
     const token = localStorage.getItem("accessToken");
+    console.log(token);
     if (!token) {
       // login needed
       swal("Oops!", "로그인이 필요한 기능입니다.", "error", {
@@ -41,9 +42,13 @@ class FeedbackComponent {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await axios.post(`${API_URL}/booths/id/like`, {
-      headers: config,
+    console.log(`${API_URL}/api/likes/${this.boothId}`);
+    const response = await axios.post(`${API_URL}/api/likes/${this.boothId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
+    console.log(response);
 
     if (response.status == 400) {
       alert("권한이 없습니다.");
@@ -51,6 +56,7 @@ class FeedbackComponent {
   }
 
   private SetDomNodes(boothId: number) {
+    this.boothId = boothId;
     this._feedbackContainer = document.createElement("div");
     this._feedbackContainer.className = "feedback-container";
 
@@ -85,14 +91,11 @@ class FeedbackComponent {
     }, 10);
 
     // Get likes and comments info from api server
-    console.log(`${API_URL}/booths/${boothId}/likes`);
-    axios.get(`${API_URL}/booths/${boothId}/likes`).then((res) => {
-      console.log("like data : " + res.data);
-      this._likeNumber.innerText = res + "";
+    axios.get(`${API_URL}/api/likes/${this.boothId}`).then((res) => {
+      this._likeNumber.innerText = res.data.data;
     });
-    axios.get(`${API_URL}/booths/${boothId}/comments`).then((res) => {
-      console.log("comment data : " + res.data);
-      this._likeNumber.innerText = res + "";
+    axios.get(`${API_URL}/api/comments/${this.boothId}`).then((res) => {
+      this._feedbackNumber.innerText = "" + res.data.length;
     });
     // enroll event listener
     this._likeBtn.onclick = () => {
