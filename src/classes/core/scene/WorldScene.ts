@@ -170,9 +170,11 @@ class WorldScene implements ICustomScene {
       // Promise-based-waiting for connection establishment.
       // There is no reason to proceed scene if there is an unexpected error on socket connection
       this.WaitConnection().then(() => {
+        const username = localStorage.getItem("nickname");
         const connectionData: IConnection = {
           session_id: (this._socket as Socket).id,
           expo_name: expoName,
+          user_name: username,
           transforms: [],
         };
         (this._socket as Socket).Send(1, connectionData);

@@ -14,6 +14,7 @@ export interface IInit {
 export interface IConnection {
   session_id: string;
   expo_name: string;
+  user_name: string;
   transforms: TransformData[];
 }
 
