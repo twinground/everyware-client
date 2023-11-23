@@ -74,7 +74,7 @@ class WorldScene implements ICustomScene {
   ) {
     this.TutorialOnboarding();
     //TODO wh test
-    this._chatBox = new ChatBox(expoName, "wh", _socket);
+    this._chatBox = new ChatBox(expoName, _socket);
 
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
@@ -112,7 +112,6 @@ class WorldScene implements ICustomScene {
     if (this._socket) {
       this._socket.On("connection").Add((data: IConnection) => {
         // Initialize all the users exists in server before this connection
-        this._socket.name = data.user_name;
         for (let userData of data.transforms) {
           this.LoadModelAsset().then((asset) => {
             const {

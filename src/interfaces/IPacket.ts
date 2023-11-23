@@ -35,6 +35,7 @@ export interface ITransform {
 
 export interface IChatMessage {
   session_id: string;
+  user_name: string;
   expo_name: string;
   message: string;
 }

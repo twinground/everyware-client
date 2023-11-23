@@ -6,7 +6,11 @@ class FormComponent {
   public boothId: number;
   constructor() {}
 
-  private async RequestFormSubmit(data: any, token: string) {
+  private async RequestFormSubmit(
+    data: any,
+    token: string,
+    feedbackNumber: HTMLDivElement
+  ) {
     const response = await axios.post(
       `${API_URL}/api/comments/${this.boothId}`,
       data,
@@ -27,6 +31,7 @@ class FormComponent {
           },
         },
       });
+      feedbackNumber.innerText = response.data.data.count;
     }
 
     if (response.data.state === 400) {
@@ -41,7 +46,11 @@ class FormComponent {
     }
   }
 
-  private SetDomNodes(boothId: number, token: string) {
+  private SetDomNodes(
+    boothId: number,
+    token: string,
+    feedbackNumber: HTMLDivElement
+  ) {
     let rateData = -1;
     this.boothId = boothId;
     const formContainer = document.createElement("div");
@@ -115,7 +124,7 @@ class FormComponent {
         rate: rateData,
         comment: suggestionTextarea.value,
       };
-      this.RequestFormSubmit(data, token);
+      this.RequestFormSubmit(data, token, feedbackNumber);
 
       this.RemoveDomNodes("form-container");
     };
@@ -135,8 +144,8 @@ class FormComponent {
     }
   }
 
-  Render(boothId: number, token: string) {
-    const container = this.SetDomNodes(boothId, token);
+  Render(boothId: number, token: string, feedbackNumber: HTMLDivElement) {
+    const container = this.SetDomNodes(boothId, token, feedbackNumber);
 
     document.body.appendChild(container);
     return container;
