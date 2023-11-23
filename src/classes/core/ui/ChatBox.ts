@@ -18,16 +18,16 @@ class ChatBox {
   private _isOn: boolean;
   private _isDefault: boolean;
 
-  constructor(expoName: string, userName: string, socket?: Socket) {
+  constructor(expoName: string, socket?: Socket) {
     // if you have parent out of this class turn _isDefault to false and call InputChatBox with parent element
     this._isDefault = true;
     this._isOn = false;
     this._expoName = expoName;
-    this._userName = userName;
     if (socket) {
       this._socket = socket;
       this._socket.On("chatMessage").Add((data: IChatMessage) => {
-        this.AddRecievedChat(this._socket.name, data.message);
+        console.log(data);
+        this.AddRecievedChat(data.user_name, data.message);
       });
     }
 
@@ -74,7 +74,7 @@ class ChatBox {
     //add event listener on button
     this._sendButtonDOM.addEventListener("click", () => {
       if (this._textFieldDOM.value != "") {
-        this.SendChatMessage(this._userName, this._textFieldDOM.value);
+        this.SendChatMessage(this._textFieldDOM.value);
       }
 
       this._textFieldDOM.value = "";
@@ -86,7 +86,7 @@ class ChatBox {
 
       if (event.key === "Enter") {
         if (this._textFieldDOM.value != "") {
-          this.SendChatMessage(this._userName, this._textFieldDOM.value);
+          this.SendChatMessage(this._textFieldDOM.value);
         }
 
         this._textFieldDOM.value = "";
@@ -114,13 +114,15 @@ class ChatBox {
 
   //TODO ChatBox클래스의 _TextFieldDOM과 _userName을 통해 패킷 전송!
   //send함수 내에 소켓 전송 함수 구현하면 댐
-  private SendChatMessage(_name: string, text: string) {
+  private SendChatMessage(text: string) {
     if (this._socket) {
       const chatData: IChatMessage = {
         session_id: this._socket.id,
+        user_name: this._socket.name,
         expo_name: this._expoName,
         message: text,
       };
+      console.log(chatData);
       this._socket.Send(4, chatData);
     }
   }

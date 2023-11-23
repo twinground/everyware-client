@@ -55,10 +55,11 @@ class FeedbackComponent {
           },
         }
       );
-      console.log(response.data);
-      this._likeNumber.innerText = response.data;
-      // if success, alert
 
+      if (response.data.state == 200) {
+        console.log(response.data);
+        this._likeNumber.innerText = response.data.data.count;
+      }
       if (response.data.state == 400) {
         // if fail, fail alert
         alert("권한이 없습니다.");
@@ -70,7 +71,7 @@ class FeedbackComponent {
     const token = this.CheckToken();
     if (token != "") {
       const feedbackForm = new FormComponent();
-      feedbackForm.Render(this.boothId, token);
+      feedbackForm.Render(this.boothId, token, this._feedbackNumber);
     }
   }
 

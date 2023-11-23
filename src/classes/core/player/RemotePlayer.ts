@@ -22,7 +22,7 @@ class RemotePlayer extends TransformNode {
   constructor(
     readonly scene: Scene,
     asset: PlayerAsset,
-    name: string,
+    username: string,
     advancedTexture: AdvancedDynamicTexture
   ) {
     super("player", scene);
@@ -51,7 +51,11 @@ class RemotePlayer extends TransformNode {
       walkFor: asset.animationGroups[3],
     };
     // nickname
-    this._nicknameTag = new NicknameUI(this._headMesh, name, advancedTexture);
+    this._nicknameTag = new NicknameUI(
+      this._headMesh,
+      username,
+      advancedTexture
+    );
 
     // play idle animation as an initial animation
     this._animations.idle.play(true);
@@ -92,6 +96,10 @@ class RemotePlayer extends TransformNode {
 
   set CurAnim(anim: AnimationGroup) {
     this._curAnim = anim;
+  }
+
+  get NameTag() {
+    return this._nicknameTag;
   }
 }
 

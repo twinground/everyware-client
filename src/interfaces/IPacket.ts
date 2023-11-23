@@ -1,5 +1,6 @@
 type TransformData = {
   session_id: string;
+  user_name: string;
   position: { x: number; z: number };
   quaternion: { y: number; w: number };
   state: string;
@@ -14,6 +15,7 @@ export interface IInit {
 export interface IConnection {
   session_id: string;
   expo_name: string;
+  user_name: string;
   transforms: TransformData[];
 }
 
@@ -33,6 +35,7 @@ export interface ITransform {
 
 export interface IChatMessage {
   session_id: string;
+  user_name: string;
   expo_name: string;
   message: string;
 }

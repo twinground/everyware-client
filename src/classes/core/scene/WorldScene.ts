@@ -74,7 +74,7 @@ class WorldScene implements ICustomScene {
   ) {
     this.TutorialOnboarding();
     //TODO wh test
-    this._chatBox = new ChatBox(expoName, "wh", _socket);
+    this._chatBox = new ChatBox(expoName, _socket);
 
     // Initialize Scene
     this.scene = new Scene(engine.BabylonEngine);
@@ -117,13 +117,14 @@ class WorldScene implements ICustomScene {
             const {
               session_id,
               position: { x, z },
+              user_name,
               quaternion: { y, w },
               state,
             } = userData;
             this._remotePlayerMap[session_id] = new RemotePlayer(
               this.scene,
               asset,
-              session_id.slice(0, 5),
+              user_name,
               this._advancedTexture
             );
             const target = this._remotePlayerMap[session_id];
@@ -164,6 +165,7 @@ class WorldScene implements ICustomScene {
 
       this._socket.On("disconnection").Add((data: IDisconnection) => {
         this._remotePlayerMap[data.session_id].dispose(); // delete all resource of this player
+        this._remotePlayerMap[data.session_id].NameTag.textBlock.dispose();
         delete this._remotePlayerMap[data.session_id];
       });
 
@@ -173,6 +175,7 @@ class WorldScene implements ICustomScene {
         const connectionData: IConnection = {
           session_id: (this._socket as Socket).id,
           expo_name: expoName,
+          user_name: this._socket.name,
           transforms: [],
         };
         (this._socket as Socket).Send(1, connectionData);
