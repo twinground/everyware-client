@@ -1,5 +1,6 @@
 type TransformData = {
   session_id: string;
+  user_name: string;
   position: { x: number; z: number };
   quaternion: { y: number; w: number };
   state: string;
