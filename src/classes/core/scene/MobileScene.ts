@@ -16,7 +16,9 @@ import {
   SceneLoader,
   Color3,
   Plane,
+  Mesh,
 } from "@babylonjs/core";
+import * as earcut from "earcut";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
 import Engine from "../Engine";
@@ -66,16 +68,16 @@ class MobileScene implements ICustomScene {
       Vector3.Zero(),
       this.scene
     );
-    this._camera.setPosition(new Vector3(0, 5, 10));
+    this._camera.setPosition(new Vector3(0, 3, 9));
     this._camera.inertia = 0;
     this._camera.angularSensibilityX = 250;
     this._camera.angularSensibilityY = 250;
-    this._camera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    this._camera.lowerBetaLimit = 0.1;
-    this._camera.upperAlphaLimit = Math.PI * 0.9;
-    this._camera.lowerAlphaLimit = 0.1;
-    this._camera.lowerRadiusLimit = 5;
-    this._camera.upperRadiusLimit = 20;
+    this._camera.upperBetaLimit = Math.PI / 3;
+    this._camera.lowerBetaLimit = Math.PI / 4;
+    this._camera.upperAlphaLimit = Math.PI / 2;
+    this._camera.lowerAlphaLimit = Math.PI / 2;
+    this._camera.lowerRadiusLimit = 9;
+    this._camera.upperRadiusLimit = 9;
     this._camera.attachControl(true);
 
     SceneLoader.ImportMesh(
@@ -92,6 +94,75 @@ class MobileScene implements ICustomScene {
         mesh.parent = null;
       }
     );
+
+    // TODO : rounded screen
+    // const width = 5; // with 0 radius
+    // const depth = 4; //with 0 radius
+    // const radius = 1;
+    // const dTheta = Math.PI / 32;
+
+    // //Polygon shape in XoZ plane
+    // const shape = [];
+
+    // //bottom left corner
+    // let centerX = -(0.5 * width - radius);
+    // let centerZ = -(0.5 * depth - radius);
+    // for (let theta = Math.PI; theta <= 1.5 * Math.PI; theta += dTheta) {
+    //   shape.push(
+    //     new Vector3(
+    //       centerX + radius * Math.cos(theta),
+    //       0,
+    //       centerZ + radius * Math.sin(theta)
+    //     )
+    //   );
+    // }
+
+    // //bottom right corner
+    // centerX = 0.5 * width - radius;
+    // for (let theta = 1.5 * Math.PI; theta <= 2 * Math.PI; theta += dTheta) {
+    //   shape.push(
+    //     new Vector3(
+    //       centerX + radius * Math.cos(theta),
+    //       0,
+    //       centerZ + radius * Math.sin(theta)
+    //     )
+    //   );
+    // }
+
+    // //top right corner
+    // centerZ = 0.5 * depth - radius;
+    // for (let theta = 0; theta <= 0.5 * Math.PI; theta += dTheta) {
+    //   shape.push(
+    //     new Vector3(
+    //       centerX + radius * Math.cos(theta),
+    //       0,
+    //       centerZ + radius * Math.sin(theta)
+    //     )
+    //   );
+    // }
+
+    // //top left corner
+    // centerX = -(0.5 * width - radius);
+    // for (let theta = 0.5 * Math.PI; theta <= Math.PI; theta += dTheta) {
+    //   shape.push(
+    //     new Vector3(
+    //       centerX + radius * Math.cos(theta),
+    //       0,
+    //       centerZ + radius * Math.sin(theta)
+    //     )
+    //   );
+    // }
+
+    // const polygon = MeshBuilder.CreatePolygon(
+    //   "polygon",
+    //   {
+    //     shape: shape,
+    //     sideOrientation: Mesh.DOUBLESIDE,
+    //   },
+    //   this.scene,
+    //   earcut
+    // );
+    // polygon.rotation.addInPlace(new Vector3(0, Math.PI / 2, 0));
 
     let screenMesh = MeshBuilder.CreatePlane(
       "screenMesh",
@@ -178,7 +249,7 @@ class MobileScene implements ICustomScene {
     iframe.style.height = "100%";
     iframe.style.border = "0px";
     iframe.src =
-      "http://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
+      "https://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
     iframe.style.scale = "6 1.5";
     iframe.style.translate = "-100%";
     iframeContainer.appendChild(iframe);
