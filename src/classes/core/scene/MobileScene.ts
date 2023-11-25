@@ -162,7 +162,11 @@ class MobileScene implements ICustomScene {
     //   this.scene,
     //   earcut
     // );
-    // polygon.rotation.addInPlace(new Vector3(0, Math.PI / 2, 0));
+    // polygon.rotation.addInPlace(new Vector3(0, Math.PI / 2, Math.PI / 2));
+    // polygon.scaling.x = 3;
+    // polygon.scaling.y = 6.5;
+    // polygon.position.z += 0.2;
+    // polygon.position.y += 0.25;
 
     let screenMesh = MeshBuilder.CreatePlane(
       "screenMesh",
@@ -232,7 +236,6 @@ class MobileScene implements ICustomScene {
     iframeContainer.style.position = "absolute";
     iframeContainer.style.width = width + "px";
     iframeContainer.style.height = height + "px";
-    iframeContainer.style.backgroundColor = "#000";
     iframeContainer.id = "iframeContainer";
 
     let CSSobject = new CSS3DObject(iframeContainer);
@@ -249,7 +252,7 @@ class MobileScene implements ICustomScene {
     iframe.style.height = "100%";
     iframe.style.border = "0px";
     iframe.src =
-      "https://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
+      "http://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
     iframe.style.scale = "6 1.5";
     iframe.style.translate = "-100%";
     iframeContainer.appendChild(iframe);
