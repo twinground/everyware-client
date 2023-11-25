@@ -25,6 +25,7 @@ import WorldScene from "../scene/WorldScene";
 import BoardImage from "../ui/BoardImage";
 import { createButton } from "../ui/ViewButton";
 import { BoothData } from "../../../types/BoothDataType";
+import Npc from "./Npc";
 
 const BLUE_COLOR = new Color4(52 / 255, 152 / 255, 219 / 255, 0.8);
 
@@ -34,6 +35,7 @@ class Booth {
   readonly advancedTexture: AdvancedDynamicTexture;
   // mesh
   public rootMesh: AbstractMesh | TransformNode;
+  public npc: Npc;
   public deskCollision: Mesh;
   public boards: Mesh[] = [];
   public frontLogo: Node;
@@ -76,8 +78,19 @@ class Booth {
     this.bottomLogoURI = boothData.boothMaterials.bottom_logos;
     this.boardImageURIS = boothData.boothMaterials.images;
 
+    this.npc = new Npc(this.scene);
     if (boothInstance) {
       this.rootMesh = boothInstance;
+      this.npc.LoadModelAsset().then((npcMesh: AbstractMesh) => {
+        this.npc.SetParentMesh(this.rootMesh);
+
+        npcMesh.position.set(-2.8, 0.1, -4.3);
+        npcMesh.rotationQuaternion = Quaternion.FromEulerAngles(
+          0,
+          -Math.PI / 2,
+          0
+        );
+      }); // load npc
     }
 
     // texture and material
@@ -102,8 +115,17 @@ class Booth {
       "booth_v2_compressed.glb",
       this.scene
     );
-
     this.rootMesh = boothGLB.meshes[0];
+    this.npc.LoadModelAsset().then((npcMesh: AbstractMesh) => {
+      this.npc.SetParentMesh(this.rootMesh);
+
+      npcMesh.position.set(-2.8, 0.1, -4.3);
+      npcMesh.rotationQuaternion = Quaternion.FromEulerAngles(
+        0,
+        -Math.PI / 2,
+        0
+      );
+    }); // load npc
 
     for (let child of this.rootMesh.getChildren()) {
       if (child.id.match(RegExp("board-*"))) {
