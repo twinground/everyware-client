@@ -73,7 +73,7 @@ class MobileScene implements ICustomScene {
     this._camera.angularSensibilityX = 250;
     this._camera.angularSensibilityY = 250;
     this._camera.upperBetaLimit = Math.PI / 3;
-    this._camera.lowerBetaLimit = Math.PI / 4;
+    this._camera.lowerBetaLimit = Math.PI / 3;
     this._camera.upperAlphaLimit = Math.PI / 2;
     this._camera.lowerAlphaLimit = Math.PI / 2;
     this._camera.lowerRadiusLimit = 9;
@@ -83,100 +83,27 @@ class MobileScene implements ICustomScene {
     SceneLoader.ImportMesh(
       "",
       "./models/",
-      "galaxy_s8.glb",
+      "galaxy_ultra.glb",
       this.scene,
       (meshes) => {
         let mesh = meshes[0];
         mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, 2 * Math.PI, 0);
         mesh.position.z -= 0.02;
         mesh.position.y -= 3.2;
-        mesh.scaling.setAll(0.7);
+        mesh.scaling.setAll(1.2);
         mesh.parent = null;
       }
     );
-
-    // TODO : rounded screen
-    // const width = 5; // with 0 radius
-    // const depth = 4; //with 0 radius
-    // const radius = 1;
-    // const dTheta = Math.PI / 32;
-
-    // //Polygon shape in XoZ plane
-    // const shape = [];
-
-    // //bottom left corner
-    // let centerX = -(0.5 * width - radius);
-    // let centerZ = -(0.5 * depth - radius);
-    // for (let theta = Math.PI; theta <= 1.5 * Math.PI; theta += dTheta) {
-    //   shape.push(
-    //     new Vector3(
-    //       centerX + radius * Math.cos(theta),
-    //       0,
-    //       centerZ + radius * Math.sin(theta)
-    //     )
-    //   );
-    // }
-
-    // //bottom right corner
-    // centerX = 0.5 * width - radius;
-    // for (let theta = 1.5 * Math.PI; theta <= 2 * Math.PI; theta += dTheta) {
-    //   shape.push(
-    //     new Vector3(
-    //       centerX + radius * Math.cos(theta),
-    //       0,
-    //       centerZ + radius * Math.sin(theta)
-    //     )
-    //   );
-    // }
-
-    // //top right corner
-    // centerZ = 0.5 * depth - radius;
-    // for (let theta = 0; theta <= 0.5 * Math.PI; theta += dTheta) {
-    //   shape.push(
-    //     new Vector3(
-    //       centerX + radius * Math.cos(theta),
-    //       0,
-    //       centerZ + radius * Math.sin(theta)
-    //     )
-    //   );
-    // }
-
-    // //top left corner
-    // centerX = -(0.5 * width - radius);
-    // for (let theta = 0.5 * Math.PI; theta <= Math.PI; theta += dTheta) {
-    //   shape.push(
-    //     new Vector3(
-    //       centerX + radius * Math.cos(theta),
-    //       0,
-    //       centerZ + radius * Math.sin(theta)
-    //     )
-    //   );
-    // }
-
-    // const polygon = MeshBuilder.CreatePolygon(
-    //   "polygon",
-    //   {
-    //     shape: shape,
-    //     sideOrientation: Mesh.DOUBLESIDE,
-    //   },
-    //   this.scene,
-    //   earcut
-    // );
-    // polygon.rotation.addInPlace(new Vector3(0, Math.PI / 2, Math.PI / 2));
-    // polygon.scaling.x = 3;
-    // polygon.scaling.y = 6.5;
-    // polygon.position.z += 0.2;
-    // polygon.position.y += 0.25;
 
     let screenMesh = MeshBuilder.CreatePlane(
       "screenMesh",
       { width: 1, height: 1 },
       this.scene
     );
-    screenMesh.scaling.x = 3;
-    screenMesh.scaling.y = 6.5;
+    screenMesh.scaling.x = 2.9;
+    screenMesh.scaling.y = 6.1;
     screenMesh.position.z += 0.2;
-    screenMesh.position.y += 0.25;
+    screenMesh.position.y += 0.03;
     screenMesh.rotation.addInPlace(new Vector3(0, Math.PI, 0));
 
     // Setup the CSS css3DRenderer and Youtube object
@@ -240,10 +167,12 @@ class MobileScene implements ICustomScene {
 
     let CSSobject = new CSS3DObject(iframeContainer);
     CSSobject.position.copyFrom(mesh.getAbsolutePosition());
-    CSSobject.position.y -= 1.4;
-    CSSobject.position.x += 3.75;
+    CSSobject.position.y -= 1.65;
+    CSSobject.position.x += 3.95;
     CSSobject.rotation.y = -mesh.rotation.y;
     CSSobject.scaling.copyFrom(mesh.scaling);
+    CSSobject.scaling.x -= 0.08;
+    CSSobject.scaling.y += 0.2;
 
     let iframe = document.createElement("iframe");
     iframe.style.position = "absolute";

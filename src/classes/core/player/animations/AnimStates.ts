@@ -133,11 +133,11 @@ export class PreviewState extends AnimState {
   Transition(nextState: string): void {
     switch (nextState) {
       case "idle":
-        this.player.Animations.idle.stop();
+        this.player.Animations.thumbsUp.stop();
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
-            this.player.Animations.thumbsUp,
             this.player.Animations.idle,
+            this.player.Animations.thumbsUp,
             0.05
           )
         );
