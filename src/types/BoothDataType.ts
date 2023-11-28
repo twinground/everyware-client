@@ -6,4 +6,5 @@ export type BoothData = {
     images: string[];
     top_logos: string;
   };
+  meetLink: string;
 };

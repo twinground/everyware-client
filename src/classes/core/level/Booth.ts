@@ -18,6 +18,7 @@ import {
   Matrix,
   ActionManager,
   ExecuteCodeAction,
+  ParticleHelper,
 } from "@babylonjs/core";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 // class
@@ -42,6 +43,7 @@ class Booth {
   public topLogo: Node;
   public boothCarpet: Mesh;
   public boothCollision: Mesh;
+  public frontDeskCollision: Mesh;
   public mobileCollision: Mesh;
   public boardCollisions: Mesh[] = [];
   // texture & material
@@ -60,6 +62,7 @@ class Booth {
   public topLogoURI: string;
   public bottomLogoURI: string;
   public boardImageURIS: string[];
+  public googleMeetLink: string;
 
   constructor(
     worldScene: WorldScene,
@@ -77,6 +80,7 @@ class Booth {
     this.topLogoURI = boothData.boothMaterials.top_logos;
     this.bottomLogoURI = boothData.boothMaterials.bottom_logos;
     this.boardImageURIS = boothData.boothMaterials.images;
+    this.googleMeetLink = boothData.meetLink;
 
     this.npc = new Npc(this.scene);
     if (boothInstance) {
@@ -92,7 +96,6 @@ class Booth {
         );
       }); // load npc
     }
-
     // texture and material
     this.pbrMaterial = new PBRMaterial("booth-shared-pbr-material", this.scene);
     this.pbrMaterial.roughness = 1;
@@ -174,6 +177,16 @@ class Booth {
     );
     this.boothCollision.parent = parent;
     this.boothCollision.visibility = 0;
+
+    // front desk collision area
+    this.frontDeskCollision = MeshBuilder.CreateBox(
+      "front-desk-collision",
+      { width: 2, height: 5, depth: 2.5 },
+      this.scene
+    );
+    this.frontDeskCollision.position.set(-5, 1, -4.3);
+    this.frontDeskCollision.parent = parent;
+    this.frontDeskCollision.visibility = 0;
 
     // board collision area
     for (let i = 0; i < 3; i++) {
@@ -340,7 +353,7 @@ class Booth {
 
     const monitor = MeshBuilder.CreateBox(
       "monitor",
-      { width: 1, height: 1, depth: 3.5 },
+      { width: 1, height: 1.5, depth: 4 },
       this.scene
     );
     monitor.position.set(2.2, 0.5, 3.8);

@@ -34,7 +34,6 @@ class Npc {
       "npc.glb",
       this.scene
     );
-    console.log(animationGroups.slice(3));
     let mesh = meshes[0];
     mesh.parent = null;
 
@@ -80,7 +79,7 @@ class Npc {
   public PlayRandomAnimation() {
     const idx = Math.floor(Math.random() * 3);
 
-    if (idx == 1) return;
+    // if (idx == 1) return;
 
     const newAnim = this.animations[ANIM_NAME_MAP[idx]];
     // if (newAnim === this.curAnim) {
