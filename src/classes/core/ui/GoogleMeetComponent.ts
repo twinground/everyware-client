@@ -1,16 +1,62 @@
 import axios from "axios";
 import { API_URL } from "../static";
 import swal from "sweetalert";
+import Timer from "./Timer";
 // class
 
 class GoogleMeetComponent {
   private _meetContainer: HTMLDivElement;
   private _meetBtn: HTMLDivElement;
   private _meetText: HTMLParagraphElement;
+  private _timer: Timer;
   public isRendered = false;
   private boothId: number = -1; // request google meet about this booth id
 
-  constructor() {}
+  constructor() {
+    this._timer = new Timer();
+  }
+
+  public async RequestGoogleMeet(meetLink: string) {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/booths/${this.boothId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.isSuccess) {
+        swal("", "예약에 성공했습니다!", "success", {
+          buttons: {
+            ok: {
+              text: "ok",
+              value: true,
+            },
+          },
+        });
+        this._timer.StartTimer(
+          Number(response.data.result.timestamp),
+          meetLink
+        );
+      }
+    } catch (error) {
+      if (error.response.status == 400) {
+        // already booked
+        swal("Oops!", "이미 예약한 대화가 존재합니다.", "error", {
+          buttons: {
+            ok: {
+              text: "ok",
+              value: true,
+            },
+          },
+        });
+      }
+    }
+  }
 
   private SetDomNodes(boothId: number, meetLink: string) {
     this.boothId = boothId;
@@ -22,7 +68,7 @@ class GoogleMeetComponent {
     this._meetContainer.appendChild(this._meetBtn);
 
     this._meetBtn.onclick = () => {
-      window.open(meetLink);
+      this.RequestGoogleMeet(meetLink);
     };
 
     this._meetText = document.createElement("p");
@@ -51,6 +97,8 @@ class GoogleMeetComponent {
   }
 
   Render(boothId: number, meetLink: string) {
+    this.boothId = boothId;
+
     const container = this.SetDomNodes(boothId, meetLink);
 
     document.body.appendChild(container);
