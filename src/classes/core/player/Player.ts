@@ -34,7 +34,6 @@ class Player {
   private _headMesh: AbstractMesh;
   private _arcRotCamera: ArcRotateCamera;
   private _followCamera: FollowCamera;
-  private _universalCamera: UniversalCamera;
   private _currentCamera: TargetCamera;
   private _animations: PlayerAnimations;
   private _curAnim: AnimationGroup;

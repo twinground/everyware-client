@@ -16,7 +16,9 @@ import {
   SceneLoader,
   Color3,
   Plane,
+  Mesh,
 } from "@babylonjs/core";
+import * as earcut from "earcut";
 import { AdvancedDynamicTexture, Button } from "@babylonjs/gui";
 import ICustomScene from "../../../interfaces/ICustomScene";
 import Engine from "../Engine";
@@ -66,29 +68,29 @@ class MobileScene implements ICustomScene {
       Vector3.Zero(),
       this.scene
     );
-    this._camera.setPosition(new Vector3(0, 5, 10));
+    this._camera.setPosition(new Vector3(0, 3, 9));
     this._camera.inertia = 0;
     this._camera.angularSensibilityX = 250;
     this._camera.angularSensibilityY = 250;
-    this._camera.upperBetaLimit = (Math.PI / 2) * 0.9;
-    this._camera.lowerBetaLimit = 0.1;
-    this._camera.upperAlphaLimit = Math.PI * 0.9;
-    this._camera.lowerAlphaLimit = 0.1;
-    this._camera.lowerRadiusLimit = 5;
-    this._camera.upperRadiusLimit = 20;
+    this._camera.upperBetaLimit = Math.PI / 3;
+    this._camera.lowerBetaLimit = Math.PI / 3;
+    this._camera.upperAlphaLimit = Math.PI / 2;
+    this._camera.lowerAlphaLimit = Math.PI / 2;
+    this._camera.lowerRadiusLimit = 9;
+    this._camera.upperRadiusLimit = 9;
     this._camera.attachControl(true);
 
     SceneLoader.ImportMesh(
       "",
       "./models/",
-      "galaxy_s8.glb",
+      "galaxy_ultra.glb",
       this.scene,
       (meshes) => {
         let mesh = meshes[0];
         mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, 2 * Math.PI, 0);
         mesh.position.z -= 0.02;
         mesh.position.y -= 3.2;
-        mesh.scaling.setAll(0.7);
+        mesh.scaling.setAll(1.2);
         mesh.parent = null;
       }
     );
@@ -98,10 +100,10 @@ class MobileScene implements ICustomScene {
       { width: 1, height: 1 },
       this.scene
     );
-    screenMesh.scaling.x = 3;
-    screenMesh.scaling.y = 6.5;
+    screenMesh.scaling.x = 2.9;
+    screenMesh.scaling.y = 6.1;
     screenMesh.position.z += 0.2;
-    screenMesh.position.y += 0.25;
+    screenMesh.position.y += 0.03;
     screenMesh.rotation.addInPlace(new Vector3(0, Math.PI, 0));
 
     // Setup the CSS css3DRenderer and Youtube object
@@ -161,15 +163,16 @@ class MobileScene implements ICustomScene {
     iframeContainer.style.position = "absolute";
     iframeContainer.style.width = width + "px";
     iframeContainer.style.height = height + "px";
-    iframeContainer.style.backgroundColor = "#000";
     iframeContainer.id = "iframeContainer";
 
     let CSSobject = new CSS3DObject(iframeContainer);
     CSSobject.position.copyFrom(mesh.getAbsolutePosition());
-    CSSobject.position.y -= 1.4;
-    CSSobject.position.x += 3.75;
+    CSSobject.position.y -= 1.65;
+    CSSobject.position.x += 3.95;
     CSSobject.rotation.y = -mesh.rotation.y;
     CSSobject.scaling.copyFrom(mesh.scaling);
+    CSSobject.scaling.x -= 0.08;
+    CSSobject.scaling.y += 0.2;
 
     let iframe = document.createElement("iframe");
     iframe.style.position = "absolute";

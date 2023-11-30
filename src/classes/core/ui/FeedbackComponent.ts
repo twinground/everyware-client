@@ -33,7 +33,7 @@ class FeedbackComponent {
         },
       }).then((value) => {
         if (value) {
-          //window.location.href = ""
+          window.open("http://everyware-test.shop/auth/auth.html");
         }
       });
       return "";
@@ -45,7 +45,6 @@ class FeedbackComponent {
   private async RequestLike() {
     const token = this.CheckToken();
     if (token != "") {
-      console.log(`${API_URL}/api/likes/${this.boothId}`);
       const response = await axios.post(
         `${API_URL}/api/likes/${this.boothId}`,
         {},
@@ -57,7 +56,6 @@ class FeedbackComponent {
       );
 
       if (response.data.state == 200) {
-        console.log(response.data);
         this._likeNumber.innerText = response.data.data.count;
       }
       if (response.data.state == 400) {

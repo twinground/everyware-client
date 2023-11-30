@@ -27,18 +27,19 @@ export class IdleState extends AnimState {
   Transition(nextState: string): void {
     switch (nextState) {
       case "preview": {
-        this.player.scene.stopAllAnimations();
+        this.player.Animations.idle.stop();
+
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
             this.player.Animations.thumbsUp,
             this.player.Animations.idle,
-            0.05
+            0.1
           )
         );
         break;
       }
       case "walk": {
-        this.player.scene.stopAllAnimations();
+        this.player.Animations.idle.stop();
 
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
@@ -51,7 +52,7 @@ export class IdleState extends AnimState {
         break;
       }
       case "walkBack": {
-        this.player.scene.stopAllAnimations();
+        this.player.Animations.idle.stop();
 
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
@@ -76,8 +77,7 @@ export class WalkState extends AnimState {
   Transition(nextState: string): void {
     switch (nextState) {
       case "idle": {
-        this.player.scene.stopAllAnimations(); // Stop all animations before blending two animations
-
+        this.player.Animations.walkFor.stop();
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
             this.player.Animations.idle,
@@ -105,8 +105,7 @@ export class WalkBackState extends AnimState {
   Transition(nextState: string): void {
     switch (nextState) {
       case "idle": {
-        this.player.scene.stopAllAnimations(); // Stop all animations before blending two animations
-
+        this.player.Animations.walkBack.stop();
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
             this.player.Animations.idle,
@@ -134,11 +133,11 @@ export class PreviewState extends AnimState {
   Transition(nextState: string): void {
     switch (nextState) {
       case "idle":
-        this.player.scene.stopAllAnimations();
+        this.player.Animations.thumbsUp.stop();
         this.player.scene.onBeforeRenderObservable.runCoroutineAsync(
           this.player.AnimationBlending(
-            this.player.Animations.thumbsUp,
             this.player.Animations.idle,
+            this.player.Animations.thumbsUp,
             0.05
           )
         );

@@ -35,6 +35,7 @@ import {
 import Booth from "../level/Booth";
 import ChatBox from "../ui/ChatBox";
 import FeedbackComponent from "../ui/FeedbackComponent";
+import GoogleMeetComponent from "../ui/GoogleMeetComponent";
 
 const OUTLINE_COLOR = new Color3(1, 1, 0);
 const GRAVITY = new Vector3(0, -9.81, 0);
@@ -65,6 +66,7 @@ class WorldScene implements ICustomScene {
   private _gizmode: number;
   /* UI */
   private _feedbackComponent: FeedbackComponent;
+  private _meetButtonComponent: GoogleMeetComponent;
 
   constructor(
     private engine: Engine,
@@ -107,6 +109,7 @@ class WorldScene implements ICustomScene {
 
     // ui
     this._feedbackComponent = new FeedbackComponent();
+    this._meetButtonComponent = new GoogleMeetComponent();
 
     // Socket Event callback definition for "connection" and "transform"
     if (this._socket) {
@@ -208,10 +211,6 @@ class WorldScene implements ICustomScene {
 
     this._viewButtons = [];
     this._isViewing = false;
-
-    // TODO : Use this debuggers only for development
-    // this.SetGizmoInteraction();
-    // this.SetInpsector();
   }
 
   /**
@@ -312,21 +311,32 @@ class WorldScene implements ICustomScene {
    */
   public CreateBoothCollisionEvent(targetBooths: Booth[]) {
     this.scene.onBeforeRenderObservable.add(() => {
-      let flag = false;
+      let boothFlag = false;
+      let frontDeskFlag = false;
+
       for (let booth of targetBooths) {
         if (booth.boothCollision.intersectsMesh(this._player.Mesh, false)) {
           booth.isInBooth = true;
           if (!this._feedbackComponent.isRendered) {
-            const container = this._feedbackComponent.Render(booth.id);
+            this._feedbackComponent.Render(booth.id);
             this._feedbackComponent.isRendered = true;
           }
-          flag = true;
+          boothFlag = true;
         } else {
           booth.isInBooth = false;
         }
+
+        if (booth.frontDeskCollision.intersectsMesh(this._player.Mesh, false)) {
+          if (!this._meetButtonComponent.isRendered) {
+            this._meetButtonComponent.Render(booth.id, booth.googleMeetLink);
+            this._meetButtonComponent.isRendered = true;
+          }
+          frontDeskFlag = true;
+        } else {
+        }
       }
 
-      if (flag) {
+      if (boothFlag) {
         (this._player.CurrentCam as FollowCamera).radius = 2.5;
         (this._player.CurrentCam as FollowCamera).heightOffset = 0;
         (this._player.CurrentCam as FollowCamera).cameraAcceleration = 0.02;
@@ -341,6 +351,14 @@ class WorldScene implements ICustomScene {
         if (this._feedbackComponent.isRendered) {
           this._feedbackComponent.isRendered = false;
           this._feedbackComponent.RemoveDomNodes("feedback-container");
+        }
+      }
+
+      if (frontDeskFlag) {
+      } else {
+        if (this._meetButtonComponent.isRendered) {
+          this._meetButtonComponent.isRendered = false;
+          this._meetButtonComponent.RemoveDomNodes("meet-container");
         }
       }
     });
@@ -498,9 +516,11 @@ class WorldScene implements ICustomScene {
     for (let i = 0; i < tutorialButton.length; i++) {
       tutorialButton[i].classList.add("tutorial-button");
       tutorialButton[i].textContent = textList[i];
-      tutorialButton[i].style.right = `${130 - i * 100}px`;
       bodyElement.appendChild(tutorialButton[i]);
     }
+
+    tutorialButton[0].style.right = "30px";
+    tutorialButton[1].style.left = "30px";
 
     switchElement[0].classList.add("hidden");
 

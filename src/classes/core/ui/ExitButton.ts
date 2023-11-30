@@ -11,7 +11,7 @@ export function createExitButton(advancedTexture: AdvancedDynamicTexture) {
   exitButton.background = "grey";
   exitButton.fontSize = "30px";
   exitButton.alpha = 0.5;
-  exitButton.top = 200;
+  exitButton.top = 325;
 
   return exitButton;
 }

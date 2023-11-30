@@ -28,17 +28,6 @@ const mainColor = {
   g: 240,
   b: 197,
 };
-const dummy_booth_data = [
-  "./images/board-1.jpeg",
-  "./images/board-2.jpg",
-  "./images/board-3.jpg",
-  "./images/board-4.jpg",
-  "./images/board-5.jpg",
-  "./images/board-6.png",
-  "./images/board-7.jpg",
-  "./images/board-8.jpg",
-  "./images/board-9.jpg",
-];
 
 class Level {
   public scene: Scene;
