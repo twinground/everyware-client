@@ -73,8 +73,8 @@ class Timer {
   }
 
   StartTimer(reserved: number, meetLink: string) {
-    let delta = reserved - Math.floor(Date.now() / 1000);
-    delta = 10;
+    //let delta = reserved - Math.floor(Date.now() / 1000);
+    let delta = 10; // TODO : Hard coding
 
     this.SetDomNodes();
     const timeInterval = setInterval(() => {
