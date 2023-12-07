@@ -165,7 +165,7 @@ class Player {
      */
     this._nicknameTag = new NicknameUI(
       this._headMesh,
-      this._socket.name,
+      this._socket ? this._socket.name : "emtpy",
       advancedTexture
     );
     /**
