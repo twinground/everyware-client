@@ -72,7 +72,7 @@ class Timer {
     this._secText.innerText = `${sec}`;
   }
 
-  StartTimer(reserved: number, meetLink: string) {
+  StartTimer(_reserved: number, meetLink: string) {
     //let delta = reserved - Math.floor(Date.now() / 1000);
     let delta = 10; // TODO : Hard coding
 
