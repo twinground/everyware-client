@@ -55,6 +55,27 @@ class GoogleMeetComponent {
           },
         });
       }
+
+      if (error.response.status == 401) {
+        // already booked
+        swal("Oops!", "로그인이 필요한 기능입니다.", "error", {
+          buttons: {
+            login: {
+              text: "로그인 하러가기",
+              value: true,
+            },
+            no: {
+              text: "다음에",
+              value: false,
+            },
+          },
+        }).then((value) => {
+          if (value) {
+            window.location.href = "http://everyware-test.shop/auth/auth.html";
+          }
+        });
+        return "";
+      }
     }
   }
 

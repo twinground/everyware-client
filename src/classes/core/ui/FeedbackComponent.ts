@@ -33,7 +33,7 @@ class FeedbackComponent {
         },
       }).then((value) => {
         if (value) {
-          window.open("http://everyware-test.shop/auth/auth.html");
+          window.location.href = "http://everyware-test.shop/auth/auth.html";
         }
       });
       return "";
