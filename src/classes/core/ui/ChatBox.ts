@@ -69,7 +69,7 @@ class ChatBox {
     this._openChatButtonDOM.classList.add("open-chat-button");
     const openButtonIcon = document.createElement("img");
     this._openChatButtonDOM.appendChild(openButtonIcon);
-    openButtonIcon.src = "/images/messenger.png";
+    openButtonIcon.src = "images/messenger.png";
 
     //add event listener on button
     this._sendButtonDOM.addEventListener("click", () => {

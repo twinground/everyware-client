@@ -74,7 +74,6 @@ class GoogleMeetComponent {
             window.location.href = "http://everyware-test.shop/auth/auth.html";
           }
         });
-        return "";
       }
     }
   }

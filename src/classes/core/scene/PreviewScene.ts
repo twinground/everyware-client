@@ -190,17 +190,7 @@ class PreviewScene implements ICustomScene {
 
     //append iframe
     iframeContainer.innerHTML = `
-      <iframe 
-        width="${width}" 
-        height="${height}" 
-        src="https://www.youtube.com/embed/HpS_hHTMPF0?si=eKsi8naKJJWl4fyx" 
-        title="YouTube video player" 
-        frameborder="0" 
-        allow="accelerometer; 
-        autoplay; clipboard-write; 
-        encrypted-media; 
-        gyroscope; picture-in-picture; 
-        web-share" allowfullscreen></iframe>
+        <iframe width=${width} height=${height} src="https://www.youtube.com/embed/x5mDy5ZcJvs?si=QZPgiZvvhVGf8Rls" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
     `;
 
     let depthMask = new StandardMaterial("VideoViewMaterial", scene);

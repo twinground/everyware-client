@@ -477,20 +477,20 @@ class WorldScene implements ICustomScene {
    */
   private TutorialOnboarding() {
     const backgounrdImg = [
-      "/images/tutorial/background1.png",
-      "/images/tutorial/background2.png",
-      "/images/tutorial/background3.png",
+      "images/tutorial/background1.png",
+      "images/tutorial/background2.png",
+      "images/tutorial/background3.png",
     ];
 
     const explainImg = [
-      "/images/tutorial/explain1.png",
-      "/images/tutorial/explain2.png",
-      "/images/tutorial/explain3.png",
+      "images/tutorial/explain1.png",
+      "images/tutorial/explain2.png",
+      "images/tutorial/explain3.png",
     ];
 
     const highlightFrame = [
-      "/images/tutorial/bg2_highlight.png",
-      "/images/tutorial/bg3_highlight.png",
+      "images/tutorial/bg2_highlight.png",
+      "images/tutorial/bg3_highlight.png",
     ];
 
     let textList = ["NEXT", "SKIP"];
