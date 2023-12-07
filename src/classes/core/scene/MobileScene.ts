@@ -27,6 +27,8 @@ import { ISceneStateMachine } from "../../../interfaces/IStateMachine";
 import { createExitButton } from "../ui/ExitButton";
 import CSS3DObject from "../renderer/CSS3DObject.js";
 import CSS3DRenderer from "../renderer/CSSRenderer.js";
+import { API_URL } from "../static";
+import axios from "axios";
 
 const width = 2000;
 const height = 1080;
@@ -37,6 +39,7 @@ class MobileScene implements ICustomScene {
   private _level: EnvironmentHelper;
   private _advancedTexture: AdvancedDynamicTexture;
   private _exitButton: Button;
+  private _iframeURL: string;
 
   constructor(
     private engine: Engine,
@@ -107,29 +110,39 @@ class MobileScene implements ICustomScene {
     screenMesh.rotation.addInPlace(new Vector3(0, Math.PI, 0));
 
     // Setup the CSS css3DRenderer and Youtube object
-    let [css3DRenderer, container] = this.SetupRenderer(screenMesh, this.scene);
-    screenMesh.actionManager = new ActionManager(this.scene);
-    screenMesh.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnPickTrigger, function (_event) {
-        (container as HTMLDivElement).style.zIndex = "1";
-      })
-    );
-    document.addEventListener("click", (e: any) => {
-      if (e.target.id === "CSS3DRendererDom") {
-        (container as HTMLDivElement).style.zIndex = "-1";
-      }
-    });
-
-    window.addEventListener("resize", (_e) => {
-      this.engine.BabylonEngine.resize();
-    });
-    //------------EVENTS--------------------------------
-    this.scene.onBeforeRenderObservable.add(() => {
-      (css3DRenderer as CSS3DRenderer).render(
-        this.scene,
-        this.scene.activeCamera
+    this.RequestMobileURL().then(() => {
+      let [css3DRenderer, container] = this.SetupRenderer(
+        screenMesh,
+        this.scene
       );
+      screenMesh.actionManager = new ActionManager(this.scene);
+      screenMesh.actionManager.registerAction(
+        new ExecuteCodeAction(ActionManager.OnPickTrigger, function (_event) {
+          (container as HTMLDivElement).style.zIndex = "1";
+        })
+      );
+      document.addEventListener("click", (e: any) => {
+        if (e.target.id === "CSS3DRendererDom") {
+          (container as HTMLDivElement).style.zIndex = "-1";
+        }
+      });
+
+      window.addEventListener("resize", (_e) => {
+        this.engine.BabylonEngine.resize();
+      });
+      //------------EVENTS--------------------------------
+      this.scene.onBeforeRenderObservable.add(() => {
+        (css3DRenderer as CSS3DRenderer).render(
+          this.scene,
+          this.scene.activeCamera
+        );
+      });
     });
+  }
+
+  async RequestMobileURL() {
+    const response = await axios.get(`${API_URL}/api/expos/link`);
+    this._iframeURL = response.data;
   }
 
   RemoveDomNode(id: string) {
@@ -180,8 +193,7 @@ class MobileScene implements ICustomScene {
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "0px";
-    iframe.src =
-      "http://14.36.205.233:5645/#!action=stream&udid=emulator-5554&player=mse&ws=ws%3A%2F%2F14.36.205.233%3A5645%2F%3Faction%3Dproxy-adb%26remote%3Dtcp%253A8886%26udid%3Demulator-5554";
+    iframe.src = this._iframeURL;
     iframe.style.scale = "6 1.5";
     iframe.style.translate = "-100%";
     iframeContainer.appendChild(iframe);
