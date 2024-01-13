@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "postinstall": "cp ./node_modules/@babylonjs/havok/lib/esm/HavokPhysics.wasm ./assets/HavokPhysics.wasm",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"

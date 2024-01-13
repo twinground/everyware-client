@@ -20,6 +20,7 @@ import Expo from "./Expo";
 // type
 import { BoothData } from "../../../types/BoothDataType";
 import { API_URL } from "../static";
+import { boothData } from "../../../types/StaticBooth";
 
 //const ENV_COLOR = new Color3(255 / 255, 240 / 255, 197 / 255);
 const ENV_COLOR = new Color3(52 / 255, 152 / 255, 219 / 255);
@@ -102,9 +103,9 @@ class Level {
     this._expo = new Expo(this.scene);
     // requeset booth informations
 
-    const response = await axios.get(`${API_URL}/api/expos/1`);
-    const boothData = response.data;
-
+    // with sever
+    // const response = await axios.get(`${API_URL}/api/expos/1`);
+    // const boothData = response.data;
     /**
      * Load and set Booths
      */
